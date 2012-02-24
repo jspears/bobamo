@@ -1,29 +1,33 @@
-window.HeaderView = Backbone.View.extend({
+define(['Backbone', 'jQuery','Underscore', 'collections/employee', 'views/employee/list', 'text!tpl/header.html'], function (Backbone, $,_, collection, EmployeeListView, headerTmpl) {
 
-    initialize:function () {
-        this.template = _.template(tpl.get('header'));
-        this.searchResults = new EmployeeCollection();
-        this.searchresultsView = new EmployeeListView({model:this.searchResults, className:'dropdown-menu'});
-    },
+    var HeaderView = Backbone.View.extend({
 
-    render:function (eventName) {
-        $(this.el).html(this.template());
-        $('.navbar-search', this.el).append(this.searchresultsView.render().el);
-        return this;
-    },
+        initialize:function () {
+            this.template = _.template(headerTmpl);
+            this.searchResults = new collection.EmployeeCollection();
+            this.searchresultsView = new EmployeeListView({model:this.searchResults, className:'dropdown-menu'});
+        },
 
-    events:{
-        "keyup .search-query":"search"
-    },
+        render:function (eventName) {
+            $(this.el).html(this.template());
+            $('.navbar-search', this.el).append(this.searchresultsView.render().el);
+            return this;
+        },
 
-    search:function (event) {
+        events:{
+            "keyup .search-query":"search"
+        },
+
+        search:function (event) {
 //        var key = event.target.value;
-        var key = $('#searchText').val();
-        console.log('search ' + key);
-        this.searchResults.findByName(key);
-        setTimeout(function () {
-            $('#searchForm').addClass('open');
-        });
-    }
+            var key = $('#searchText').val();
+            console.log('search ' + key);
+            this.searchResults.findByName(key);
+            setTimeout(function () {
+                $('#searchForm').addClass('open');
+            });
+        }
 
+    });
+    return HeaderView;
 });

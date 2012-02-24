@@ -1,16 +1,22 @@
 // Filename: app.js
 define([
-  'jQuery', 
-  'Underscore', 
-  'Backbone',
-  'router', // Request router.js
-], function($, _, Backbone, Router){
-  var initialize = function(){
-    // Pass in our Router module and call it's initialize function
-    Router.initialize();
-  }
+    'jQuery',
+    'Underscore',
+    'Backbone',
+    'router',
+    'views/header'
+], function ($, _, Backbone, Router, HeaderView) {
+    return {
+        initialize:function () {
+            this.headerView = new HeaderView();
+            $('.header').html(this.headerView.render().el);
 
-  return { 
-    initialize: initialize
-  };
+            // Close the search dropdown on click anywhere in the UI
+            $('body').click(function () {
+                $('.dropdown').removeClass("open");
+            });
+            Router.initialize();
+        }
+
+    };
 });
