@@ -1,0 +1,7 @@
+<ul>
+  <% _.each(items, function(item){
+    var id = item.get('_id');
+    %>
+   <li><a href="#/${schema.modelName}/edit?_id=<%=id%>"><%=id%></a></li>
+  <% }); %>
+</ul>

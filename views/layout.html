@@ -1,0 +1,54 @@
+<!doctype html>
+<!--[if lt IE 7]>
+<html class="no-js ie6 oldie" lang="en"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js ie7 oldie" lang="en"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js ie8 oldie" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <title>${title}</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <link rel="stylesheet" href="css/style.css">
+    {{if loggedIn}}
+    <script data-main="js/main" src="js/libs/require/require.js"></script>
+    {{/if}}
+</head>
+<body>
+<div id="container">
+    <div id="logo">
+        <h1>${title}</h1>
+    </div>
+
+    <div id="menu">
+        <ul>
+            {{if loggedIn}}
+            <li><a href="#">Home</a></li>
+            {{each(v,k) schemas}}
+            <li><a href="#/${v}">${v} List</a></li>
+            {{/each}}
+            {{/if}}
+        </ul>
+        <div>
+            {{if loggedIn}}
+            <a href="/logout">Logout</a>
+            {{/if}}
+        </div>
+    </div>
+    <div id="page">
+        {{html body}}
+    </div>
+    <div id="footer">
+    </div>
+</div>
+
+</body>
+</html>
