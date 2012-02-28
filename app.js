@@ -9,7 +9,7 @@ var express = require('express')
     , rest = require('mers')
     , jqtpl = require('jqtpl')
     , util = require('mers/lib/util')
-//    , passport = require('./app/lib/passport')
+    , passport = require('./app/lib/passport')
     , fs = require('fs')
     ;
 
@@ -23,15 +23,20 @@ app.configure(function () {
     app.set('view engine', 'html');
     app.register('.html', jqtpl.express);
     app.register('.js', jqtpl.express);
+    app.use(express.cookieParser());
     app.use(express.bodyParser());
+    app.use(express.session({ secret:'big fat secret' }));
     app.use(express.methodOverride());
+    app.use(passport.initialize());
+    app.use(passport.session());
     app.use(app.router);
 
     generate(app);
-
-//app.use(express.session({ secret:'big fat secret' }));
-//    app.use(passport.initialize());
-//    app.use(passport.session());
+    app.dynamicHelpers({
+        isAuthenicated:function (req, res) {
+            return req.isAuthenticated();
+        }
+    });
     loadDir('./app/model');
 
 });
@@ -46,8 +51,36 @@ app.configure('production', function () {
     app.use(express.errorHandler());
 });
 
-// Routes
 
+// Routes
+app.get('/', routes.index);
+app.post('/', passport.authenticate('local', { failureRedirect:'/check' }), function (req, res, next) {
+    return res.send({
+        status: 0,
+        payload:req.user
+    });
+
+});
+
+app.get('/check', function (req, res, next) {
+    var obj = {};
+    if (req.isAuthenticated && req.isAuthenticated()) {
+        obj = {status:0, payload:req.user};
+    } else {
+        obj = {status:1};
+    }
+
+    res.send(obj)
+});
+app.get('/logout', function (req, res) {
+    req.logOut();
+    res.redirect('/');
+});
+app.all(/\/api\/*/, function (req, res, next) {
+    if (req.isAuthenticated && req.isAuthenticated())
+        return  next();
+    res.redirect('/check');
+});
 //app.get('/', routes.index);
 app.all(/\/api\/*/, function (req, res, next) {
     req.query.transform = util.split(req.query.transform, ',', ['_idToId']);
@@ -58,6 +91,7 @@ app.get('/api/employee/:id/reports', function (req, res, next) {
 
     next();
 })
+
 app.use('/api', rest({
     mongoose:    mongoose,
     transformers:{

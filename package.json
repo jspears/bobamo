@@ -13,4 +13,9 @@
     , "mocha":"latest"
     ,"csv":"latest"
   }
+  ,"devDependencies":{
+    "mocha":"latest"
+    ,"should":"latest"
+  }
+  
 }
