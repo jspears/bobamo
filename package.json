@@ -7,7 +7,7 @@
       "express": "2.5.8"
     , "jqtpl": ">= 0.0.1"
     , "mongoose":"latest"
-    , "mongoose-express-rest":"latest"
+    , "mers":"latest"
     , "passport":"latest"
     , "passport-local":"latest"
     , "mocha":"latest"

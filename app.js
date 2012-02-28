@@ -6,7 +6,8 @@ var express = require('express')
     , routes = require('./routes')
     , mongoose = require('mongoose')
     , generate = require('./routes/generate')
-    , rest = require('mongoose-express-rest')
+    , rest = require('mers')
+    , jqtpl = require('jqtpl')
 //    , passport = require('./app/lib/passport')
     , fs = require('fs')
     ;
@@ -16,28 +17,35 @@ var app = module.exports = express.createServer();
 // Configuration
 
 app.configure(function () {
+    app.use(express.static(__dirname + '/public'));
     app.set('views', __dirname + '/views');
-    app.set('view engine', 'jqtpl');
+    app.set('view engine', 'html');
+    app.register('.html', jqtpl.express);
+    app.register('.js', jqtpl.express);
     app.use(express.bodyParser());
     app.use(express.methodOverride());
     app.use(app.router);
-    app.use(express.static(__dirname + '/public'));
+    generate(app);
 //app.use(express.session({ secret:'big fat secret' }));
 //    app.use(passport.initialize());
 //    app.use(passport.session());
-    app.use('/api', rest(mongoose))
     loadDir('./app/model');
+    app.use('/api', rest({
+        mongoose:mongoose,
+        transformers:{
+            
+        }
 
-//    generate(app);
+    }).rest());
 });
 
 app.configure('development', function () {
-    mongoose.connect("mongodb://localhost/rapidjs_development");
+    mongoose.connect('mongodb://localhost/mojaba_development')
     app.use(express.errorHandler({ dumpExceptions:true, showStack:true }));
 });
 
 app.configure('production', function () {
-    mongoose.connect("mongodb://localhost/rapidjs");
+    mongoose.connect('mongodb://localhost/mojaba')
     app.use(express.errorHandler());
 });
 

@@ -3,7 +3,7 @@ var assert = require('assert');
 var employee = require('../app/model/employee');
 
 before(function (done) {
-    mongoose.connect("mongodb://localhost/rapidjs_development");
+    mongoose.connect("mongodb://localhost/mojaba_development");
     var c = mongoose.connection;
     c.db.dropDatabase(function () {
         done();
