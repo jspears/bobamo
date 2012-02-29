@@ -11,5 +11,11 @@
     , "passport":"latest"
     , "passport-local":"latest"
     , "mocha":"latest"
+    ,"csv":"latest"
   }
+  ,"devDependencies":{
+    "mocha":"latest"
+    ,"should":"latest"
+  }
+  
 }

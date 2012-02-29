@@ -6,24 +6,27 @@ define(['Backbone', 'jQuery', 'Underscore', 'collections/employee', 'views/emplo
         initialize:function () {
             this.template = _.template(fullTmpl);
         },
-        show:function (model) {
+        show:      function (model) {
             this.model = new collection.Employee(model);
             var self = this;
             this.model.fetch({
                 success:function (data) {
+                    console
                     $('#content').html(self.render().el);
                 }
             });
-        },
-        render:function (model) {
-            $(this.el).html(this.template(this.model.toJSON()));
-            $('#details', this.el).html(new EmployeeView({model:this.model}).render().el);
             this.model.reports.fetch({
                 success:function (data) {
+                    console.log('reports', data);
                     if (data.length == 0)
                         $('.no-reports').show();
                 }
             });
+        },
+        render:    function (model) {
+            $(this.el).html(this.template(this.model.toJSON()));
+            $('#details', this.el).html(new EmployeeView({model:this.model}).render().el);
+
             $('#reports', this.el).append(new EmployeeListView({model:this.model.reports}).render().el);
             return this;
         }

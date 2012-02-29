@@ -9,6 +9,7 @@ define(['Backbone', 'jquery', 'Underscore', 'text!tpl/employee-list-item.html'],
             var self = this;
             this.model.bind("reset", this.render, this);
             this.model.bind("add", function (employee) {
+                console.log('add', employee);
                 $(self.el).append(new EmployeeListItemView({model:employee}).render().el);
             });
         },

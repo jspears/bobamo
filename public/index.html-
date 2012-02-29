@@ -26,9 +26,6 @@
     <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
     <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
     <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
-    <script>
-        window.isAuthenticated = {{html isAuthenicated }};
-    </script>
 </head>
 
 <body>
@@ -37,10 +34,25 @@
 
 <div class="container">
     <div class="row">
-        <div id="content" class="span12>">{{html body}}</div>
+        <div id="content" class="span12>"></div>
     </div>
 
 </div> <!-- /container -->
+
+<!--<script src="lib/jquery-1.7.1.min.js"></script>-->
+<!--<script src="lib/underscore-min.js"></script>-->
+<!--<script src="lib/backbone-min.js"></script>-->
+
+<!--<script src="lib/bootstrap-dropdown.js"></script>-->
+
+<!--<script src="js/utils.js"></script>-->
+<!--<script src="js/models/employeemodel.js"></script>-->
+<!--<script src="js/views/header.js"></script>-->
+<!--<script src="js/views/home.js"></script>-->
+<!--<script src="js/views/contact.js"></script>-->
+<!--<script src="js/views/employeelist.js"></script>-->
+<!--<script src="js/views/employeedetails.js"></script>-->
+<script data-main="js/main" src="js/libs/require/require-jquery.js"></script>
 
 </body>
 </html>

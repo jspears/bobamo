@@ -6,6 +6,7 @@ define([
     'collections/${schema.modelName}',
     'text!templates/${schema.modelName}/list.html'
 ], function ($, _, Backbone, collection, ${schema.modelName}ListTemplate) {
+    "use strict";
     var ${schema.modelName}ListView = Backbone.View.extend({
         el:"#page",
         initialize:function () {

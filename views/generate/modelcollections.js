@@ -2,6 +2,7 @@ define([
     'Underscore',
     'Backbone'
 ], function(_, Backbone) {
+    "use strict";
     //we define these together because they often link together and if they are in seperate callbacks bad things happen.
     var ${schema.modelName}Model = Backbone.Model.extend({
         urlRoot:'/rest/user',

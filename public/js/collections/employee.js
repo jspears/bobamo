@@ -2,17 +2,16 @@ define(['Backbone', 'jQuery'], function (Backbone, $) {
     var Employee = Backbone.Model.extend({
 
         url:function () {
-           return "/api/employee/"+this.id+'?populate[manager]=firstName,lastName,_id'
+           return "/api/employee/"+this.id+'?populate[manager]=firstName,lastName,id'
         },
 
         initialize:function onIntialize() {
             this.reports = new EmployeeCollection();
-            this.reports.url = '/api/employee/' + this.id + '/reports?populate=reports';
+            this.reports.url = '/api/employee/' + this.id + '/reports';
         },
-        idAttribute:'_id',
         parse:function (resp) {
-            console.log('parse', resp);
-            return resp.payload;
+            console.log('Employee#parse', resp);
+            return resp.payload || resp;
         },
         defaults:{
             title:'',
@@ -24,7 +23,7 @@ define(['Backbone', 'jQuery'], function (Backbone, $) {
             email:null,
             twitterId:null,
             manager:{
-                _id:null,
+                id:null,
                 firstName:null,
                 lastName:null
             }
@@ -37,11 +36,10 @@ define(['Backbone', 'jQuery'], function (Backbone, $) {
 
         model:Employee,
         parse:function (resp) {
-            console.log('parse', resp);
-            return resp.payload;
+            console.log('EmployeeCollection#parse', resp);
+            return resp.payload || resp;
         },
         url:"/api/employee",
-        idAttribute:'_id',
         findByName:function (key) {
             // TODO: Modify service to include firstName in search
             var url = (key == '') ? '../api/employee' : "../api/employee/finder/search?term=" + key;
