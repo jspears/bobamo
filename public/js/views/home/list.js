@@ -1,7 +1,7 @@
-define(['Backbone', 'jQuery', 'Underscore', 'text!tpl/home.html'], function (Backbone, $,_, homeTmpl) {
+define(['Backbone', 'jQuery', 'Underscore', 'text!tpl/home.html'], function (Backbone, $, _, homeTmpl) {
 
     var HomeView = Backbone.View.extend({
-
+        el:'#content',
         initialize:function () {
             console.log('Initializing Home View');
             this.template = _.template(homeTmpl);
@@ -9,7 +9,7 @@ define(['Backbone', 'jQuery', 'Underscore', 'text!tpl/home.html'], function (Bac
 
         events:{
             "click #showMeBtn":"showMeBtnClick"
-        },
+            },
 
         render:function (eventName) {
             $(this.el).html(this.template());

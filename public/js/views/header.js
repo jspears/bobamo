@@ -15,9 +15,14 @@ define(['Backbone', 'jQuery','Underscore', 'collections/employee', 'views/employ
         },
 
         events:{
-            "keyup .search-query":"search"
+            "keyup .search-query":"search",
+            "click .nav li a": "active"
         },
-
+        active:function(e){
+            var $p = $(e.target).parent();
+            $p.parent().children().removeClass('active');
+            $p.addClass('active')
+        },
         search:function (event) {
 //        var key = event.target.value;
             var key = $('#searchText').val();
