@@ -2,12 +2,14 @@ var crypto = require('crypto'), mongoose = require('mongoose'), Schema = mongoos
 var UserSchema = new Schema({
     username:{type:String, required:true, unique:true, index:true},
     first_name:{type:String},
-    last_name:{type:String},
+    last_name:{type:String}, 
+    twitter:{type:String,required:true, validate: /^@[a-zA-Z0-9]*$/i },
     email:{type:String},
     _password:{type:String},
     groups:[
         { type:Schema.ObjectId, ref:'group', index:true}
     ],
+
     created_at:{type:Date},
     created_by:{type:Schema.ObjectId, ref:'user'},
     modified_at:{type:Date}

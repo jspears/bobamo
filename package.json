@@ -12,6 +12,7 @@
     , "passport-local":"latest"
     , "mocha":"latest"
     ,"csv":"latest"
+    ,"underscore":"latest"
   }
   ,"devDependencies":{
     "mocha":"latest"
