@@ -21,6 +21,7 @@ describe('Testing User Schema', function () {
             password:  'jspears',
             first_name:'Justin',
             last_name: 'Spears',
+	    twitter:'@speajus',
             email:     'speajus@gmail.com'
         }).save(function (err, obj) {
             assert.ifError(err);

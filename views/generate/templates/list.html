@@ -1,7 +1,6 @@
-<ul>
-  <% _.each(items, function(item){
-    var id = item.get('_id');
-    %>
-   <li><a href="#/${schema.modelName}/edit?_id=<%=id%>"><%=id%></a></li>
-  <% }); %>
-</ul>
+<a href='#${schema.modelName}/edit?id=<%= id %>'>
+    <% if (url){ %>
+    <img width="50" height="50" src="pics/<%= url %>" style="float:left;"/>
+    <%}%>
+    <p class="list-item"><%= id %> name <br />subsection</p>
+</a>

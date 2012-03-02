@@ -3,11 +3,13 @@ var mongoose = require('mongoose'), Employee = require('../app/model/employee'),
 var factory = require('../app/lib/display-factory');
 
 describe('Factory', function () {
-    describe('Testing User', function () {
+    describe('createSchema', function () {
 
         it('should be awesome at creating fields', function (done) {
-            var df = new  factory.DisplayFactory();
-            var stuff = df.createFields(User);
+            var df = factory.DisplayFactory;
+            var Schema = df.createSchema(User);
+            Schema.should.have.property('paths');
+            var stuff = Schema.paths;
             console.log(df.UIModel);
             stuff.should.have.property('username');
             stuff.username.should.have.property('validator').eql(['required'])

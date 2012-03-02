@@ -1,10 +1,10 @@
 var util = require('./util'), _u = require('underscore'), sutil = require('./string');
-var DisplayFactory = (function (mongoose) {
+var DisplayFactory = function () {
 
     this.UIModel = {}
 
 
-});
+};
 function _m(Model) {
     if (typeof Model === 'string')
         Model = mongoose.model(Model);
@@ -124,35 +124,45 @@ function _field(p, path) {
     return _u.extend({}, defaults, options.display);
 }
 DisplayFactory.prototype._field = _field
-DisplayFactory.prototype.createFields = function createFields(Model) {
+DisplayFactory.prototype.createSchema = function createSchema(Model, User) {
     Model = _m(Model);
     var CModel = util.depth(this.UIModel, Model.modelName, {}, true);
 
     Model.schema.eachPath(function (k, v) {
         var field = _field(v, k);
-        if (field)
-            util.depth(CModel, k, field, true);
-    });
+        if (field){
+            util.depth(CModel, ['paths',k], field, true);
+
+        }
+    }, this);
     _u.each(Model.schema.virtuals, function (v, k) {
         var field = _field(v, k);
         if (field)
-            util.depth(CModel, k, field, true);
+            util.depth(CModel, ['paths',k], field, true);
 
-    });
+    }, this);
+
     return CModel;
 }
-DisplayFactory.prototype.createBackboneForm = function createBackboneForm(Model) {
+DisplayFactory.prototype.createFields = function createFields(Model, User) {
     Model = _m(Model);
+    var fields = util.depth(Model, ['options', 'display', 'fields'], []);
+    return (fields && fields.length) ? fields : Object.keys(this.createSchema(Model, User));
+}
+DisplayFactory.prototype.createDefaults = function createDefaults(Model, User) {
+    Model = _m(Model);
+    var schema = this.createSchema(Model).paths;
+    var defs = {};
+    Object.keys(schema).forEach(function (v, k) {
+        if (v == '_id' || v == 'id') return;
+        defs[v] = null;
+    });
 
-
-    var options = util.depth(this.UIModel, [Model.modelName], 'options');
-    if (!options.fields) {
-
-        options.fields = createFields(Model);
-    }
-    var ref = _value(options, 'ref');
-
-
+    return defs;
+}
+DisplayFactory.prototype.createTitle = function(Model,user){
+    Model= _m(Model);
+    return util.depth(Model, 'options.display.label', sutil.toTitle(Model.modelName));
 }
 
-module.exports.DisplayFactory = DisplayFactory;
+module.exports.DisplayFactory = new DisplayFactory;

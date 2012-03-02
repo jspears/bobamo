@@ -12,6 +12,8 @@ var express = require('express')
     , passport = require('./app/lib/passport')
     , fs = require('fs')
     , expose = require('express-expose')
+    , factory = require('./app/lib/display-factory').DisplayFactory
+    , strUtil = require('./app/lib/string');
     ;
 
 var app = module.exports = express.createServer();
@@ -36,7 +38,28 @@ app.configure(function () {
     app.dynamicHelpers({
         isAuthenicated:function (req, res) {
             return req.isAuthenticated();
+        },
+        createSchema:function (req, res) {
+            return function onSchema(Model) {
+                return JSON.stringify(factory.createSchema(Model, req.user).paths);
+            }
+        },
+        createFields:function(req, res){
+            return function onFields(Model){
+                return JSON.stringify( factory.createFields(Model, req.user));
+            }
+        },
+        createDefaults:function(req, res){
+            return function onDefaults(Model){
+                return  JSON.stringify(factory.createDefaults(Model, req.user));
+            }
+        },
+        toTitle:function(req,res){
+            return function onToTitle(Model){
+                return factory.createTitle(Model, req.user);
+            }
         }
+
     });
     loadDir('./app/model');
 
@@ -53,18 +76,18 @@ app.configure('production', function () {
 });
 //app.exposeRequire();
 app.expose(app.settings, 'settings');
-app.get('/settings',function(req,res,next){
-    var user = { name: 'tj' };
-    res.expose(user, 'express.current.user');
-    res.setHeader('Content-Type:', 'text/javascript')
-    res.render('expose.js', {layout:false})
-  })
+//app.get('/stuff',function(req,res,next){
+//    var user = require('./tests/example-model');
+//    res.expose(user, 'express.current.user');
+//    res.setHeader('Content-Type:', 'text/javascript')
+//    res.render('expose.js', {layout:false})
+//  })
 //app.exposeModule(__dirname + '/app/lib/string', 'toTitle');
 // Routes
 app.get('/', routes.index);
 app.post('/', passport.authenticate('local', { failureRedirect:'/check' }), function (req, res, next) {
     return res.send({
-        status: 0,
+        status:0,
         payload:req.user
     });
 
@@ -101,7 +124,7 @@ app.get('/api/employee/:id/reports', function (req, res, next) {
 })
 
 app.use('/api', rest({
-    mongoose:    mongoose,
+    mongoose:mongoose,
     transformers:{
         _idToId:function () {
             return function (obj) {
