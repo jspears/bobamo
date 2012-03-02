@@ -10,7 +10,7 @@ var UserSchema = new Schema({
         { type:Schema.ObjectId, ref:'group', index:true}
     ],
 
-    created_at:{type:Date},
+    created_at:{type:Date, display:{display:'none'}},
     created_by:{type:Schema.ObjectId, ref:'user'},
     modified_at:{type:Date}
 }, {safe:true, strict:true});

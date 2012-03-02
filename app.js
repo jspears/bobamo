@@ -11,6 +11,7 @@ var express = require('express')
     , util = require('mers/lib/util')
     , passport = require('./app/lib/passport')
     , fs = require('fs')
+    , expose = require('express-expose')
     ;
 
 var app = module.exports = express.createServer();
@@ -50,8 +51,15 @@ app.configure('production', function () {
     mongoose.connect('mongodb://localhost/mojaba')
     app.use(express.errorHandler());
 });
-
-
+//app.exposeRequire();
+app.expose(app.settings, 'settings');
+app.get('/settings',function(req,res,next){
+    var user = { name: 'tj' };
+    res.expose(user, 'express.current.user');
+    res.setHeader('Content-Type:', 'text/javascript')
+    res.render('expose.js', {layout:false})
+  })
+//app.exposeModule(__dirname + '/app/lib/string', 'toTitle');
 // Routes
 app.get('/', routes.index);
 app.post('/', passport.authenticate('local', { failureRedirect:'/check' }), function (req, res, next) {

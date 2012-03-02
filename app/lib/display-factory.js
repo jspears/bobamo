@@ -1,4 +1,4 @@
-var util = require('./util'), _u = require('underscore');
+var util = require('./util'), _u = require('underscore'), sutil = require('./string');
 var DisplayFactory = (function (mongoose) {
 
     this.UIModel = {}
@@ -14,6 +14,10 @@ function _m(Model) {
 function _field(p, path) {
     var defaults = {};
     var options = p.options || {};
+    if (options.display && options.display.display == 'none' || ( path[0] == '_' && path != '_id')) {
+        return null;
+    }
+
     if (p.instance == 'ObjectID') {
         if (options.ref) {
             _u.extend(defaults, {
@@ -96,7 +100,8 @@ function _field(p, path) {
                 }
 
             } else {
-                console.log('No Type?', p);
+                console.log('No Type for [' + path + '] guessing String', p);
+                defaults.dataType = 'String';
             }
         }
     }
@@ -107,12 +112,15 @@ function _field(p, path) {
     if (p.validators) {
         _u.each(p.validators, function (v, k) {
             if (v.length) {
-                if (v[0] instanceof RegExp)
+                if (v[0] instanceof RegExp) {
                     util.defaultOrSet(defaults, 'validator', []).push(v[0]);
+                } else {
+                    console.warn('can only handle client side regex/required validators for now')
+                }
             }
         })
     }
-    defaults.label =
+    defaults.label = sutil.toTitle(path);
     return _u.extend({}, defaults, options.display);
 }
 DisplayFactory.prototype._field = _field
@@ -122,7 +130,14 @@ DisplayFactory.prototype.createFields = function createFields(Model) {
 
     Model.schema.eachPath(function (k, v) {
         var field = _field(v, k);
-        util.depth(CModel, k, field, true);
+        if (field)
+            util.depth(CModel, k, field, true);
+    });
+    _u.each(Model.schema.virtuals, function (v, k) {
+        var field = _field(v, k);
+        if (field)
+            util.depth(CModel, k, field, true);
+
     });
     return CModel;
 }
