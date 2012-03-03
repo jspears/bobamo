@@ -4,33 +4,36 @@ define([
 ], function(_, Backbone) {
     "use strict";
     //we define these together because they often link together and if they are in seperate callbacks bad things happen.
-    var ${schema.modelName}Model = Backbone.Model.extend({
-        urlRoot:'/rest/user',
-        defaults: {
-            score: 10
-        },
+    var defaults = {{html createDefaults(schema)}};
+    var schema = {{html createSchema(schema)}};;
+    var Model = Backbone.Model.extend({
+        urlRoot:'/api/${schema.modelName}',
+        schema:schema,
+       // defaults:defaults,
         initialize: function() {
-        },
-        parse:function(resp) {
-            resp.payload;
+        }
+        ,parse:function(resp) {
+            console.log('${schema.modelName}model#parse', resp);
+            return resp.payload ? resp.payload : resp;
         }
 
     });
-    var ${schema.modelName}Collection = Backbone.Collection.extend({
-        model: ${schema.modelName}Model,
-        url:'/rest/${schema.modelName}',
+    var Collection = Backbone.Collection.extend({
+        model: Model,
+        url:'/api/${schema.modelName}',
         initialize: function() {
 
         },
         parse:function(resp) {
-            return resp.payload
+            console.log('Collection#parse ${schema.modelName}', resp.payload);
+            return resp.payload ? resp.payload : resp;
         }
     });
 
 
     return {
-        model:${schema.modelName}Model,
-        collection:${schema.modelName}Collection
+        Model:Model,
+        Collection:Collection
     };
 
 });

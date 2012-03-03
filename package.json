@@ -12,6 +12,8 @@
     , "passport-local":"latest"
     , "mocha":"latest"
     ,"csv":"latest"
+    ,"underscore":"latest"
+    ,"express-expose":"latest"
   }
   ,"devDependencies":{
     "mocha":"latest"
