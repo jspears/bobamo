@@ -1,4 +1,4 @@
-define(['Backbone', 'jQuery','Underscore', 'collections/employee', 'views/employee/list', 'text!tpl/header.html'], function (Backbone, $,_, collection, EmployeeListView, headerTmpl) {
+define(['Backbone', 'jquery','Underscore', 'collections/employee', 'views/employee/list', 'text!tpl/header.html', 'bootstrap/bootstrap-dropdown'], function (Backbone, $,_, collection, EmployeeListView, headerTmpl) {
 
     var HeaderView = Backbone.View.extend({
 
@@ -9,8 +9,10 @@ define(['Backbone', 'jQuery','Underscore', 'collections/employee', 'views/employ
         },
 
         render:function (eventName) {
-            $(this.el).html(this.template());
-            $('.navbar-search', this.el).append(this.searchresultsView.render().el);
+            var $el = $(this.el);
+            $el.html(this.template());
+            $('.navbar-search',$el).append(this.searchresultsView.render().el);
+            $('.dropdown-toggle', $el).dropdown();
             return this;
         },
 

@@ -35,6 +35,9 @@ app.configure(function () {
     app.use(app.router);
 
     generate(app);
+    app.helpers({
+        sutil:strUtil
+    })
     app.dynamicHelpers({
         isAuthenicated:function (req, res) {
             return req.isAuthenticated();
@@ -58,7 +61,13 @@ app.configure(function () {
             return function onToTitle(Model){
                 return factory.createTitle(Model, req.user);
             }
+        },
+        models:function(req,res){
+            return function onModels(){
+                return factory.listModels(req.user);
+            }
         }
+
 
     });
     loadDir('./app/model');

@@ -4,11 +4,11 @@ var employee = require('../app/model/employee');
 
 before(function (done) {
     mongoose.connect("mongodb://localhost/mojaba_development");
-    var c = mongoose.connection;
-    c.db.dropDatabase(function () {
-        done();
-    });
-  //  done();
+//    var c = mongoose.connection;
+//    c.db.dropDatabase(function () {
+//        done();
+//    });
+  done();
 });
 
 describe('testing add user', function () {

@@ -15,6 +15,12 @@ module.exports = function (app) {
        res.render(j('generate', 'templates', req.params.view), makeOptions(req))
 
     });
+    app.get('/tpl/:view', function (req, res, next) {
+        //   res.contentType('text/html; charset=utf-8');
+        res.render(j('generate', 'templates', req.params.view), makeOptions(req))
+
+    });
+
     function j(){
         return Array.prototype.slice.call(arguments,0).join('/');
     }

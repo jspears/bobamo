@@ -11,23 +11,38 @@ define([
     var fields = {{html createFields(schema)}};
     var EditView = Backbone.View.extend({
         el:'#content',
+        renderForm:function(){
+
+        },
         render:function (opts) {
             var $el =$(this.el);
             var id = opts && (opts.id || opts._id);
             var model = new Model(opts);
-            if (id){
-                model.fetch();
-            }
             var form = this.form = new Form({
                 model:model,
                 fields:fields
-            }).render();
+            });
+
 
             $el.empty();
             var title = id ? 'Edit ${toTitle(schema)} ['+id+']' : 'Create New';
             $el.append('<h3>'+title+'</h3>')
-            $el.append(form.el);
 
+            var $fm = $('<div></div>')
+            $el.append($fm);
+            if (id){
+                model.fetch({success:function(){
+                    $fm.append(form.render().el);
+                }});
+            }else{
+                $fm.append(form.render().el);
+            }
+
+            var $div = $('<div class="btn-group pull-right">');
+
+            $div.append('<button class="btn">Cancel</button>');
+            $div.append('<button class="btn">Submit</button>');
+            $el.append($div);
             return this;
         }
     });

@@ -12,6 +12,7 @@ require.config({
    'jquery-ui':'libs/backbone-forms/test/lib/jquery-ui/jquery-ui-1.8.14.custom.min',
    'Backbone.Form':'libs/backbone-forms/src/backbone-forms',
    'jquery-editors':'libs/backbone-forms/src/jquery-ui-editors',
+   'bootstrap':'libs/bootstrap/js',
     templates: '../templates',
     tpl: '../tpl'
   }
