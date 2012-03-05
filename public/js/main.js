@@ -9,6 +9,9 @@ require.config({
     jQuery: 'libs/jquery/jquery',
     Underscore: 'libs/underscore/underscore',
     Backbone: 'libs/backbone/backbone',
+   'jquery-ui':'libs/backbone-forms/test/lib/jquery-ui/jquery-ui-1.8.14.custom.min',
+   'Backbone.Form':'libs/backbone-forms/src/backbone-forms',
+   'jquery-editors':'libs/backbone-forms/src/jquery-ui-editors',
     templates: '../templates',
     tpl: '../tpl'
   }

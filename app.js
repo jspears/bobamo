@@ -126,6 +126,14 @@ app.get('/api/employee/:id/reports', function (req, res, next) {
 app.use('/api', rest({
     mongoose:mongoose,
     transformers:{
+        labelval:function(m){
+            return function(obj){
+                return {
+                    val:obj._id || obj.id,
+                    label:obj.name || obj.title || obj.description || m.modelName+' '+obj.id
+                }
+            }
+        },
         _idToId:function () {
             return function (obj) {
                 if (!obj.toObject)

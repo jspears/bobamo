@@ -21,7 +21,7 @@ define([
 
         },
         renderItem:function (item) {
-            console.log('add', item);
+            console.log('renderItem', item);
             if (this.$ul)
                 this.$ul.append(new ListItemView({model:item}).render().el);
             else
@@ -42,8 +42,11 @@ define([
             $el.empty();
             $el.append('<h3>{{html toTitle(schema) }}</h3>')
             this.renderList();
-            this.collection.each(this.renderItem, this);
-            this.collection.fetch();
+            var self = this;
+            this.collection.fetch({success:function(){
+                console.log('fetch')
+                self.collection.models.forEach(self.renderItem,self);
+            }});
 //            this.collection.fetch({success:function(){
 //                console.log('fetch->success', arguments)
 //            }});

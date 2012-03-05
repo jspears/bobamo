@@ -24,7 +24,6 @@ define([
             if (parts.length > 1) {
                 obj = query.parse(parts[1]);
             }
-            var _this = this;
             var path = ['/js/views'];
             if (paths.length == 1) {
                 path.push(paths[0])
@@ -35,7 +34,8 @@ define([
             var p = path.join('/');
             console.log('path=', p, 'params=', obj);
             require([p + '.js'], function (View) {
-                var view = _this.views[p] || (_this.views[p] = new View({router:AppRouter}));
+                console.log('rendering ', p, View);
+                var view = self.views[p] || (self.views[p] = new View({router:AppRouter}));
                 view[ view.show ? 'show' : 'render'](obj);
             });
         }

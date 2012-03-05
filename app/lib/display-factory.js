@@ -21,7 +21,7 @@ function _field(p, path) {
     if (p.instance == 'ObjectID') {
         if (options.ref) {
             _u.extend(defaults, {
-                url:'/rest/' + options.ref + '/labelvalue',
+                url:'/api/' + options.ref + '?transform=labelval',
                 dataType:'String',
                 type:'Select',
                 key:options.ref,
@@ -36,7 +36,7 @@ function _field(p, path) {
         }
     } else if (p.ref) {
         _u.extend(defaults, {
-            url:'/rest/' + p.ref + '/labelvalue',
+            url:'/api/' + p.ref + '?transform=labelval',
             dataType:'String',
             type:'Select',
             key:p.ref,
@@ -46,11 +46,11 @@ function _field(p, path) {
     } else {
         var modelName = util.depth(p, 'caster.options.ref');
         if (modelName) {
-            _u.extend(defaults, {
-                dataType:'Array',
-                url:'/rest/' + modelName + '/labelvalue',
-                type:'MultiEditor'
-            });
+//            _u.extend(defaults, {
+//                dataType:'Array',
+//                url:'/rest/' + modelName + '/labelvalue',
+//                type:'MultiEditor'
+//            });
         } else {
             var type = util.depth(p, 'options.type');
 
@@ -120,7 +120,7 @@ function _field(p, path) {
             }
         })
     }
-    defaults.label = sutil.toTitle(path);
+    defaults.title = sutil.toTitle(path);
     return _u.extend({}, defaults, options.display);
 }
 DisplayFactory.prototype._field = _field
@@ -147,7 +147,7 @@ DisplayFactory.prototype.createSchema = function createSchema(Model, User) {
 DisplayFactory.prototype.createFields = function createFields(Model, User) {
     Model = _m(Model);
     var fields = util.depth(Model, ['options', 'display', 'fields'], []);
-    return (fields && fields.length) ? fields : Object.keys(this.createSchema(Model, User));
+    return (fields && fields.length) ? fields : Object.keys(this.createSchema(Model, User).paths);
 }
 DisplayFactory.prototype.createDefaults = function createDefaults(Model, User) {
     Model = _m(Model);

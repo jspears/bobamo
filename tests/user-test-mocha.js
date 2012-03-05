@@ -30,4 +30,21 @@ describe('Testing User Schema', function () {
             done();
         })
     });
+    it ('should save another user', function(done){
+        new User({
+            username:  'jsmith',
+            password:  'jsmith',
+            first_name:'John',
+            last_name: 'Smith',
+            twitter:'@mrsmith',
+            email:     'junk@junk.com'
+        }).save(function (err, obj) {
+            assert.ifError(err);
+            obj.should.have.property('_id');
+
+            done();
+        })
+
+    });
+
 });
