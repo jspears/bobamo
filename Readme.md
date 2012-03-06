@@ -1,4 +1,4 @@
-=Mojaba
+#Mojaba
 Its basically a crud infrastructure for [mongoose](http://mongoosejs.com), [backbone](http://documentcloud.github.com/backbone/), [mers](https://github.com/jspears/mers),
 [backbone forms](https://github.com/powmedia/backbone-forms) and [twitter bootstrap](http://twitter.github.com/bootstrap/). The idea
 is you define your model and a little extra and it generates the crud on demand.    It doesn't leave you in the
@@ -6,7 +6,7 @@ box though, you can easily change any part of the generated stuff by making it s
 directory.   This allows for easy customization.  In the not so distant future you will be able to subclass the
 existing scaffolding to extend the default capability.  You can at your own risk modify the scaffolding generated in views/generator
 
-== Configuration
+## Configuration
 Models belong in app/models, they are loaded automatically.   Each Mongoose schema can be annotated with an
 display object, in addition each field in the schema can be annotated.
 
