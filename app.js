@@ -66,6 +66,11 @@ app.configure(function () {
             return function onModels(){
                 return factory.listModels(req.user);
             }
+        },
+        createEditors:function(req,res){
+            return function onEditors(Model){
+                return JSON.stringify(factory.createEditors(Model, req.user));
+            }
         }
 
 

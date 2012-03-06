@@ -9,11 +9,15 @@ var UserSchema = new Schema({
     groups:[
         { type:Schema.ObjectId, ref:'group', index:true}
     ],
+    meta:{
+          stars:Number,
+      favorite:Number
+    },
 
     created_at:{type:Date, display:{display:'none'}},
     created_by:{type:Schema.ObjectId, ref:'user'},
     modified_at:{type:Date}
-}, {safe:true, strict:true});
+}, {safe:true, strict:true, display:{fields:['username','first_name','last_name','twitter','email','groups']}});
 
 function sha1b64(password) {
     return crypto.createHash('sha1').update(password).digest('base64');

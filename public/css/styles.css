@@ -12,3 +12,11 @@
 .no-reports {
     display: none;
 }
+.bbf-field .bbf-error, .bbf-field.bbf-error {
+    /*outline: 1px solid red;*/
+    box-shadow: 0 0 5px  rgba(255, 0,0, 1);
+    -webkit-box-shadow: 0 0 5px  rgba(255, 0,0, 1);
+    -moz-box-shadow: 0 0 5px rgba(255, 0,0, 1);
+    border:1px solid rgba(255,0,0, 0.8);
+}
+

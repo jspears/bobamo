@@ -39,7 +39,7 @@ define(['Backbone', 'jQuery', 'Underscore', 'text!tpl/login.html'], function (Ba
         onNext:   function () {
             console.log('do you remember what we are supposed to do now?', this.origEvent || '');
             if (this.options && this.options.router)
-                this.options.router.navigate(this.origEvent || '/#home', {trigger:true});
+                this.options.router.navigate(this.origEvent || '/#home', {trigger:true, replace: true});
         }
 
     });
