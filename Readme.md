@@ -1,4 +1,4 @@
-=Mojaba
+#Mojaba
 Its basically a crud infrastructure for [mongoose](http://mongoosejs.com), [backbone](http://documentcloud.github.com/backbone/), [mers](https://github.com/jspears/mers),
 [backbone forms](https://github.com/powmedia/backbone-forms) and [twitter bootstrap](http://twitter.github.com/bootstrap/). The idea
 is you define your model and a little extra and it generates the crud on demand.    It doesn't leave you in the
@@ -6,7 +6,7 @@ box though, you can easily change any part of the generated stuff by making it s
 directory.   This allows for easy customization.  In the not so distant future you will be able to subclass the
 existing scaffolding to extend the default capability.  You can at your own risk modify the scaffolding generated in views/generator
 
-== Configuration
+## Configuration
 Models belong in app/models, they are loaded automatically.   Each Mongoose schema can be annotated with an
 display object, in addition each field in the schema can be annotated.
 
@@ -17,14 +17,14 @@ A Schema can have the following annotations
 * fields (an array of fields that are editable. see [backbone forms](https://github.com/powmedia/backbone-forms) for more
  information.
 
-
 A Field can have the following annotations
+
 * title (The label for the field, if empty an attempt to change it to title case happens)
 * validate (Currently on Regex and Required are supported)
 * type [see backbone forms](https://github.com/powmedia/backbone-forms), 'Text','Password', 'Radio', 'MultiSelect', 'Number','Date','DateTime'
 * dataType [see backbone forms](https://github.com/powmedia/backbone-forms) 'String', 'Number', 'Array','Object','Date'
 * ro - read only
-* display - 'none' do send, 'hidden', hidden field, visible (default).
+* display - 'none' do send to client, 'hidden', hidden field, visible (default).
 
 Soon you should be able to edit these via an admin UI.
 Many-To-One support is coming.
