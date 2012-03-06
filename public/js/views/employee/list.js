@@ -1,12 +1,16 @@
-define(['Backbone', 'jquery', 'Underscore', 'text!tpl/employee-list-item.html'], function (Backbone, $, _, employeeListItem) {
+define(['Backbone', 'jquery', 'Underscore', 'collections/employee', 'text!tpl/employee-list-item.html'], function (Backbone, $, _, collection, employeeListItem) {
     var EmployeeListView = Backbone.View.extend({
-
+//        el:'#content',
         tagName:'ul',
 
         className:'nav nav-list',
 
         initialize:function () {
             var self = this;
+            if (!this.model){
+                this.model = new collection.EmployeeCollection();
+                this.model.fetch();
+            }
             this.model.bind("reset", this.render, this);
             this.model.bind("add", function (employee) {
                 console.log('add', employee);
@@ -14,7 +18,11 @@ define(['Backbone', 'jquery', 'Underscore', 'text!tpl/employee-list-item.html'],
             });
         },
 
-        render:function (eventName) {
+        render:function (obj) {
+            if (this.options && this.options.container){
+                var $c = $(this.options.container);
+                $c.empty().append($(this.el));
+            }
             $(this.el).empty();
             _.each(this.model.models, function (employee) {
                 $(this.el).append(new EmployeeListItemView({model:employee}).render().el);

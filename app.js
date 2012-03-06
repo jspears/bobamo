@@ -35,6 +35,9 @@ app.configure(function () {
     app.use(app.router);
 
     generate(app);
+    app.helpers({
+        sutil:strUtil
+    })
     app.dynamicHelpers({
         isAuthenicated:function (req, res) {
             return req.isAuthenticated();
@@ -58,7 +61,13 @@ app.configure(function () {
             return function onToTitle(Model){
                 return factory.createTitle(Model, req.user);
             }
+        },
+        models:function(req,res){
+            return function onModels(){
+                return factory.listModels(req.user);
+            }
         }
+
 
     });
     loadDir('./app/model');
@@ -126,6 +135,14 @@ app.get('/api/employee/:id/reports', function (req, res, next) {
 app.use('/api', rest({
     mongoose:mongoose,
     transformers:{
+        labelval:function(m){
+            return function(obj){
+                return {
+                    val:obj._id || obj.id,
+                    label:obj.name || obj.title || obj.description || m.modelName+' '+obj.id
+                }
+            }
+        },
         _idToId:function () {
             return function (obj) {
                 if (!obj.toObject)
