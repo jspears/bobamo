@@ -17,14 +17,14 @@ A Schema can have the following annotations
 * fields (an array of fields that are editable. see [backbone forms](https://github.com/powmedia/backbone-forms) for more
  information.
 
-
 A Field can have the following annotations
+
 * title (The label for the field, if empty an attempt to change it to title case happens)
 * validate (Currently on Regex and Required are supported)
 * type [see backbone forms](https://github.com/powmedia/backbone-forms), 'Text','Password', 'Radio', 'MultiSelect', 'Number','Date','DateTime'
 * dataType [see backbone forms](https://github.com/powmedia/backbone-forms) 'String', 'Number', 'Array','Object','Date'
 * ro - read only
-* display - 'none' do send, 'hidden', hidden field, visible (default).
+* display - 'none' do send to client, 'hidden', hidden field, visible (default).
 
 Soon you should be able to edit these via an admin UI.
 Many-To-One support is coming.
