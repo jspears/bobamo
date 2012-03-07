@@ -63,7 +63,7 @@ function _field(p, path) {
         if (modelName) {
             _u.extend(defaults, {
                 dataType:'Array',
-                url:'/rest/' + modelName + '/labelvalue',
+                url:'/api/' + modelName + '/labelvalue',
                 type:'MultiEditor'
             });
         } else {

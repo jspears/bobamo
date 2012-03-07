@@ -1,6 +1,6 @@
 var crypto = require('crypto'), mongoose = require('mongoose'), Schema = mongoose.Schema;
 var UserSchema = new Schema({
-    username:{type:String, required:true, unique:true, index:true},
+    username:{type:String, required:true, unique:true, index:true, display:{help:'This must be a unique name'}},
     first_name:{type:String},
     last_name:{type:String}, 
     twitter:{type:String,required:true, validate: /^@[a-zA-Z0-9]*$/i },

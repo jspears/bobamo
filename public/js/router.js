@@ -6,19 +6,26 @@ define([
     'libs/querystring'], function ($, _, Backbone, query) {
     var AppRouter = Backbone.Router.extend({
         routes:       {
+            'login':'doLogin',
+            'login/*actions':'doLogin',
             '*actions':'defaultAction'
+        },
+        doLogin:function(actions){
+            console.log('doLogin', arguments);
+            var self = this;
+            return require(['/js/views/login/login.js'], function (View) {
+                new View({router:self}).render('/'+(actions || 'home'));
+            });
         },
         views:        {},
         defaultAction:function (actions) {
             // We have no matching route, lets display the home page
             var parts = (actions || 'home' ).replace(/^\/*/, '').split('?', 2);
             var self = this;
-            if (!window.isAuthenticated) {
-                    return require(['/js/views/login/login.js'], function (View) {
-                        new View({router:self}).render(actions);
+            if (!window.isAuthenticated ) {
+                return this.navigate('#login'+actions, {trigger:true, replace:true});
+             }
 
-                    });
-            }
             var paths = parts[0].split('/');
             var obj = {};
             if (parts.length > 1) {

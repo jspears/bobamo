@@ -3,8 +3,28 @@ Its basically a crud infrastructure for [mongoose](http://mongoosejs.com), [back
 [backbone forms](https://github.com/powmedia/backbone-forms) and [twitter bootstrap](http://twitter.github.com/bootstrap/). The idea
 is you define your model and a little extra and it generates the crud on demand.    It doesn't leave you in the
 box though, you can easily change any part of the generated stuff by making it static and putting in the public
-directory.   This allows for easy customization.  In the not so distant future you will be able to subclass the
-existing scaffolding to extend the default capability.  You can at your own risk modify the scaffolding generated in views/generator
+directory.   This allows for easy customization.   You can at your own risk modify the scaffolding generated in views/generator
+
+## Subclass
+Because everything is scoped within requirejs, subclassing is pretty easy. Say you wanted to do something to the
+user view create a javascript file 
+  
+  js/views/user/list.js
+  
+```
+  require(['Backbone','jquery', 'js/super/views/user/list.js'], function(Backbone, $, ListView){
+    var NewListView = ListView.extend({
+      render:function(obj){
+       //do something special
+      }
+    });
+   return NewListView; // do not forget to return it.
+  
+  });
+```
+
+That's it.   Because the file is in the same spot, require will load it instead of the original, and the original file
+is now uder the js/super/ designation.   
 
 ## Configuration
 Models belong in app/models, they are loaded automatically.   Each Mongoose schema can be annotated with an
