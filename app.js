@@ -38,23 +38,27 @@ app.configure(function () {
     app.helpers({
         sutil:strUtil
     })
+
     app.dynamicHelpers({
         isAuthenicated:function (req, res) {
             return req.isAuthenticated();
         },
         createSchema:function (req, res) {
-            return function onSchema(Model) {
-                return JSON.stringify(factory.createSchema(Model, req.user).paths);
+            return function onSchema(Model, plain) {
+                var schema = factory.createSchema(Model, req.user).paths;
+                return plain ? schema : JSON.stringify(schema);
             }
         },
         createFields:function(req, res){
-            return function onFields(Model){
-                return JSON.stringify( factory.createFields(Model, req.user));
+            return function onFields(Model, plain){
+                var fields = factory.createFields(Model, req.user);
+                return  plain ? fields : JSON.stringify(fields);
             }
         },
         createDefaults:function(req, res){
-            return function onDefaults(Model){
-                return  JSON.stringify(factory.createDefaults(Model, req.user));
+            return function onDefaults(Model, plain){
+                var defs = factory.createDefaults(Model, req.user);
+                return  plain ? defs : JSON.stringify(defs);
             }
         },
         toTitle:function(req,res){
@@ -63,13 +67,15 @@ app.configure(function () {
             }
         },
         models:function(req,res){
-            return function onModels(){
-                return factory.listModels(req.user);
+            return function onModels(plain){
+                var models = factory.listModels(req.user);
+                return plain ? models : JSON.stringify(models) ;
             }
         },
         createEditors:function(req,res){
-            return function onEditors(Model){
-                return JSON.stringify(factory.createEditors(Model, req.user));
+            return function onEditors(Model, plain){
+                var editors = factory.createEditors(Model, req.user)
+                return plain ? editors : JSON.stringify(editors);
             }
         }
 

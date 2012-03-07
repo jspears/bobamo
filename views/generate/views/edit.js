@@ -118,5 +118,4 @@ var EditView = Backbone.View.extend({
     }
 });
 return EditView;
-})
-;
+});
