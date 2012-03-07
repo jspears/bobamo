@@ -85,13 +85,13 @@ var EditView = Backbone.View.extend({
         model.bind('change', function(){
            console.log('change');
         });
-        var title = id ? 'Edit ${toTitle(schema)} [' + id + ']' : 'Create New ${toTitle(schema)}';
+        var title = id ? '<i class="icon-edit"></i> Edit ${toTitle(schema)} [' + id + ']' : '<i class="icon-plus"></i>Create New ${toTitle(schema)}';
         var form = this.form = new Form({
             model:model,
             fieldsets:[{legend:title, fields:fields}]
         });
 
-        form.classNames = 'form-horizontal';
+ //        form.classNames = 'form-horizontal';
         $el.empty();
 //        $el.append('<h3>' + title + '</h3>')
         this.$error = $('<ul style="display:none" class="alert alert-error unstyled error-list"></ul>');
