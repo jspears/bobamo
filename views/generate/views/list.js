@@ -14,7 +14,7 @@ define([
         initialize:function () {
             var self = this;
             this.collection = collection;
-            this.collection.bind("reset", this.renderList, this);
+         //  this.collection.bind("reset", this.renderList, this);
             this.collection.bind("add", this.renderItem, this);
 
         },
@@ -30,7 +30,7 @@ define([
             var $ul = this.$ul;
             if (!$ul) {
                 this.$el.append(tableTemplate);
-                this.$ul = this.$el.find('tbody');
+                $ul = this.$ul = this.$el.find('tbody');
             } else {
                 $ul.empty();
             }

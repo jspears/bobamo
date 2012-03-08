@@ -6,15 +6,18 @@ define([
     'libs/querystring'], function ($, _, Backbone, query) {
     var AppRouter = Backbone.Router.extend({
         routes:       {
-            'login':'doLogin',
+            'login/login*':'doLoginHome',
             'login/*actions':'doLogin',
             '*actions':'defaultAction'
+        },
+        doLoginHome:function(){
+            this.doLogin('/home')
         },
         doLogin:function(actions){
             console.log('doLogin', arguments);
             var self = this;
             return require(['/js/views/login/login.js'], function (View) {
-                new View({router:self}).render('/'+(actions || 'home'));
+                new View({router:self}).render('/'+(actions ? actions.indexOf('login') > -1 ? '/home'  : actions : '/home'));
             });
         },
         views:        {},
@@ -23,7 +26,7 @@ define([
             var parts = (actions || 'home' ).replace(/^\/*/, '').split('?', 2);
             var self = this;
             if (!window.isAuthenticated ) {
-                return this.navigate('#login'+actions, {trigger:true, replace:true});
+                return this.navigate('#login/'+actions, {trigger:true, replace:true});
              }
 
             var paths = parts[0].split('/');

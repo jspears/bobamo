@@ -68,10 +68,11 @@ var EditView = Backbone.View.extend({
         console.log('${schema.modelName}/edit#onSuccess', arguments);
     },
     onCancel:function () {
-            var onSave = this.onSave;
+            var onSave = this.onSave, onCancel = this.doCancel;
             require(['confirm_change'], function (Confirm) {
                 var c = new Confirm();
-                c.render('show', onSave);
+                c.render('show', onSave, onCancel);
+
             })
         return this;
     },

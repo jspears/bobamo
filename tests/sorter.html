@@ -1,0 +1,25 @@
+<html>
+<head>
+    <title>Sorter Test Pad</title>
+    <link rel="stylesheet" href="../public/js/libs/table/jquery.sorter.css">
+    <script type="text/javascript" src="../public/js/libs/require/require-jquery.js"></script>
+    <script type="text/javascript">
+        require(['../public/js/libs/table/jquery.sorter'], function ($) {
+            $(function () {
+                $('#test1').sorter({field:'firstName', direction:-1});
+                $('#test2, #test3').sorter();
+                $('.sortable').on('sorter-change', function(evt){
+                   console.log('sorter-change', evt.field, evt.direction);
+                });
+            });
+        });
+    </script>
+
+</head>
+<body>
+<span id="test1" class="sortable">First Name</span>
+<span id="test2" class="sortable" data-field="lastName" data-direction="1">Last Name</span>
+<span id="test3" class="sortable elementActivate">Stuff</span>
+</body>
+
+</html>

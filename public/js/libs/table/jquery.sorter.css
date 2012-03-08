@@ -1,0 +1,43 @@
+.sorter {
+    display: inline-block;
+    margin-left:2px;
+}
+
+.sorter .arrow {
+    width: 0;
+    height: 0;
+    text-indent: -99999px;
+    vertical-align: top;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    opacity: 0.3;
+    filter: alpha(opacity = 30);
+    /*content: "↓2193";*/
+    margin: 1px;
+    display: block;
+    cursor: pointer;
+}
+
+.sorter .arrow:hover {
+    opacity: .5;
+    filter: alpha(opacity = 50);
+}
+
+.sorter .arrow:active {
+    opacity: .9;
+    filter: alpha(opacity = 90);
+}
+
+.sorter .arrow.down {
+    border-top: 4px solid black;
+    margin-left: 0;
+}
+
+.sorter .arrow.up {
+    border-bottom: 4px solid black;
+}
+
+.sorter .arrow.activate {
+    opacity: 1;
+    filter: alpha(opacity = 100);
+}

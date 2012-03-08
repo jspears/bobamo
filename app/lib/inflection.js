@@ -162,12 +162,12 @@ var InflectionJS =
     /*
      These are regular expressions used for converting between String formats
      */
-    id_suffix:new RegExp('(_ids|_id)$', 'g'),
+    id_suffix:new RegExp('([A-Za-z0-9])(_id|id|id_)(s?)$', 'gi'),
     underbar:new RegExp('_', 'g'),
     space_or_underbar:new RegExp('[\ _-]+', 'g'),
     uppercase:new RegExp('([A-Z])', 'g'),
     underbar_prefix:new RegExp('^_'),
-
+    camel_space_or_underbar:/([a-z])[-_ ]?([A-Z])/g,
     /*
      This is a helper method that applies rules based replacement to a String
      Signature:
@@ -312,13 +312,11 @@ InflectionJS.underscore = function (str) {
  "message_properties".humanize(true) == "message properties"
  */
 InflectionJS.humanize = function (str, lowFirstLetter) {
-    str = str.toLowerCase();
-    str = str.replace(InflectionJS.id_suffix, '');
-    str = str.replace(InflectionJS.underbar, ' ');
-    if (!lowFirstLetter) {
-        str = InflectionJS.capitalize(str);
-    }
-    return str;
+    var rstr = str.replace(InflectionJS.id_suffix, '$1$3').replace(InflectionJS.camel_space_or_underbar, '$1 $2').toLowerCase();
+    if (!lowFirstLetter)
+        return InflectionJS.capitalize(rstr);
+
+    return rstr;
 };
 
 
