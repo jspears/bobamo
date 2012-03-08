@@ -37,9 +37,10 @@ define(['Backbone', 'jQuery', 'Underscore', 'text!tpl/login.html'], function (Ba
             $(this.el).find('.alert-warning').hide('slow', this.onNext);
         },
         onNext:   function () {
-            console.log('do you remember what we are supposed to do now?', this.origEvent || '');
-            if (this.options && this.options.router)
-                this.options.router.navigate(this.origEvent || '/#home', {trigger:true});
+            if (this.options && this.options.router){
+                console.log('navigating to ', this.origEvent || '/#home');
+                this.options.router.navigate(this.origEvent || '/#home', {trigger:true, replace:true});
+            }
         }
 
     });

@@ -29,70 +29,59 @@
  The code is available at http://code.google.com/p/inflection-js/
 
  The basic usage is:
- 1. Include this script on your web page.
- 2. Call functions on any String object in Javascript
+ var InflectionJS = require('./inflection.js');
 
  Currently implemented functions:
 
- String.pluralize(plural) == String
+ InflectionJSpluralize(string, plural) == String
  renders a singular English language noun into its plural form
  normal results can be overridden by passing in an alternative
 
- String.singularize(singular) == String
+ InflectionJS.singularize(string, singular) == String
  renders a plural English language noun into its singular form
  normal results can be overridden by passing in an alterative
 
- String.camelize(lowFirstLetter) == String
+ InflectionJS.camelize(string, lowFirstLetter) == String
  renders a lower case underscored word into camel case
  the first letter of the result will be upper case unless you pass true
  also translates "/" into "::" (underscore does the opposite)
 
- String.underscore() == String
+ InflectionJS.underscore(string) == String
  renders a camel cased word into words seperated by underscores
  also translates "::" back into "/" (camelize does the opposite)
 
- String.humanize(lowFirstLetter) == String
+ InflectionJS.humanize(lstring, owFirstLetter) == String
  renders a lower case and underscored word into human readable form
  defaults to making the first letter capitalized unless you pass true
 
- String.capitalize() == String
+ InflectionJS.capitalize(string) == String
  renders all characters to lower case and then makes the first upper
 
- String.dasherize() == String
+ InflectionJS.dasherize(string) == String
  renders all underbars and spaces as dashes
 
- String.titleize() == String
+ InflectionJS.titleize(string) == String
  renders words into title casing (as for book titles)
 
- String.demodulize() == String
+ InflectionJS.demodulize(string) == String
  renders class names that are prepended by modules into just the class
 
- String.tableize() == String
+ InflectionJS.tableize(string) == String
  renders camel cased singular words into their underscored plural form
 
- String.classify() == String
+ InflectionJS.classify(string) == String
  renders an underscored plural word into its camel cased singular form
 
- String.foreign_key(dropIdUbar) == String
- renders a class name (camel cased singular noun) into a foreign key
- defaults to seperating the class from the id with an underbar unless
- you pass true
-
- String.ordinalize() == String
+ InflectionJS.ordinalize(string) == String
  renders all numbers found in the string into their sequence like "22nd"
  */
 
-/*
- This sets up a container for some constants in its own namespace
- We use the window (if available) to enable dynamic loading of this script
- Window won't necessarily exist for non-browsers.
- */
 
 /*
  This sets up some constants for later use
  This should use the window namespace variable if available
  */
-InflectionJS =
+var InflectionJS =
 {
     /*
      This is a list of nouns that use the same form for both singular and plural.
@@ -175,7 +164,7 @@ InflectionJS =
      */
     id_suffix:new RegExp('(_ids|_id)$', 'g'),
     underbar:new RegExp('_', 'g'),
-    space_or_underbar:new RegExp('[\ _]', 'g'),
+    space_or_underbar:new RegExp('[\ _-]+', 'g'),
     uppercase:new RegExp('([A-Z])', 'g'),
     underbar_prefix:new RegExp('^_'),
 
@@ -212,10 +201,11 @@ InflectionJS =
     }
 };
 
+
 /*
  This function adds plurilization support to every String object
  Signature:
- String.pluralize(plural) == String
+ InflectionJS.pluralize(plural) == String
  Arguments:
  plural - String (optional) - overrides normal output with said String
  Returns:
@@ -234,10 +224,11 @@ InflectionJS.pluralize = function (str, plural) {
         plural
     );
 };
+
 /*
  This function adds singularization support to every String object
  Signature:
- String.singularize(singular) == String
+ InflectionJS.singularize(singular) == String
  Arguments:
  singular - String (optional) - overrides normal output with said String
  Returns:
@@ -251,8 +242,8 @@ InflectionJS.pluralize = function (str, plural) {
 InflectionJS.singularize = function (str, singular) {
     return InflectionJS.apply_rules(
         str,
-        InflectionJS._singular_rules,
-        InflectionJS._uncountable_words,
+        InflectionJS.singular_rules,
+        InflectionJS.uncountable_words,
         singular
     );
 };
@@ -261,7 +252,7 @@ InflectionJS.singularize = function (str, singular) {
 /*
  This function adds camelization support to every String object
  Signature:
- String.camelize(lowFirstLetter) == String
+ InflectionJS.camelize(lowFirstLetter) == String
  Arguments:
  lowFirstLetter - boolean (optional) - default is to capitalize the first
  letter of the results... passing true will lowercase it
@@ -275,7 +266,7 @@ InflectionJS.singularize = function (str, singular) {
 InflectionJS.camelize = function (str, lowFirstLetter) {
     var str_path = str.toLowerCase().split('/');
     for (var i = 0; i < str_path.length; i++) {
-        var str_arr = str_path[i].split('_');
+        var str_arr = str_path[i].split(InflectionJS.space_or_underbar);
         var initX = ((lowFirstLetter && i + 1 === str_path.length) ? (1) : (0));
         for (var x = initX; x < str_arr.length; x++) {
             str_arr[x] = str_arr[x].charAt(0).toUpperCase() + str_arr[x].substring(1);
@@ -285,11 +276,10 @@ InflectionJS.camelize = function (str, lowFirstLetter) {
     return str_path.join('::');
 };
 
-
 /*
  This function adds underscore support to every String object
  Signature:
- String.underscore() == String
+ InflectionJS.underscore() == String
  Arguments:
  N/A
  Returns:
@@ -308,11 +298,10 @@ InflectionJS.underscore = function (str) {
     return str_path.join('/').toLowerCase();
 };
 
-
 /*
  This function adds humanize support to every String object
  Signature:
- String.humanize(lowFirstLetter) == String
+ InflectionJS.humanize(lowFirstLetter) == String
  Arguments:
  lowFirstLetter - boolean (optional) - default is to capitalize the first
  letter of the results... passing true will lowercase it
@@ -322,20 +311,21 @@ InflectionJS.underscore = function (str) {
  "message_properties".humanize() == "Message properties"
  "message_properties".humanize(true) == "message properties"
  */
-InflectionJS.humanize = function (cstr, lowFirstLetter) {
-    var str = cstr.toLowerCase();
+InflectionJS.humanize = function (str, lowFirstLetter) {
+    str = str.toLowerCase();
     str = str.replace(InflectionJS.id_suffix, '');
     str = str.replace(InflectionJS.underbar, ' ');
     if (!lowFirstLetter) {
         str = InflectionJS.capitalize(str);
- s   }
+    }
     return str;
 };
+
 
 /*
  This function adds capitalization support to every String object
  Signature:
- String.capitalize() == String
+ InflectionJS.capitalize() == String
  Arguments:
  N/A
  Returns:
@@ -345,14 +335,13 @@ InflectionJS.humanize = function (cstr, lowFirstLetter) {
  "message properties".capitalize() == "Message properties"
  */
 InflectionJS.capitalize = function (str) {
-    return str.toLowerCase().substring(0, 1).toUpperCase() + str.substring(1);
+    return  str.toLowerCase().substring(0, 1).toUpperCase() + str.substring(1);
 };
-
 
 /*
  This function adds dasherization support to every String object
  Signature:
- String.dasherize() == String
+ InflectionJS.dasherize() == String
  Arguments:
  N/A
  Returns:
@@ -368,7 +357,7 @@ InflectionJS.dasherize = function (str) {
 /*
  This function adds titleize support to every String object
  Signature:
- String.titleize() == String
+ InflectionJS.titleize() == String
  Arguments:
  N/A
  Returns:
@@ -378,55 +367,21 @@ InflectionJS.dasherize = function (str) {
  "message properties to keep".titleize() == "Message Properties to Keep"
  */
 InflectionJS.titleize = function (str) {
-    var str_arr = str.toLowerCase().replace(InflectionJS.underbar, ' ').split(' ');
-    for (var x = 0; x < str_arr.length; x++) {
-        var d = str_arr[x].split('-');
-        for (var i = 0; i < d.length; i++) {
-            if (InflectionJS.non_titlecased_words.indexOf(d[i].toLowerCase()) < 0) {
-                d[i] = InflectionJS.capitalize(d[i]);
-            }
+    var d = str.toLowerCase().split(InflectionJS.space_or_underbar);
+    for (var i = 0, l = d.length; i < l; i++) {
+        var w = d[i];
+        if (InflectionJS.non_titlecased_words.indexOf(w) < 0) {
+            d[i] = InflectionJS.capitalize(w);
         }
-        str_arr[x] = d.join('-');
     }
-    return InflectionJS.capitalize(str_arr.join(' '));
+    return d.join(' ');
 };
-
-
-/*
- This function adds tableize support to every String object
- Signature:
- String.tableize() == String
- Arguments:
- N/A
- Returns:
- String - renders camel cased words into their underscored plural form
- Examples:
- "MessageBusProperty".tableize() == "message_bus_properties"
- */
-InflectionJS.tableize = function (str) {
-   return InflectionJS.pluralize(InflectionJS.underscore(str));
-};
-
-/*
- This function adds classification support to every String object
- Signature:
- String.classify() == String
- Arguments:
- N/A
- Returns:
- String - underscored plural nouns become the camel cased singular form
- Examples:
- "message_bus_properties".classify() == "MessageBusProperty"
- */
-InflectionJS.classify = function (str) {
-    return InflectionJS.singularize(InflectionJS.camelize(str));
-}
 
 
 /*
  This function adds ordinalize support to every String object
  Signature:
- String.ordinalize() == String
+ InflectionJS.ordinalize() == String
  Arguments:
  N/A
  Returns:
@@ -457,6 +412,18 @@ InflectionJS.ordinalize = function (str) {
         }
     }
     return str_arr.join(' ');
+};
+
+InflectionJS.underscore = function (camelCaseStr) {
+    return InflectionJS.camelTo(camelCaseStr, '_');
+};
+InflectionJS.hyphenize = function (camelCaseStr) {
+    return InflectionJS.camelTo(camelCaseStr, '-');
+};
+InflectionJS.camelTo = function camelTo (camelCaseStr, delim) {
+    return camelCaseStr
+        .replace(/([a-z])([A-Z])/g, '$1'+delim+'$2')
+        .toLowerCase();
 };
 
 module.exports = InflectionJS;

@@ -1,8 +1,23 @@
-var util = require('./util'), _u = require('underscore'), sutil = require('./string'), mongoose = require('mongoose');
+var util = require('./util'), _u = require('underscore'), sutil = require('./string'), mongoose = require('mongoose'), inflection=require('./inflection');
 var DisplayFactory = function () {
 
     this.UIModel = {}
-
+    this.default_editors = ['Base',
+        'Checkbox',
+        'Checkboxes',
+        'Date',
+        'DateTime',
+        'Hidden',
+        'List',
+        'NestedModel',
+        'Number',
+        'Object',
+        'Password',
+        'Radio',
+        'Select',
+        'Text',
+        'TextArea'];
+    this.read_only = ['id','_id', 'created_at','modified_at', 'created_by', 'modified_by']
 
 };
 function _m(Model) {
@@ -12,7 +27,7 @@ function _m(Model) {
 }
 
 function _field(p, path) {
-    var defaults = {};
+     var defaults = {};
     var options = p.options || {};
     if (options.display && options.display.display == 'none' || ( path[0] == '_' && path != '_id')) {
         return null;
@@ -46,11 +61,11 @@ function _field(p, path) {
     } else {
         var modelName = util.depth(p, 'caster.options.ref');
         if (modelName) {
-//            _u.extend(defaults, {
-//                dataType:'Array',
-//                url:'/rest/' + modelName + '/labelvalue',
-//                type:'MultiEditor'
-//            });
+            _u.extend(defaults, {
+                dataType:'Array',
+                url:'/api/' + modelName + '/labelvalue',
+                type:'MultiEditor'
+            });
         } else {
             var type = util.depth(p, 'options.type');
 
@@ -128,29 +143,44 @@ DisplayFactory.prototype.createSchema = function createSchema(Model, User) {
     Model = _m(Model);
     var CModel = util.depth(this.UIModel, Model.modelName, {}, true);
 
+    var depth = {};
+
     Model.schema.eachPath(function (k, v) {
         var field = _field(v, k);
         if (field) {
-            util.depth(CModel, ['paths', k], field, true);
+            var parts = k.split('.');
+            if (parts.length == 1)
+                util.depth(CModel, ['paths'].concat( parts), field, true);
+            else{
+                var pop = parts.pop();
+                util.depth(CModel, ['paths'].concat( parts, 'type'), 'Object', true );
+                util.depth(CModel, ['paths'].concat( parts, 'subSchema', pop), field, true);
+
+            }
 
         }
     }, this);
     _u.each(Model.schema.virtuals, function (v, k) {
         var field = _field(v, k);
         if (field)
-            util.depth(CModel, ['paths', k], field, true);
+            util.depth(CModel, ['paths'].concat( k.split('.')), field, true);
 
     }, this);
-
+    if (Model.options.display){
+        util.depth(CModel, ['display'], Model.options.display || {}, true);
+    }
     return CModel;
 }
 DisplayFactory.prototype.listModels = function listModels(User) {
     return Object.keys(mongoose.modelSchemas);
 }
+function filterRo(v){
+    return 0 > this.read_only.indexOf(v);
+}
 DisplayFactory.prototype.createFields = function createFields(Model, User) {
     Model = _m(Model);
-    var fields = util.depth(Model, ['options', 'display', 'fields'], []);
-    return (fields && fields.length) ? fields : Object.keys(this.createSchema(Model, User).paths);
+    var Schema = this.createSchema(Model, User);
+    return util.depth(Schema, [ 'display', 'fields'], Object.keys(Schema.paths).filter(filterRo, this));
 }
 DisplayFactory.prototype.createDefaults = function createDefaults(Model, User) {
     Model = _m(Model);
@@ -163,92 +193,29 @@ DisplayFactory.prototype.createDefaults = function createDefaults(Model, User) {
 
     return defs;
 }
+DisplayFactory.prototype.createEditors = function(Model, user){
+    Model = _m(Model);
+    var CSchema = this.createSchema(Model,user).paths;
+    var ret = {};
+    var def = false;
+    _u.each(CSchema, function(v,k){
+        if (!v.type)
+            return;
+
+        if (this.default_editors.indexOf(v.type) > -1)
+            def =true;
+        else
+            ret['libs/editors/'+inflection.hyphenize(v.type)] = true;
+    }, this)
+    var stuff = Object.keys(ret);
+    if (def)
+        stuff.unshift('jquery-editors')
+    return stuff;
+}
+
 DisplayFactory.prototype.createTitle = function (Model, user) {
     Model = _m(Model);
     return util.depth(Model, 'options.display.label', sutil.toTitle(Model.modelName));
 }
 
 module.exports.DisplayFactory = new DisplayFactory;
-
-var MMContainer = function (mongoose, user) {
-    var models = {};
-
-
-}
-var MModel = function (obj) {
-    var dg = this.__defineGetter__.bind(this);
-    dg('modelName', function () {
-        return obj.modelName;
-    });
-
-    dg('label', function () {
-        return obj.label;
-    });
-    dg('plural', function () {
-        return obj.plural;
-    });
-    dg('labelAttr', function () {
-        return obj.labelAttr;
-
-    });
-    dg('paths', function () {
-
-    });
-    dg('fields', function () {
-       return obj.fields ||  obj.paths;
-    });
-    dg('edit_fields', function () {
-        return obj.edit_fields || _u.filter(obj.fields, function(obj){
-          return obj.ro == false;
-        });
-    });
-    dg('display_fields', function () {
-        return obj.display_fields || obj.fields;
-    });
-    dg('list_fields', function () {
-        return obj.list_fields || obj.fields;
-    });
-    dg('show_fields', function () {
-        return obj.show_fields || obj.fields;
-    });
-}
-
-var MField = function (obj) {
-    var dg = this.__defineGetter__.bind(this);
-    dg('path', function () {
-        return obj.path;
-    })
-    dg('label', function () {
-        return obj.label;
-    });
-    dg('title', function () {
-        return obj.title;
-
-    });
-
-    dg('type', function () {
-        return obj.type;
-    });
-
-    dg('dataType', function () {
-        return obj.dataType;
-
-    });
-
-    dg('plural', function () {
-        return obj.plural;
-    });
-    dg('ro', function () {
-        return obj.ro;
-    });
-    dg('display', function () {
-        return obj.display;
-    });
-    dg('url', function () {
-        return obj.url;
-    });
-    dg('options', function () {
-        return obj.options;
-    });
-
-}

@@ -1,0 +1,17 @@
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            {{each(i,l) createFields(schema.modelName, true)}}
+                <th>${createSchema(schema.modelName,true)[l].title}</th>
+            {{/each}}
+        </tr>
+        <tr>
+        </tr>
+    </thead>
+    <tbody/>
+    <tfoot>
+        <tr></tr>
+    </tfoot>
+
+</table>

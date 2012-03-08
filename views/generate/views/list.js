@@ -4,15 +4,13 @@ define([
     'Underscore',
     'Backbone',
     'collections/${schema.modelName}',
-    'text!templates/${schema.modelName}/list.html'
-], function ($, _, Backbone, collection, listTemplate) {
+    'text!templates/${schema.modelName}/table.html',
+    'text!templates/${schema.modelName}/table-item.html'
+], function ($, _, Backbone, collection, tableTemplate, tableItemTemplate) {
     "use strict";
+
     var ListView = Backbone.View.extend({
         el:'#content',
-//        tagName:'ul',
-
-        className:'nav nav-list',
-
         initialize:function () {
             var self = this;
             this.collection = collection;
@@ -31,13 +29,15 @@ define([
             console.log('renderList');
             var $ul = this.$ul;
             if (!$ul) {
-                $(this.el).append(($ul = this.$ul = $("<ul nav nav-list></ul>")));
+                this.$el.append(tableTemplate);
+                this.$ul = this.$el.find('tbody');
             } else {
                 $ul.empty();
             }
             return this;
         },
-        render:function (eventName) {
+        render:function (obj) {
+           // this.$el = obj && obj.container ? $(obj.container) : $('#content');
             var $el = $(this.el);
             $el.empty();
             $el.append('<h3>{{html toTitle(schema) }}</h3>')
@@ -55,10 +55,9 @@ define([
     });
     var ListItemView = Backbone.View.extend({
 
-        tagName:"li",
-
+        tagName:"tr",
+        template:_.template(tableItemTemplate),
         initialize:function () {
-            this.template = _.template(listTemplate);
             this.model.bind("change", this.render, this);
             this.model.bind("destroy", this.close, this);
         },
