@@ -49,6 +49,12 @@ app.configure(function () {
                 return plain ? schema : JSON.stringify(schema);
             }
         },
+        _schema:function(req,res){
+            return function onSchema(Model, plain) {
+                var schema = factory.createSchema(Model, req.user);
+                return plain ? schema : JSON.stringify(schema);
+            }
+        },
         createFields:function(req, res){
             return function onFields(Model, plain){
                 var fields = factory.createFields(Model, req.user);

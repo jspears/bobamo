@@ -1,4 +1,4 @@
-define(['Backbone', 'jQuery', 'Underscore', 'text!tpl/home.html'], function (Backbone, $, _, homeTmpl) {
+define(['Backbone', 'jquery', 'Underscore', 'text!tpl/home.html'], function (Backbone, $, _, homeTmpl) {
 
     var HomeView = Backbone.View.extend({
         el:'#content',

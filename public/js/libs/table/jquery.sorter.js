@@ -12,6 +12,8 @@
         if (dir){
             $( dir > 0 ? '.up' : '.down', $el).addClass('activate');
         }
+        if (isNaN(dir))
+            dir = null;
         $el.attr('data-direction', dir);
         if (trigger)
             $el.trigger({type:'sorter-change', direction:isNaN(dir) ? null : dir, field:$el.attr('data-field')});

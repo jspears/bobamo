@@ -1,4 +1,4 @@
-define(['Backbone', 'jQuery'], function (Backbone, $) {
+define(['Backbone', 'jquery'], function (Backbone, $) {
     var Employee = Backbone.Model.extend({
 
         url:function () {

@@ -169,6 +169,8 @@ DisplayFactory.prototype.createSchema = function createSchema(Model, User) {
     if (Model.options.display){
         util.depth(CModel, ['display'], Model.options.display || {}, true);
     }
+    util.depth(CModel, ['display','plural'], inflection.pluralize(Model.modelName),true);
+    util.depth(CModel, ['modelName'], Model.modelName, true);
     return CModel;
 }
 DisplayFactory.prototype.listModels = function listModels(User) {

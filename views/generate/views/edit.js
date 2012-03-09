@@ -1,5 +1,5 @@
 define([
-    'jQuery',
+    'jquery',
     'underscore',
     'Backbone',
     'Backbone.Form',

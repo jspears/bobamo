@@ -17,250 +17,29 @@ function generate(total, skip, limit, filterTotal) {
     total = 0 + total;
     skip = 0 + skip;
     limit = 0 + limit;
+    filterTotal = Math.max(0,total - 100);
     var end = Math.min(skip + limit, total);
-    console.log('total', skip, limit, end)
+    console.log('total', skip, limit, end, filterTotal)
 
-    var obj = {total:total, filterTotal:filterTotal || total, payload:[]}
+    var obj = {total:total, filterTotal:filterTotal, payload:[]}
     for (var i = skip; i < end; i++) {
         obj.payload.push('<li>Example Item ' + i + '</li>');
     }
     return obj;
 }
-define('jquery-paginate', ['jquery'], function ($) {
-    var Paginate = function (element, options) {
-        this.options = $.extend({}, $.fn.paginate.defaults, options);
 
-        this.$el = $('<div class="btn-toolbar"></div>')
-        this.$message = $('<div class="message well"></div>');
-        this.$buttonGrp = $('<div class="btn-group"></div>');
-        this.$buttonGrp2 = $('<div class="btn-group"></div>');
-        this.$buttonGrp3 = $('<div class="btn-group"></div>');
-        this.$el.append(this.$buttonGrp, this.$buttonGrp2, this.$buttonGrp3);
-        this.$el.delegate('.btn-group a.btn', 'click', $.proxy(this.onClick, this));
-        this.$element = $(element).append(this.$el, this.$message);
-        if (this.options.total) {
-            this.drawButtons();
-            this.drawMessage();
-        }
-
-    }
-    Paginate.prototype = {
-        constructor:Paginate,
-        tmpl:/{([^}]*)}/g,
-        /**
-         * Simple replacement.
-         * string template like this.
-         *  var str = 'hello {world} nice to meet you {stuff} or {not}'
-         *  and an object
-         *  replace(str,{ world:'world', stuff:'guys', not:'else' })
-         *  or
-         *  replace('hello {1} to {2} {1} {3}', ['me', 'you', 'other']);
-         *
-         *  also works with array
-         *
-         *
-         * @param str
-         * @param opt
-         */
-        replace:function (str, opt) {
-            var o = opt || this.options;
-            var self = this;
-            return str.replace(this.tmpl, function (j, k, l) {
-                var v = o[k];
-                if (typeof v === 'undefined') {
-                    var parts = k.split(':', 2);
-                    return parts.length > 1 ? parts[1] : parts[0];
-                }
-                return $.isFunction(v) ? v.apply(self, Array.prototype.slice.call(arguments)) : v
-            });
-        },
-        onClick:function (e) {
-            var limit = this.options.limit;
-            var $c = $(e.currentTarget)
-            var page = $c.attr('data-page');
-            console.log('onClick', page);
-            $('.btn-primary', this.$el).removeClass('btn-primary');
-            var skip = this.options.skip = limit * (page - 1) + 1;
-            this.$element.attr('data-skip', skip);
-            this.drawButtons();
-            this.makeRequest();
-
-        },
-
-        update:function (total, limit, skip, filterTotal) {
-            console.log('arguments', arguments);
-            total = total.total || total;
-            skip = skip || total.skip;
-            limit = limit || total.limit;
-            filterTotal = filterTotal || total.filterTotal;
-
-            if (typeof skip !== 'undefined') {
-                this.options.skip = skip;
-                this.$element.attr('data-skip', skip);
-
-            }
-            if (typeof limit !== 'undefined') {
-                this.options.limit = limit;
-                this.$element.attr('data-limit', limit);
-            }
-            if (typeof total !== 'undefined') {
-                this.options.total = total;
-                this.$element.attr('data-total', total);
-
-            }
-            if (typeof filterTotal !== 'undefined') {
-                this.options.filterTotal = filterTotal;
-                this.$element.attr('data-filter-total', filterTotal);
-
-            }
-            console.log('update', this.options);
-            this.drawButtons();
-            this.drawMessage();
-
-        },
-        drawButtons:function () {
-            this.$buttonGrp.empty();
-            this.$buttonGrp2.empty()
-            this.$buttonGrp3.empty();
-            var total = parseInt(this.options.total), limit = parseInt(this.options.limit), skip = parseInt(this.options.skip);
-            var pageCount = Math.ceil(total / limit);
-            var curpage = skip && Math.ceil(skip / limit) || 1;
-            console.log('skip', skip, 'curpage', curpage)
-            var btnTotal = 0;
-            if (pageCount < 11) {
-                for (var i = 1, l = pageCount; i <= l; i++) {
-                    this.drawButton(this.$buttonGrp, i, i, curpage == i);
-                    btnTotal = i;
-                }
-
-            } else {
-                for (var i = 1, l = Math.min(pageCount, 4); i <= l; i++) {
-                    this.drawButton(this.$buttonGrp, i, i, curpage == i);
-                    btnTotal = i;
-                }
-                var end = pageCount - 4;
-                if (pageCount > 4) {
-                    if (pageCount > 7) {
-                        var $bg = this.$buttonGrp2;
-                        var cpath = curpage - 1 <= 4 ? Math.ceil(total / (limit * 2)) : curpage - 1;
-                        for (var i = cpath, j = 0; i < cpath + 3; i++, j++) {
-                            var $btn = this.drawButton($bg, i, i, curpage == i);
-                            if (j == 0) {
-                                $btn.prepend('<b class="icon-chevron-left"/>')
-                            } else if (j == 2) {
-                                $btn.append('<b class="icon-chevron-right"/>')
-
-                            }
-                        }
-                    }
-                    var $bg = this.$buttonGrp3;
-                    for (var i = end + 1; i <= pageCount; i++) {
-                        this.drawButton($bg, i, i, curpage == i);
-                    }
-                }
-            }
-
-        },
-        drawButton:function ($bg, content, page, select) {
-            var $btn = $(this.options.btnTemplate).html(content);
-            if (select)
-                $btn.addClass('btn-primary')
-            $btn.attr('data-page', page);
-            $bg.append($btn)
-            return $btn;
-        },
-        makeRequest:function () {
-            this.$element.trigger({type:'paginate-change', limit:parseInt(this.options.limit), skip:parseInt(this.options.skip - 1)});
-            this.load({limit:this.options.limit, skip:this.options.skip})
-        },
-        wait:function () {
-            console.log('wait');
-            this.$message.html(this.options.messages.wait);
-        },
-        load:function () {//override me
-        },
-        drawMessage:function () {
-            console.log('drawMessage');
-            var messages = this.options.messages;
-            var total = this.options.total;
-            var fTotal = this.options.filterTotal;
-            total = total ? parseInt(total) : 0;
-            fTotal = fTotal ? parseInt(fTotal) : null;
-            if (total == 0)
-                this.$message.html(this.replace(messages.none))
-            else if (total == 1) {
-                this.$message.html(this.replace(messages.one))
-
-            } else if (total < 4) {
-                this.$message.html(this.replace(messages.few))
-            } else {
-                this.$message.html(this.replace(messages.multiple));
-            }
-        }
-    };
-
-    $.fn.paginate = function (option) {
-        var args = Array.prototype.slice.call(arguments, 1);
-        return this.each(function (s) {
-            var $this = $(this)
-                    , data = $this.data('paginate')
-                    , options = typeof option == 'object' && option || {skip:$this.attr('data-skip'), limit:$this.attr('data-limit'), total:$this.attr('data-total'), filterTotal:$this.attr('data-filter-total')};
-            if (!data) $this.data('paginate', (data = new Paginate(this, options)))
-            if (typeof option == 'string') data[option].apply(data, args);
-            return data;
-        });
-    }
-
-    $.fn.paginate.defaults = {
-        limit:10,
-        skip:0,
-        btnTemplate:'<a class="btn"></a>',
-        messages:{
-            wait:'<b class="icon-wait"/>Loading...',
-            none:'No {items:items} found {filter}.',
-            multiple:'Displaying {skip} to {end} of {total} {items:items} {filter}.',
-            one:'Found one {items:item} {filter}.',
-            few:'Found {count:a few} {items:items} {filter}.',
-            filternone:'<b class="icon-filter"/> No {items:items} found matching {filter:filter}.'
-        },
-        filter:function () {
-            var o = this.options;
-            if (o.filterTotal > 0) {
-                return this.replace(',<b class="icon-search"/> filtering {filterTotal}');
-            }
-            return '';
-
-        },
-        end:function () {
-            var o = this.options;
-            return Math.min(parseInt(o.total), parseInt(o.skip) + parseInt(o.limit));
-        },
-        success:function () {
-        },
-        error:function () {
-        }
-    }
-
-    $.fn.paginate.Constructor = Paginate;
-
-    return $;
-});
-require(['jquery-paginate'], function ($) {
+require(['../public/js/libs/table/jquery.mojaba-paginate'], function ($) {
     $(function () {
-        var $el = $('ul.page_content').empty();
-//                $el.append.apply($el, generate(100, 10, 10, 20).payload);
         $('.paginate').paginate();
-        var $li = $('#list');
-
+        var $ul = $('#list');
         $('#listPage').paginate().on('paginate-change', function (event) {
             var $this = $(this);
             $this.paginate('wait');
-
             setTimeout(function onGenerate() {
-                var resp = generate(10000 * Math.random(), event.skip, event.limit);
+                var resp = generate(Math.round(10000 * Math.random()), event.skip, event.limit);
                 $this.paginate('update', resp);
-                $li.empty().append.apply($li, resp.payload);
-            }, 3000);
+                $ul.empty().append.apply($ul, resp.payload);
+            }, 1000);
         });
     });
 })
@@ -270,17 +49,19 @@ require(['jquery-paginate'], function ($) {
 
 </head>
 <body>
-<b class="icon-wait"></b>Loading...
+<div class="paginate page_navigation span12"></div>
+<div class="paginate page_navigation span12" data-total="103" data-filter-total="0" data-limit="10"></div>
+<div class="paginate page_navigation span12" data-total="2220" data-filter-total="50" data-skip="22" data-limit="10" data-items="Goobs"></div>
 <div class="paginate page_navigation span12" data-total="103" data-skip="22" data-limit="10"></div>
 <div class="paginate page_navigation span12" data-total="103" data-skip="51" data-limit="10"></div>
 <div class="paginate page_navigation span12" data-total="133" data-skip="61" data-limit="10"></div>
 <div class="paginate page_navigation span12" data-total="1330" data-skip="651" data-limit="10"></div>
 <div class="paginate page_navigation span12" data-total="1330" data-skip="1329" data-limit="10"></div>
 <div class="paginate page_navigation span12" data-total="1330" data-skip="1319" data-limit="10"></div>
-<div class="paginate page_navigation span12" data-total="1" data-skip="22" data-limit="10"></div>
+<div class="paginate page_navigation span12" data-total="1" data-skip="22" data-limit="10" data-item="Goob"></div>
 <div class="paginate page_navigation span12" data-total="0" data-skip="22" data-limit="10"></div>
 <div class="paginate page_navigation span12" data-total="22" data-skip="2" data-limit="4" data-filter-total="21"></div>
-<div id="listPage" class="paginate page_navigation span12" data-total="2220" data-skip="22" data-limit="10"></div>
+<div id="listPage" class="paginate page_navigation span12" data-total="2220" data-skip="22" data-limit="10" data-items="Goobs"></div>
 <ul id="list">
 
 </ul>

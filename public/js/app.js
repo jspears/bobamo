@@ -1,6 +1,6 @@
 // Filename: app.js
 define([
-    'jQuery',
+    'jquery',
     'Underscore',
     'Backbone',
     'router',

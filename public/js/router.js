@@ -1,6 +1,6 @@
 // Filename: router.js
 define([
-    'jQuery',
+    'jquery',
     'Underscore',
     'Backbone',
     'libs/querystring'], function ($, _, Backbone, query) {
