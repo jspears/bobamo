@@ -7,7 +7,8 @@ define(['Backbone', 'underscore', 'jquery', 'text!tpl/confirm_change.html', 'lib
         },
 
         events:{
-            'click .btn-primary':'onSave'
+            'click .btn-primary':'onSave',
+            'click .btn.cancel':'onCancel'
         },
         onSave:function(){
             this.$modal.modal('hide');
@@ -15,8 +16,14 @@ define(['Backbone', 'underscore', 'jquery', 'text!tpl/confirm_change.html', 'lib
                 this.callback();
             }
         },
-        render:function(modal, callback, data){
+        onCancel:function(){
+            console.log('onCancel');
+            if (this.cancelCallback)
+                this.cancelCallback();
+        },
+        render:function(modal, callback, cancel, data){
             this.callback = callback;
+            this.cancelCallback = cancel;
             var fill = _.extend({body:'You made changes do you want to save them?', button:'Save Change', title:'Unsaved Changes'}, data)
             this.$modal = $(this.template(fill));
             $(this.el).append(this.$modal)

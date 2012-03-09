@@ -63,7 +63,7 @@ function _field(p, path) {
         if (modelName) {
             _u.extend(defaults, {
                 dataType:'Array',
-                url:'/api/' + modelName + '/labelvalue',
+                url:'/api/' + modelName + '?transform=labelval',
                 type:'MultiEditor'
             });
         } else {
@@ -135,7 +135,7 @@ function _field(p, path) {
             }
         })
     }
-    defaults.title = sutil.toTitle(path);
+    defaults.title = inflection.titleize(inflection.humanize(path));
     return _u.extend({}, defaults, options.display);
 }
 DisplayFactory.prototype._field = _field
