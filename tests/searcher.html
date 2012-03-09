@@ -11,7 +11,9 @@
         require(['libs/table/jquery.searcher'], function ($) {
             $(function () {
                 $('#test1').searcher({fields:'firstName', labels:['First Name', 'Last Name']});
-                $('#test2').searcher();
+                $('#test2').searcher().on('search-change', function(e){
+                    console.log('search-change',e);
+                });
 
             });
         });
