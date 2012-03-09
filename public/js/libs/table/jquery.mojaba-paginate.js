@@ -148,6 +148,7 @@ define(['jquery'], function ($) {
         },
         wait:function () {
             this.$message.html(this.options.messages.wait);
+            return this;
         },
         load:function () {//override me
         },

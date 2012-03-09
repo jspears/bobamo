@@ -1,0 +1,35 @@
+<html>
+<head>
+    <title>Searcher Test Pad</title>
+    <link rel="stylesheet" href="../public/js/libs/bootstrap/css/bootstrap.css">
+    <script type="text/javascript" src="../public/js/libs/require/require-jquery.js"></script>
+
+    <script type="text/javascript">
+        require.config({
+            baseUrl: "../public/js"
+        });
+        require(['libs/table/jquery.searcher'], function ($) {
+            $(function () {
+                $('#test1').searcher({fields:'firstName', labels:['First Name', 'Last Name']});
+                $('#test2').searcher();
+
+            });
+        });
+    </script>
+
+</head>
+<body>
+<h3>Search Test Pad</h3>
+<div id="test1" class="sortable"></div>
+<div id="test2" class="sortable" data-fields="name,email,username" data-labels="Name,Email,Username"></div>
+<form class="well btn-toolbar">
+    <input type="text" class="input-medium search-query">
+    <span class="">
+    <button type="submit" class="btn">Search</button>
+    <button type="submit" class="btn">Search</button>
+    <button type="submit" class="btn">Search</button>
+    </span>
+</form>
+</body>
+
+</html>
