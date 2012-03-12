@@ -11,7 +11,12 @@ define([
 
 ], function ($, _, Backbone, collection, tableTemplate, tableItemTemplate) {
     "use strict";
-
+    function _null(v) {
+        return v != null;
+    };
+    function _dir(v){
+        return v.direction ? v.label + " " + (v.direction > 0 ? " ascending" : "descending") : null;
+    };
     var ListView = Backbone.View.extend({
         tagName:'div',
         events:{
@@ -34,14 +39,14 @@ define([
                 console.log('trying to add item but not rendered yet', item);
         },
         renderList:function () {
-           this.$ul = this.$el.find('tbody').empty();
+            this.$ul = this.$el.find('tbody').empty();
             this.collection.models.forEach(this.renderItem, this);
             return this;
         },
         sorts:[],
 
-        update:function () {
-            var $p = this.$paginate.paginate('wait');
+        update:function (message) {
+            var $p = this.$paginate.paginate('wait', message);
 
             var self = this;
             var data = {
@@ -60,16 +65,21 @@ define([
                 data:data,
                 success:function (arg, resp) {
                     self.renderList();
-                    $p.paginate('update', resp);
+                    setTimeout(function () {
+                        $p.paginate('update', resp);
+                    }, 800);
                 }});
             return this;
         },
         onSort:function (evt) {
-            console.log('onSort',evt);
-            var obj = {field:evt.field, direction:evt.direction};
-            this.sorts = $.filter(this.sorts, function (k, v) { return v.field === obj.field; })
+            console.log('onSort', evt);
+            var obj = {field:evt.field, direction:evt.direction, label:evt.label};
+            this.sorts = _.filter(this.sorts, function (v, k) {
+                return v.field != obj.field;
+            })
             this.sorts.unshift(obj);
-            this.update();
+            var str = _(this.sorts).map(_dir).filter(_null).join(', ')
+            this.update('Sorting {items} ' + ( str ? 'by ' + str : 'naturally' ));
             return this;
         },
         render:function (obj) {
@@ -84,8 +94,8 @@ define([
 
             this.$paginate = $('<div class="pager_table"></div>').paginate({
                 limit:10,
-                item:'${_schema(schema, true).modelName}',
-                items:'${_schema(schema, true).display.plural}'
+                item:'${_schema(true).modelName}',
+                items:'${_schema(true).display.plural}'
             });
             this.$table = $(tableTemplate);
             $('.sortable', this.$table).sorter();

@@ -2,8 +2,8 @@
 <table class="table table-striped">
     <thead>
         <tr>
-            {{each(i,l) createFields(schema.modelName, true)}}
-                <th data-field="${l}" class="elementActivate sortable">${createSchema(schema.modelName,true)[l].title}</th>
+            {{each(i,l) _fields(true)}}
+                <th data-field="${l}" class="elementActivate sortable">${_paths(true)[l].title}</th>
             {{/each}}
         </tr>
         <tr>

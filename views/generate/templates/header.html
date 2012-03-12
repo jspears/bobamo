@@ -12,7 +12,7 @@
                 <ul class="nav">
                     <li class="home active"><a href="#">Home</a></li>
                     <li class="contact"><a href="#contact">Contact</a></li>
-                    {{each(i,l) models(true)}}
+                    {{each(i,l) _models(true)}}
                     <li class="dropdown ${l}" id="menu${l}">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#menu${l}">
                             ${sutil.toTitle(l)}

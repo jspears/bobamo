@@ -16,7 +16,7 @@
             dir = null;
         $el.attr('data-direction', dir);
         if (trigger)
-            $el.trigger({type:'sorter-change', direction:isNaN(dir) ? null : dir, field:$el.attr('data-field')});
+            $el.trigger({type:'sorter-change', direction:isNaN(dir) ? null : dir, field:$el.attr('data-field'), label:$el.attr('data-label')});
 
     }
     var Sorter = function (element, options) {
@@ -24,7 +24,7 @@
 
         var dir = this.options.direction;
         var field = this.options.field;
-
+        var label = this.options.label;
         var $pel = this.$el = $('<div class="sorter"><b class="arrow up"/><b class="arrow down"/></div>')
         var $ele = $(element);
         $ele.delegate('b.arrow', 'click ', this.sort);
@@ -33,6 +33,8 @@
         if (field){
             this.$el.attr('data-field', field);
         }
+        if (!$ele.attr('data-label'))
+            $ele.attr('data-label', label || $ele.text());
         if ($ele.hasClass('elementActivate')){
             $ele.on('click', function(evt){
                 var dir =$ele.attr('data-direction');
@@ -57,7 +59,7 @@
         return this.each(function (s) {
             var $this = $(this)
                 , data = $this.data('sorter')
-                , options = typeof option == 'object' && option || {field:$this.attr('data-field'), direction:$this.attr('data-direction')};
+                , options = typeof option == 'object' && option || {field:$this.attr('data-field'), direction:$this.attr('data-direction'), label:$this.attr('data-label')};
             if (!data) $this.data('sorter', (data = new Sorter(this, options)))
             if (typeof option == 'string') data[option]()
         })

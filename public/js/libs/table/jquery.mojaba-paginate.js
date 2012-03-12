@@ -150,8 +150,8 @@ define(['jquery'], function ($) {
             this.$element.trigger({type:'paginate-change', limit:parseInt(this.options.limit), skip:parseInt(this.options.skip - 1)});
             this.load({limit:this.options.limit, skip:this.options.skip})
         },
-        wait:function () {
-            this.$message.html(this.options.messages.wait);
+        wait:function (message) {
+            this.$message.html( this.replace(message ||this.options.messages.wait));
             return this;
         },
         load:function () {//override me

@@ -9,9 +9,9 @@ define([
     'text!templates/${schema.modelName}/list.html',
     'libs/backbone-forms/src/templates/bootstrap',
     'jquery-ui'
-].concat({{html createEditors(schema) }}),
+].concat({{ html _editors() }}),
 function ($, _, Backbone, Form, collection, Model, template) {
-    var fields = {{html createFields(schema)}};
+    var fields = {{ html _fields() }};
 var EditView = Backbone.View.extend({
   //  el:'#content',
     tagName:'div',
@@ -85,7 +85,7 @@ var EditView = Backbone.View.extend({
         var id = opts && (opts.id || opts._id);
         var model = new Model(opts);
 
-        var title = id ? '<i class="icon-edit"></i> Edit ${toTitle(schema)} [' + id + ']' : '<i class="icon-plus"></i>Create New ${toTitle(schema)}';
+        var title = id ? '<i class="icon-edit"></i> Edit ${_title()} [' + id + ']' : '<i class="icon-plus"></i>Create New ${_title()}';
         var form = this.form = new Form({
             model:model,
             fieldsets:[{legend:title, fields:fields}]
