@@ -21,7 +21,7 @@ define([
         initialize:function () {
             this.collection = collection;
             //  this.collection.bind("reset", this.renderList, this);
-            this.collection.bind("add", this.renderItem, this);
+//            this.collection.bind("add", this.renderItem, this);
 
         },
         renderItem:function (item) {
@@ -34,12 +34,7 @@ define([
                 console.log('trying to add item but not rendered yet', item);
         },
         renderList:function () {
-            var $ul = this.$ul;
-            if (!$ul) {
-                $ul = this.$ul = this.$el.find('tbody');
-            } else {
-                $ul.empty();
-            }
+           this.$ul = this.$el.find('tbody').empty();
             this.collection.models.forEach(this.renderItem, this);
             return this;
         },
@@ -70,6 +65,7 @@ define([
             return this;
         },
         onSort:function (evt) {
+            console.log('onSort',evt);
             var obj = {field:evt.field, direction:evt.direction};
             this.sorts = $.filter(this.sorts, function (k, v) { return v.field === obj.field; })
             this.sorts.unshift(obj);
@@ -78,16 +74,13 @@ define([
         },
         render:function (obj) {
             this.$container = obj && obj.container ? $(obj.container) : $('#content');
-            var $el = $(this.el);
-            this.$container.children().detach();
-            this.$container.append($el);
-            if (this._rendered) {
-                this.update();
-                return this;
-            }
-            this._rendered = true;
-
-            $el.append('<h3>{{html toTitle(schema) }}</h3>')
+            var $el = this.$el;
+            this.collection.reset();
+            $el.empty();
+            if (this.$paginate)
+                this.$paginate.remove();
+            if (this.$table)
+                this.$table.remove();
 
             this.$paginate = $('<div class="pager_table"></div>').paginate({
                 limit:10,
@@ -96,10 +89,12 @@ define([
             });
             this.$table = $(tableTemplate);
             $('.sortable', this.$table).sorter();
+
+            $el.append('<h3>{{html toTitle(schema) }}</h3>')
             $el.append(this.$table);
             $el.append(this.$paginate);
             this.update();
-
+            this.$container.empty().append($el);
             return this;
         }
     });

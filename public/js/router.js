@@ -21,6 +21,12 @@ define([
             });
         },
         views:        {},
+        activeHeader:function(clz){
+            var $main = $('.mainnav');
+            $main.find('.active').removeClass('active');
+            $main.find('.'+clz).addClass('active');
+
+        },
         defaultAction:function (actions) {
             // We have no matching route, lets display the home page
             var parts = (actions || 'home' ).replace(/^\/*/, '').split('?', 2);
@@ -34,6 +40,7 @@ define([
             if (parts.length > 1) {
                 obj = query.parse(parts[1]);
             }
+            this.activeHeader(paths[0]);
             var path = ['/js/views'];
             if (paths.length == 1) {
                 path.push(paths[0])

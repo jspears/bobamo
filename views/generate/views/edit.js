@@ -13,7 +13,8 @@ define([
 function ($, _, Backbone, Form, collection, Model, template) {
     var fields = {{html createFields(schema)}};
 var EditView = Backbone.View.extend({
-    el:'#content',
+  //  el:'#content',
+    tagName:'div',
     events:{
         'click button.save':'onSave',
         'click button.cancel':'onCancel',
@@ -115,6 +116,7 @@ var EditView = Backbone.View.extend({
         this.$cancel = $('<button type="submit" class="btn pull-right btn-primary save">Save</button>');
         $div.append(this.$save, this.$cancel);
         $el.append($div);
+        $(this.options.container).empty().append($el);
         return this;
     }
 });

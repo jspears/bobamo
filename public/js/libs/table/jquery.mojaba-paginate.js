@@ -17,6 +17,10 @@ define(['jquery'], function ($) {
     }
 
     Paginate.prototype = {
+        destroy:function(){
+            console.log("destroy",this);
+          this.$el.remove();
+        },
         constructor:Paginate,
         tmpl:/{([^}]*)}/g,
         /**

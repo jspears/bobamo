@@ -4,6 +4,11 @@ define(['Backbone', 'underscore', 'jquery', 'text!tpl/confirm_change.html', 'lib
         template:_.template(template),
         initialize:function(){
             _.bindAll(this);
+            this._hide = this.hide;
+            this.hide = $.proxy(function(){
+                this._hide();
+                $(this.el).remove(this.$modal);
+            },this);
         },
 
         events:{
