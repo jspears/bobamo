@@ -1,4 +1,4 @@
-define(['Backbone', 'jquery','Underscore', 'collections/employee', 'views/employee/list', 'text!tpl/header.html', 'bootstrap/bootstrap-dropdown'], function (Backbone, $,_, collection, EmployeeListView, headerTmpl) {
+define(['Backbone', 'jquery','Underscore', 'collections/employee', 'views/employee/list', 'text!tpl/header.html', 'libs/bootstrap/js/bootstrap-dropdown'], function (Backbone, $,_, collection, EmployeeListView, headerTmpl) {
 
     var HeaderView = Backbone.View.extend({
 

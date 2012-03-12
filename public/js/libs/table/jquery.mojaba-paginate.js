@@ -64,7 +64,7 @@ define(['jquery'], function ($) {
             var skip = this.options.skip = limit * (page - 1) + 1;
             this.$element.attr('data-skip', skip);
             this.drawButtons();
-            this.makeRequest();
+            this.makeRequest(page);
 
         },
 
@@ -146,8 +146,8 @@ define(['jquery'], function ($) {
             $bg.append($btn)
             return $btn;
         },
-        makeRequest:function () {
-            this.$element.trigger({type:'paginate-change', limit:parseInt(this.options.limit), skip:parseInt(this.options.skip - 1)});
+        makeRequest:function (page) {
+            this.$element.trigger({type:'paginate-change', page:page, limit:parseInt(this.options.limit), skip:parseInt(this.options.skip - 1)});
             this.load({limit:this.options.limit, skip:this.options.skip})
         },
         wait:function (message) {

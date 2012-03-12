@@ -24,7 +24,7 @@ define([
     var ListView = Backbone.View.extend({
         tagName:'div',
         events:{
-            'paginate-change .pager_table':'update',
+            'paginate-change .pager_table':'doPage',
             'sorter-change .sortable':'onSort'
         },
         initialize:function () {
@@ -48,7 +48,10 @@ define([
             return this;
         },
         sorts:[],
+        doPage:function(evt){
 
+            this.update('Loading page <b>'+evt.page+'</b> of {items}')
+        },
         update:function (message) {
             var $p = this.$paginate.paginate('wait', message);
 
