@@ -1,4 +1,4 @@
-var mongoose = require('mongoose'), factory = require('../app/lib/display-factory').DisplayFactory, _u=require('underscore');
+var mongoose = require('mongoose'), factory = require('../app/lib/display-factory').DisplayFactory, _u = require('underscore');
 module.exports = function (app) {
     var jsRe = /\.js$/;
 
@@ -33,7 +33,7 @@ module.exports = function (app) {
         }
 
         //for (var key in Object.keys(schemaHelpers)) {
-        _u.each(schemaHelpers, function(value,key){
+        _u.each(schemaHelpers, function (value, key) {
             opts[key] = value(req);
         });
 
@@ -43,7 +43,7 @@ module.exports = function (app) {
             req.__fields = factory.createFields(Model, req.user);
             req.__defaults = factory.createDefaults(Model, req.user);
             req.__editors = factory.createEditors(Model, req.user);
-            _u.each(modelHelpers, function(value, key){
+            _u.each(modelHelpers, function (value, key) {
                 opts[key] = value(req, Model);
             });
 
@@ -57,18 +57,18 @@ module.exports = function (app) {
                 var models = factory.listModels(req.user);
                 return plain ? models : JSON.stringify(models);
             }
-        },
-        _title:function (req) {
-            return function onToTitle() {
-                return factory.createTitle(req.user);
-            }
         }
     }
     var modelHelpers = {
+        _title:function (req, Model) {
+            return function onToTitle() {
+                return factory.createTitle(Model, req.user);
+            }
+        },
         _paths:function (req, Model) {
             return function onSchema(plain) {
                 var schema = req.__schema;
-                var paths =  plain ? schema.paths : JSON.stringify(schema.paths);
+                var paths = plain ? schema.paths : JSON.stringify(schema.paths);
                 return paths;
             }
         },
@@ -92,8 +92,8 @@ module.exports = function (app) {
             }
         },
         _editors:function (req, Model) {
-            return function onEditors(plain) {
-                var editors = req.__editors;
+            return function onEditors(plain, append) {
+                var editors = append ? req.__editors.concat(append) : req.__editors;
                 return plain ? editors : JSON.stringify(editors);
             }
         }

@@ -9,9 +9,8 @@ define([
     'text!templates/${schema.modelName}/list.html',
     'libs/backbone-forms/src/templates/bootstrap',
     'jquery-ui'
-].concat({{ html _editors() }}),
-function ($, _, Backbone, Form, collection, Model, template) {
-    var fields = {{ html _fields() }};
+].concat({{html _editors(false)}}), function ($, _, Backbone, Form, collection, Model, template) {
+    var fields = {{html _fields() }};
 var EditView = Backbone.View.extend({
   //  el:'#content',
     tagName:'div',

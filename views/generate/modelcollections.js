@@ -5,7 +5,7 @@ define([
     "use strict";
     //we define these together because they often link together and if they are in seperate callbacks bad things happen.
     var defaults = {{html _defaults()}};
-    var schema = {{html _schema()}};;
+    var schema = {{html _paths()}};
     var Model = Backbone.Model.extend({
         urlRoot:'/api/${schema.modelName}',
         schema:schema,
