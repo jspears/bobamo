@@ -69,24 +69,24 @@ define(['jquery'], function ($) {
         },
 
         update:function (obj) {
+
             var total = obj.total, skip = obj.skip, limit = obj.limit, filterTotal = obj.filterTotal;
             var o = this.options;
             if (_d(skip)) {
-                o.skip = skip;
                 this.$element.attr('data-skip', skip);
             }
             if (_d(limit)) {
-                o.limit = limit;
                 this.$element.attr('data-limit', limit);
             }
             if (_d(total)) {
-                o.total = total;
                 this.$element.attr('data-total', total);
             }
             if (_d(filterTotal)) {
-                o.filterTotal = filterTotal;
                 this.$element.attr('data-filter-total', filterTotal);
             }
+
+            $.extend(this.options, obj);
+            delete this.options.payload;
             this.drawButtons();
             this.drawMessage();
 
@@ -210,13 +210,14 @@ define(['jquery'], function ($) {
         skip:0,
         total:0,
         btnTemplate:'<a class="btn"></a>',
+        sort:'',
         messages:{
             wait:'<b class="icon-wait"/>Loading...',
             none:'No {items:items} found{filter}.',
-            multiple:'Displaying <b>{skip}</b> to <b>{end}</b> of <b>{ctotal}</b> {items:items}{filter}.',
+            multiple:'Displaying <b>{skip}</b> to <b>{end}</b> of <b>{ctotal}</b> {items:items}{filter}{sort}.',
             one:'Found <b>one</b> {item:item}{filter}.',
-            few:'Found <b>{count:a few}</b> {items:items}{filter}.',
-            filternone:'<b class="icon-filter"/> No {items:items} found matching{filter:filter}.',
+            few:'Found <b>{count:a few}</b> {items:items}{filter}{sort}.',
+            filternone:'<b class="icon-filter"/> No {items:items} found matching{filter:filter}{sort}.',
             filtermsg:',<b class="icon-search"/> filtering {fcount} {items:items}'
         },
         ctotal:function () {

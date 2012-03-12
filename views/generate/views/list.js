@@ -15,7 +15,11 @@ define([
         return v != null;
     };
     function _dir(v){
-        return v.direction ? v.label + " " + (v.direction > 0 ? " ascending" : "descending") : null;
+        if (v.direction)
+          return '<span class="sortable elementActivate" data-field="'+v.field+'" data-label="'+v.label+'" data-direction="'+v.direction+'">'+v.label+'</span>';
+
+        return null;
+//        return v.direction ? v.label + " " + (v.direction > 0 ? " ascending" : "descending") : null;
     };
     var ListView = Backbone.View.extend({
         tagName:'div',
@@ -66,7 +70,8 @@ define([
                 success:function (arg, resp) {
                     self.renderList();
                     setTimeout(function () {
-                        $p.paginate('update', resp);
+                        resp.sort = self.sort_str ? ' sorting by: '+self.sort_str : '';
+                        $p.paginate('update', resp).find('.sortable').sorter();
                     }, 800);
                 }});
             return this;
@@ -79,7 +84,9 @@ define([
             })
             this.sorts.unshift(obj);
             var str = _(this.sorts).map(_dir).filter(_null).join(', ')
+            this.sort_str = str;
             this.update('Sorting {items} ' + ( str ? 'by ' + str : 'naturally' ));
+
             return this;
         },
         render:function (obj) {
