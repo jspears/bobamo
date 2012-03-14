@@ -67,7 +67,7 @@ var EditView = Backbone.View.extend({
             this.onError(resp, obj);
         } else {
             $success =  $('.success-list', this.$el).empty();
-            $success.append('<li class="alert alert-success"><a class="close" data-dismiss="alert">×</a><h4 class="alert-heading">Success!</h4>Successfully Saved ${_title()} ' + obj.payload.id  + '</li>')
+            $success.append('<li class="alert alert-success"><a class="close" data-dismiss="alert">×</a><h4 class="alert-heading">Success!</h4>Successfully Saved ${_title()} ' + (obj.payload.id || obj.payload._id)  + '</li>')
             $success.show('slow');
         }
         console.log('${schema.modelName}/edit#onSuccess', arguments);

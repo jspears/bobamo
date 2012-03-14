@@ -25,12 +25,9 @@ define([
         tagName:'div',
         events:{
             'paginate-change .pager_table':'doPage',
-            'sorter-change .sortable':'onSort',
-            'click .create':'onEdit'
+            'sorter-change .sortable':'onSort'
         },
-        onEdit:function(e){
 
-        },
         initialize:function () {
             this.collection = collection;
             //  this.collection.bind("reset", this.renderList, this);
@@ -98,17 +95,17 @@ define([
         },
         render:function (obj) {
             this.$container = obj && obj.container ? $(obj.container) : $('#content');
-            var $el = this.$el;
             this.collection.reset();
-            $el.empty();
             if (this.$paginate)
                 this.$paginate.remove();
             if (this.$table)
                 this.$table.remove();
+            var $el = this.$el;
+            $el.empty();
 
             this.$paginate = $('<div class="pager_table"></div>').paginate({
                 limit:10,
-                item:'${_schema(true).modelName}',
+                item:'${_schema(true).display.title}',
                 items:'${_schema(true).display.plural}'
             });
             this.$table = $(tableTemplate);

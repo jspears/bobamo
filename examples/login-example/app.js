@@ -15,10 +15,11 @@ var app = module.exports = express.createServer();
 
 // Configuration
 app.configure(function () {
-//    app.set('views', __dirname + '/views');
-//    app.set('view engine', 'html');
-//    app.register('.html', jqtpl.express);
-//    app.register('.js', jqtpl.express);
+    app.use(express.static(__dirname + '/public'));
+    app.set('views', __dirname + '/views');
+    app.set('view engine', 'html');
+    app.register('.html', jqtpl.express);
+    app.register('.js', jqtpl.express);
     app.use(express.cookieParser());
     app.use(express.bodyParser());
     app.use(express.session({ secret:'big fat secret' }));

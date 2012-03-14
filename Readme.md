@@ -5,6 +5,31 @@ is you define your model and a little extra and it generates the crud on demand.
 box though, you can easily change any part of the generated stuff by making it static and putting in the public
 directory.   This allows for easy customization.   You can at your own risk modify the scaffolding generated in views/generator
 
+##Express
+Recently Mojaba has been refactored as a express plugin.  This gives an easy installation method, (npm) and
+relatively easy configuration.
+
+Just add mojaba to your package.json, npm install then configure app.js to use mojaba
+
+```javascript
+
+ app.use(mojaba.express({uri:'mongodb://localhost/mojaba_development'}, express))
+
+```
+Note passing express in, please bear with me as I figure out how to get rid of that, but to make it work its needed.
+You can also specify a context to host both the rest and javascript from
+
+```javascript
+
+ app.use('your-api', mojaba.express({uri:'mongodb://localhost/mojaba_development'}, express))
+
+```
+
+You can find examples of this under examples/simple and examples/login-example.
+
+
+
+
 ## Subclass
 Because everything is scoped within requirejs, subclassing is pretty easy. Say you wanted to do something to the
 user view create a javascript file 
