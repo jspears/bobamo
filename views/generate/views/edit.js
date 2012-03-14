@@ -6,7 +6,7 @@ define([
 
     'collections/${schema.modelName}',
     'models/${schema.modelName}',
-    'text!templates/${schema.modelName}/list.html',
+    'text!templates/${schema.modelName}/edit.html',
     'libs/backbone-forms/src/templates/bootstrap',
     'jquery-ui'
 ].concat({{html _editors(false)}}), function ($, _, Backbone, Form, collection, Model, template) {
@@ -14,6 +14,7 @@ define([
 var EditView = Backbone.View.extend({
   //  el:'#content',
     tagName:'div',
+    template:_.template(template),
     events:{
         'click button.save':'onSave',
         'click button.cancel':'onCancel',
@@ -33,6 +34,7 @@ var EditView = Backbone.View.extend({
     },
     onError:function (model, errors, stuff) {
         console.log('error', arguments);
+        var $error = $('.error-list', this.$el);
         if (errors) {
             var fields = this.form.fields;
             _.each(errors.error.errors, function (v, k) {
@@ -40,14 +42,15 @@ var EditView = Backbone.View.extend({
                 if (field && field.$el)
                     field.$el.addClass('error');
                 var $e = $('<li><span class="alert-heading pointer">"' + k + '" is in error: </span>' + v.message+'</li>').data('scroll-to', field.$el);
-                this.$error.prepend($e);
+               $error.prepend($e);
             }, this);
-            this.$error.show('slow');
+            $error.show('slow');
         }
     },
 
     onSave:function () {
-
+        $('.error-list').empty().hide();
+        $('.success-list').empty().hide();
         this.form.validate();
         var errors = this.form.commit();
 
@@ -63,7 +66,9 @@ var EditView = Backbone.View.extend({
         if (obj.error) {
             this.onError(resp, obj);
         } else {
-            this.$el.append('<div style="clear:right" class="alert alert-success"><a class="close" data-dismiss="alert">×</a><h4 class="alert-heading">Success!</h4>Successfully Saved ${schema.modelName} ' + (obj.payload.id || obj.payload._id) + '</div>')
+            $success =  $('.success-list', this.$el).empty();
+            $success.append('<li class="alert alert-success"><a class="close" data-dismiss="alert">×</a><h4 class="alert-heading">Success!</h4>Successfully Saved ${_title()} ' + obj.payload.id  + '</li>')
+            $success.show('slow');
         }
         console.log('${schema.modelName}/edit#onSuccess', arguments);
     },
@@ -80,20 +85,15 @@ var EditView = Backbone.View.extend({
         window.location.hash = '#/${schema.modelName}/list';
     },
     render:function (opts) {
-        var $el = this.$el.empty();
+        var $el = this.$el.empty().append(this.template());
         var id = opts && (opts.id || opts._id);
         var model = new Model(opts);
-
         var title = id ? '<i class="icon-edit"></i> Edit ${_title()} [' + id + ']' : '<i class="icon-plus"></i>Create New ${_title()}';
         var form = this.form = new Form({
             model:model,
             fieldsets:[{legend:title, fields:fields}]
         });
-
-        this.$error = $('<ul style="display:none" class="alert alert-error unstyled error-list"></ul>');
-        $el.append(this.$error);
-        var $fm = $('<div class="row"></div >')
-        $el.append($fm);
+        var $fm = $('.form-container', this.$el);
         if (id) {
             model.fetch({success:function () {
                 var $fel = $(form.render().el)
@@ -104,12 +104,6 @@ var EditView = Backbone.View.extend({
             var $fel = $(form.render().el)
             $fm.append($fel);
         }
-
-        var $div = $('<div class="form-actions ">');
-        this.$save = $('<button class="btn cancel">Cancel</button>');
-        this.$cancel = $('<button type="submit" class="btn pull-right btn-primary save">Save</button>');
-        $div.append(this.$save, this.$cancel);
-        $el.append($div);
         $(this.options.container).empty().append($el);
         return this;
     }
