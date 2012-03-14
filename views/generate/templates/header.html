@@ -1,49 +1,17 @@
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <div class="container">
-            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                <span class="icon-bar">a</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </a>
-            <a class="brand" href="#">Backbone Directory</a>
+            <a class="brand" href="#">${_app(true).options.display.title}</a>
 
             <div class="nav-collapse mainnav">
                 <ul class="nav">
-                    <li class="home active"><a href="#">Home</a></li>
-                    <li class="contact"><a href="#contact">Contact</a></li>
                     {{each(i,l) _models(true)}}
-                    <li class="dropdown ${l}" id="menu${l}">
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#menu${l}">
-                            ${sutil.toTitle(l)}
-                            <b class="caret"></b>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <a href="#${l}/edit"><i class="icon-plus"></i>Create</a>
-                            <a href="#${l}/list"><i class="icon-list"></i>List</a>
-                        </ul>
-                    </li>
-
+                       <li class="${l}" id="menu${l}">
+                          <a href="#/${l}/list">${_schema(true, l).display.plural}</a>
+                       </li>
                     {{/each}}
                 </ul>
-                <form id="searchForm" class="navbar-search pull-left dropdown">
-                    <input id="searchText" type="text" class="search-query dropdown-toggle" placeholder="Search">
-                </form>
             </div>
-            <!--/.nav-collapse -->
-            <ul class="nav">
-                <li class="dropdown">
-                    <a href="#"
-                       class="dropdown-toggle"
-                       data-toggle="dropdown">
-                        Account
-                        <b class="caret"></b>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <a href="/logout">Logout</a>
-                    </ul>
-                </li>
-            </ul>
         </div>
     </div>
 </div>

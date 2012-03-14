@@ -16,7 +16,7 @@ define([
         doLogin:function(actions){
             console.log('doLogin', arguments);
             var self = this;
-            return require(['/js/views/login/login.js'], function (View) {
+            return require(['views/login/login'], function (View) {
                 new View({router:self}).render('/'+(actions ? actions.indexOf('login') > -1 ? '/home'  : actions : '/home'));
             });
         },
@@ -31,7 +31,7 @@ define([
             // We have no matching route, lets display the home page
             var parts = (actions || 'home' ).replace(/^\/*/, '').split('?', 2);
             var self = this;
-            if (!window.isAuthenticated ) {
+            if (window.useAuthentication &! window.isAuthenticated ) {
                 return this.navigate('#login/'+actions, {trigger:true, replace:true});
              }
 
@@ -41,7 +41,7 @@ define([
                 obj = query.parse(parts[1]);
             }
             this.activeHeader(paths[0]);
-            var path = ['/js/views'];
+            var path = ['views'];
             if (paths.length == 1) {
                 path.push(paths[0])
                 path.push('list');
@@ -50,7 +50,7 @@ define([
             }
             var p = path.join('/');
             console.log('path=', p, 'params=', obj);
-            require([p + '.js'], function (View) {
+            require([p], function (View) {
                 console.log('rendering ', p, View);
                 var view = self.views[p] || (self.views[p] = new View({router:AppRouter, container:'#content'}));
                 view[ view.show ? 'show' : 'render'](obj);

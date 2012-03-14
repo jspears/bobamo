@@ -7,20 +7,20 @@ define([
     var defaults = {{html _defaults()}};
     var schema = {{html _paths()}};
     var Model = Backbone.Model.extend({
-        urlRoot:'/api/${schema.modelName}',
+        urlRoot:'${baseUrl}/${api}/${schema.modelName}',
         schema:schema,
        // defaults:defaults,
         initialize: function() {
         }
         ,parse:function(resp) {
-            console.log('${schema.modelName}model#parse', resp);
+            console.log('${baseUrl}/${api}/${schema.modelName}model#parse', resp);
             return resp.payload ? resp.payload : resp;
         }
 
     });
     var Collection = Backbone.Collection.extend({
         model: Model,
-        url:'/api/${schema.modelName}',
+        url:'${baseUrl}/${api}/${schema.modelName}',
         initialize: function() {
 
         },

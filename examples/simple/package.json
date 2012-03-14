@@ -1,0 +1,12 @@
+{
+    "name": "mojaba-example-simple"
+  , "version": "0.0.1"
+  , "private": false
+  , "dependencies": {
+      "express": "2.5.8"
+    , "jade": ">= 0.0.1"
+    , "mojaba":"0.2.0"
+    , "jqtpl":"latest"
+   , "mongoose":"latest"
+  }
+}

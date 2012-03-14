@@ -4,6 +4,7 @@
 // Require.js allows us to configure shortcut alias
 // Their usage will become more apparent futher along in the tutorial.
 require.config({
+  baseUrl:'${baseUrl}/js',
   paths: {
     loader: 'libs/backbone/loader',
     Underscore: 'libs/underscore/underscore',
@@ -13,19 +14,17 @@ require.config({
    'jquery-editors':'libs/backbone-forms/src/jquery-ui-editors',
    'bootstrap':'libs/bootstrap/js',
     templates: '../templates',
-    tpl: '../tpl'
+    tpl: '../tpl',
   }
 
 });
 
 require([
-
   // Load our app module and pass it to our definition function
-  'app', 'jquery'
-
+  'app'
   // Some plugins have to be loaded in order due to their non AMD compliance
   // Because these scripts are not "modules" they do not pass any values to the definition function below
-], function(App,$){
+], function(App){
   // The "app" dependency is passed in as "App"
   // Again, the other dependencies passed in are not "AMD" therefore don't pass a parameter to this function
   App.initialize();

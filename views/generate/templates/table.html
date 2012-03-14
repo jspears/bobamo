@@ -1,4 +1,5 @@
-
+<div>
+<h4 class="pull-left">${_schema(true).display.plural}</h4><a href="#/${_schema(true).modelName}/edit" class="btn btn-mini pull-right"><b class="icon-edit"></b>Create ${_schema(true).display.title} </a>
 <table class="table table-striped">
     <thead>
         <tr>
@@ -6,7 +7,7 @@
                 <th data-field="${l}" class="elementActivate sortable">${_paths(true)[l].title}</th>
             {{/each}}
         </tr>
-        <tr>
+        <tr>&nbsp;
         </tr>
     </thead>
     <tbody/>
@@ -15,3 +16,4 @@
     </tfoot>
 
 </table>
+</div>

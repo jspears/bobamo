@@ -9,7 +9,7 @@ define(['Backbone', 'jquery', 'Underscore', 'text!tpl/home.html'], function (Bac
 
         events:{
             "click #showMeBtn":"showMeBtnClick"
-        },
+            },
 
         render:function (eventName) {
             $(this.el).html(this.template());

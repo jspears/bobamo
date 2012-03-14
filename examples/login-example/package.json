@@ -1,0 +1,14 @@
+{
+    "name": "mojaba-login-example"
+  , "description":"An example mojaba project with Login and modification"
+  , "version": "0.2.0"
+  , "private": true
+  , "dependencies": {
+      "mojaba": "0.2.0"
+    , "express":"2.5.8"
+    , "passport":"latest"
+    , "passport-local":"latest"
+    , "jqtpl":"latest"
+  }
+  
+}

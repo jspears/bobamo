@@ -1,7 +1,6 @@
-var mongoose = require('mongoose'), Employee = require('../app/model/employee'), Group = require('../app/model/group'), User = require('../app/model/user'), should = require('should');
+var mongoose = require('mongoose'), Employee = require('../examples/model/employee'), Group = require('../examples/model/group'), User = require('../examples/model/user'), should = require('should');
 
-var factory = require('../app/lib/display-factory');
-var df = factory.DisplayFactory;
+var df = require('../lib/display-factory');
 
 describe('Factory', function () {
     describe('createSchema', function () {
@@ -17,7 +16,7 @@ describe('Factory', function () {
             stuff.should.have.property('twitter');
             stuff.twitter.should.have.property('validator').with.lengthOf(2);
             stuff.should.have.property('created_by');
-            stuff.created_by.should.have.property('title', 'Created By');
+            stuff.created_by.should.have.property('title', 'Created by');
             stuff.should.have.property('password');
             stuff.password.should.have.property('dataType', 'String');
             stuff.should.not.have.property('_password');
@@ -32,9 +31,9 @@ describe('Factory', function () {
             df.createFields(User).should.eql(['username', 'first_name', 'last_name', 'twitter', 'email', 'groups']);
             done();
         });
-        it('should return all fields', function(done){
+        it('should return all fields', function (done) {
             //TODO - order may be random, fix to ensure values and not order.
-            df.createFields(Group).should.eql(['name', 'description', 'created_at', 'modified_at', '_id', 'id']);
+            df.createFields(Group).should.eql(['name', 'description']);
             done();
 
         });
@@ -42,6 +41,16 @@ describe('Factory', function () {
     describe('createEditors', function () {
         it('should return a list of editors', function (done) {
             df.createEditors(User).should.eql(['jquery-editors', 'libs/editors/multi-editor']);
+            done();
+        });
+    });
+    describe('createApp', function () {
+        it('should return a title', function (done) {
+            var app = df.createApp();
+            console.log('app',app);
+            app.should.have.property('options')
+            app.options.should.have.property('display');
+            app.options.display.should.have.property('title', "Mojaba");
             done();
         });
     });

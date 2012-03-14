@@ -25,7 +25,11 @@ define([
         tagName:'div',
         events:{
             'paginate-change .pager_table':'doPage',
-            'sorter-change .sortable':'onSort'
+            'sorter-change .sortable':'onSort',
+            'click .create':'onEdit'
+        },
+        onEdit:function(e){
+
         },
         initialize:function () {
             this.collection = collection;
@@ -110,7 +114,6 @@ define([
             this.$table = $(tableTemplate);
             $('.sortable', this.$table).sorter();
 
-            $el.append('<h3>{{html toTitle(schema) }}</h3>')
             $el.append(this.$table);
             $el.append(this.$paginate);
             this.update();

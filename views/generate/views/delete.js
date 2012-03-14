@@ -14,7 +14,7 @@ define(['jquery', 'Backbone', 'confirm_change'], function ($, Backbone, ConfirmV
 
             confirm.render('show', function onDelete() {
                 $.ajax({type:'delete',
-                    url:'/api/${schema.modelName}',
+                    url:'${baseUrl}/${api}/${schema.modelName}',
                     data:{_id:opts.id},
                     success:function (resp) {
                         if (resp.status == 0) {

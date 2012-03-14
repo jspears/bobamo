@@ -1,0 +1,1 @@
+module.exports.express = require('./lib/mojaba-express');

@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 var assert = require('assert');
-var employee = require('../app/model/employee');
+var employee = require('../example/model/employee');
 
 before(function (done) {
     mongoose.connect("mongodb://localhost/mojaba_development");

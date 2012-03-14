@@ -1,5 +1,4 @@
-var util = require('../app/lib/util'), should = require('should');
-console
+var util = require('../lib/util'), should = require('should');
 describe('Testing Util', function () {
 
     describe('util.depth', function () {

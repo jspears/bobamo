@@ -1,4 +1,4 @@
-var mongoose = require('mongoose'), User = require('../app/model/user'), assert = require('assert'), should =require('should');
+var mongoose = require('mongoose'), User = require('../examples/model/user'), assert = require('assert'), should =require('should');
 before(function () {
     mongoose.connect('mongodb://localhost/mojaba_development')
 })
