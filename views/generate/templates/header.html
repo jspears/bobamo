@@ -12,6 +12,9 @@
                     {{/each}}
                 </ul>
             </div>
+            {{if useAuthentication}}
+                <a class="logout pull-right" href="${baseUri}/logout">Logout</a>
+            {{/if}}
         </div>
     </div>
 </div>
