@@ -1,6 +1,6 @@
 var mongoose = require('mongoose'), Employee = require('../examples/model/employee'), Group = require('../examples/model/group'), User = require('../examples/model/user'), should = require('should');
 
-var df = require('../lib/display-factory');
+var df = require('../lib/display-factory')({mongoose:mongoose});
 
 describe('Factory', function () {
     describe('createSchema', function () {
