@@ -24,9 +24,14 @@ define(['Backbone', 'jquery', 'Underscore', 'collections/employee', 'text!tpl/em
                 $c.empty().append($(this.el));
             }
             $(this.el).empty();
+            this.$el.append('<li><a class="btn btn-mini pull-right" href="#/employee/edit"><b class="icon-edit"/>Create Employee</a></li>')
+            this.$el.append('<li style="clear:right"><br/></li>')
             _.each(this.model.models, function (employee) {
                 $(this.el).append(new EmployeeListItemView({model:employee}).render().el);
             }, this);
+            if(this.model.models.length == 0){
+                this.$el.append('<li style="clear:right"><p class="alert alert-info">No Employees Found</p></li>');
+            }
             return this;
         }
     });
