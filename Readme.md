@@ -37,7 +37,7 @@ user view create a javascript file
   js/views/user/list.js
   
 ```
-  require(['Backbone','jquery', 'js/super/views/user/list.js'], function(Backbone, $, ListView){
+  require(['Backbone','jquery', 'js/super/views/user/list'], function(Backbone, $, ListView){
     var NewListView = ListView.extend({
       render:function(obj){
        //do something special
@@ -50,6 +50,38 @@ user view create a javascript file
 
 That's it.   Because the file is in the same spot, require will load it instead of the original, and the original file
 is now uder the js/super/ designation.   
+
+## Override
+Mojaba uses express.static to first look for a static version of the file.  If it finds it, it returns it.  This allows
+for easy modification of existing code.  Just put it in the corresponding public/ directory and it will be returned
+instead of the scaffolding.
+
+
+## Why?
+What makes Mojaba different, than railwayjs, rails, grails, roo...
+
+* No scaffolding commands.  Because the infrastructure is built at runtime, through intraspection of the Mongoose Model,
+no scaffolding required.
+* Extendable, as features get added to Mojaba you can benefit from them without loosing what you have.   See the subclassing
+  up top.  It should make it easier to use the parts you want and skip the parts you don't.
+* Single language.  No more writing server side in Ruby/PHP/Java and client side in javascript, its all javascript so
+  less context switches, easier to share code between client/server.
+* Client oriented, AKA SOFEA (Server Oreinted Front End Architecture), Server does not do any view work, so maintaining
+state is dramatically easier.  All data access is done through JSON/REST calls.  This allows for easy extensibility.
+* Dynamic - Only the code needed by the client is sent to the client. This is accomplished via RequireJS.   At some point it
+  should be possible to compile it into one big javascript, but for now, this is how it works.
+* Looks Nice - Thanks to the Twitter Bootstap code it is relatively pretty.
+
+## Features
+
+* Bookmarkable - All views are bookmarkable, for your browsers convience.  In addition forward/back buttons should work.
+* Pagination - Pagination is implemented in list views.
+* Sortable - Fields are sortable.
+* Easy - Well easy is in the eye of the beholder.
+
+
+
+
 
 ## Configuration
 Models belong in app/models, they are loaded automatically.   Each Mongoose schema can be annotated with an

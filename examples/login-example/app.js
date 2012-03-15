@@ -40,23 +40,21 @@ app.configure(function () {
 app.post('/', function (req, res, next) {
         next();
     }, passport.authenticate('local', { failureRedirect:'/check' }), function (req, res, next) {
-        return res.send({
-            status:0,
-            payload:req.user
-        });
-
+        req.method = 'GET';
+        req.url = '/api/user/'+req.user._id;
+        next();
     }
 );
 
 app.get('/check', function (req, res, next) {
-    var obj = {};
     if (req.isAuthenticated && req.isAuthenticated()) {
-        obj = {status:0, payload:req.user};
+        req.method = 'GET';
+        req.url = '/api/user/'+req.user._id;
+        next();
     } else {
-        obj = {status:1};
+        res.send({status:1, message:'Not Authenticated'})
     }
 
-    res.send(obj)
 });
 app.get('/logout', function (req, res) {
     req.logOut();

@@ -23,6 +23,7 @@ define([
     };
     var ListView = Backbone.View.extend({
         tagName:'div',
+        classNames:['span7'],
         events:{
             'paginate-change .pager_table':'doPage',
             'sorter-change .sortable':'onSort'
