@@ -52,7 +52,8 @@ define([
             console.log('path=', p, 'params=', obj);
             require([p], function (View) {
                 console.log('rendering ', p, View);
-                var view = self.views[p] || (self.views[p] = new View({router:AppRouter, container:'#content'}));
+               // var view = self.views[p] || (self.views[p] =
+                var view = new View({router:AppRouter, container:'#content'});
                 view[ view.show ? 'show' : 'render'](obj);
             });
         }

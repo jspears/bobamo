@@ -47,7 +47,7 @@ describe('Factory', function () {
     describe('createApp', function () {
         it('should return a title', function (done) {
             var app = df.createApp();
-            console.log('app',app);
+            console.log(JSON.stringify(app));
             app.should.have.property('options')
             app.options.should.have.property('display');
             app.options.display.should.have.property('title', "Mojaba");

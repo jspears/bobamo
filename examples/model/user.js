@@ -5,7 +5,7 @@ var UserSchema = new Schema({
     last_name:{type:String}, 
     twitter:{type:String,required:true, validate: /^@[a-zA-Z0-9]*$/i },
     email:{type:String},
-    _password:{type:String},
+    password:{type:String, display:{dataType:'Password'}, get:function(){ return 'password' }},
     groups:[
         { type:Schema.ObjectId, ref:'group', index:true}
     ],
@@ -17,21 +17,24 @@ var UserSchema = new Schema({
     created_at:{type:Date, display:{display:'none'}},
     created_by:{type:Schema.ObjectId, ref:'user'},
     modified_at:{type:Date}
-}, {safe:true, strict:true, display:{fields:['username','first_name','last_name','twitter','email','groups']}});
+}, {safe:true, strict:true, display:{fields:['username','first_name','last_name','password','twitter','email','groups']}});
 
 function sha1b64(password) {
     return crypto.createHash('sha1').update(password).digest('base64');
 }
-UserSchema.virtual('password').set(
-    function (password) {
-        this.set('_password', sha1b64(password));
-    }).get(function () {
-        return this.get('_password');
-    });
+//UserSchema.virtual('password').set(
+//    function (password) {
+//        this.set('_password', sha1b64(password));
+//    }).get(function () {
+//        return this.get('_password');
+//    });
 
 UserSchema.pre('save', function (next) {
 
     var _this = this;
+    if (this._doc.password && this._doc.password != 'password'){
+        this.password = sha1b64(_this._doc.password)
+    }
     if (this.isNew)
         this.created_at = Date.now();
     else
