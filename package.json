@@ -1,12 +1,12 @@
 {
     "name": "mojaba"
   , "description":"A scaffoldless crud thing using bootstrap, passport, mongoose, backbone and jquery"
-  , "version": "0.2.0"
+  , "version": "0.2.2"
   , "private": true
   , "dependencies": {
      "jqtpl": ">= 0.0.1"
     , "mongoose":"latest"
-    , "mers":"latest"
+    , "mers":">= 0.3.8"
     , "underscore":"latest"
     , "less":"latest"
   }

@@ -18,7 +18,7 @@ describe('Factory', function () {
             stuff.should.have.property('created_by');
             stuff.created_by.should.have.property('title', 'Created by');
             stuff.should.have.property('password');
-            stuff.password.should.have.property('dataType', 'String');
+            stuff.password.should.have.property('dataType', 'Password');
             stuff.should.not.have.property('_password');
             stuff.should.not.have.property('created_at');
             Schema.should.have.property('display');
@@ -28,7 +28,7 @@ describe('Factory', function () {
     });
     describe('createFields', function () {
         it('should return the fields options', function (done) {
-            df.createFields(User).should.eql(['username', 'first_name', 'last_name', 'twitter', 'email', 'groups']);
+            df.createFields(User).should.eql(['username', 'first_name', 'last_name','password', 'twitter','email', 'groups']);
             done();
         });
         it('should return all fields', function (done) {
