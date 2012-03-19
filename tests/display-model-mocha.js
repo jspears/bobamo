@@ -54,4 +54,25 @@ describe('Should Be Deep', function () {
         done();
 
     });
+    it('should support nested models', function(done){
+        var obj1 = {title:'hello', modelPaths:{'m1':{modelName:'m1', title:'M1',paths:{'m1.m2.m3':{title:'Stuff'}}}}};
+        var obj3 = {         modelPaths:{'m2':{modelName:'m2', title:'M1',paths:{'t2.t3':{title:'Stuff'}}}}};
+        var obj2 = new App({ modelPaths:{'m1':{modelName:'m1', title:'M1',paths:{'m1.m2.m3':{type:'Number'}}}}});
+
+        var app = new App(obj1,obj2,obj3)
+        var s = app.schemaFor('m1');
+        var s2 = app.schemaFor('m2');
+        console.log('m2',s2);
+
+        s.should.have.property('m1');
+        s.m1.should.have.property('path','m1');
+        s.m1.should.have.property('type', 'Object')
+
+        s.m1.subSchema.m2.subSchema.m3.should.have.property('title','Stuff');
+        s.m1.subSchema.m2.subSchema.m3.should.have.property('type','Number');
+        s2.t2.should.have.property('path','t2');
+        s2.t2.subSchema.t3.should.have.property('title','Stuff');
+        console.log('s2.t2.subSchema.t3',JSON.stringify(s2.t2.subSchema.t3));
+        done();
+    });
 });
