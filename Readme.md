@@ -84,8 +84,8 @@ state is dramatically easier.  All data access is done through JSON/REST calls. 
 
 
 ## Configuration
-Models belong in app/models, they are loaded automatically.   Each Mongoose schema can be annotated with an
-display object, in addition each field in the schema can be annotated.
+Each Mongoose schema can be annotated with a display object, in addition each field in the schema can be annotated.
+
 
 A Schema can have the following annotations
 
