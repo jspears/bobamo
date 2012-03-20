@@ -60,7 +60,7 @@ define([
             var self = this;
             var data = {
                 limit:10,
-                skip:parseInt($p.attr('data-skip')) -1 //TODO fix the paginator
+                skip:Math.max(0, parseInt($p.attr('data-skip')) -1) //TODO fix the paginator
             };
             var sort = [];
             _.each(this.sorts, function (v, k) {
