@@ -1,8 +1,8 @@
-    {{each(i,l) _fields(true)}}
-    <td><%= ${l} %></td>
-    {{/each}}
-    <td>
-        <a href="#/${schema.modelName}/edit?id=<%=id%>"><i class="icon-edit"></i>Edit</a>
-        <a href="#/${schema.modelName}/delete?id=<%=id%>"><i class="icon-remove"></i>Delete</a>
+{{each(i,l) _fields(true)}}
+<td><%= item.get('${l}') %></td>
+{{/each}}
+<td>
+    <a href="#/${schema.modelName}/edit?id=<%=item.id%>"><i class="icon-edit"></i>Edit</a>
+    <a href="#/${schema.modelName}/delete?id=<%=item.id%>"><i class="icon-remove"></i>Delete</a>
 
-    </td>
+</td>

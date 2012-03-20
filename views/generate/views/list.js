@@ -129,8 +129,7 @@ define([
         },
 
         render:function (eventName) {
-            var json = this.model.toJSON();
-            var tmpl = this.template(json);
+            var tmpl = this.template({item:this.model});
             var $el = $(this.el);
             $el.html(tmpl);
             return this;
