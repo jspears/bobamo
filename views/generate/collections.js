@@ -1,5 +1,11 @@
 define([
     'modelcollections/${schema.modelName}'
 ], function(ns) {
-    return new ns.Collection;
+  {{if isAdmin}}
+      var data = {{html JSON.stringify(modelData)}}
+        return new ns.Collection(data);
+  {{else}}
+        return new ns.Collection;
+
+  {{/if}}
 });
