@@ -1,10 +1,10 @@
 <div>
-<h4 class="pull-left">${_schema(true).display.plural}</h4><a href="#/${_schema(true).modelName}/edit" class="btn btn-mini pull-right"><b class="icon-edit"></b>Create ${_schema(true).display.title} </a>
+<h4 class="pull-left">${schema.plural}</h4><a href="#/${schema.modelName}/edit" class="btn btn-mini pull-right"><b class="icon-edit"></b>Create ${schema.title} </a>
 <table class="table table-striped">
     <thead>
         <tr>
-            {{each(i,l) _fields(true)}}
-                <th data-field="${l}" class="elementActivate sortable">${_paths(true)[l].title}</th>
+            {{each(i,l) schema.list_fields}}
+                <th data-field="${l}" class="elementActivate sortable">${schema.paths[l].title}</th>
             {{/each}}
         </tr>
         <tr>&nbsp;

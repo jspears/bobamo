@@ -106,8 +106,8 @@ define([
 
             this.$paginate = $('<div class="pager_table"></div>').paginate({
                 limit:10,
-                item:'${_schema(true).display.title}',
-                items:'${_schema(true).display.plural}'
+                item:'${schema.title}',
+                items:'${schema.plural}'
             });
             this.$table = $(tableTemplate);
             $('.sortable', this.$table).sorter();

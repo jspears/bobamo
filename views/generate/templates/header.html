@@ -1,15 +1,18 @@
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <div class="container">
-            <a class="brand" href="#">${_app(true).options.display.title}</a>
+            <a class="brand" href="#">${_app(true).title}</a>
 
             <div class="nav-collapse mainnav">
                 <ul class="nav">
                     {{each(i,l) _models(true)}}
-                       <li class="${l}" id="menu${l}">
-                          <a href="#/${l}/list">${_schema(true, l).display.plural}</a>
+                       <li class="${l.modelName}" id="menu${l.modelName}">
+                          <a href="#/${l.modelName}/list">${l.plural}</a>
                        </li>
                     {{/each}}
+                    <li class="admin" id="admin">
+                        <a href="#/admin/list">Admin</a>
+                    </li>
                 </ul>
             </div>
             {{if useAuthentication}}

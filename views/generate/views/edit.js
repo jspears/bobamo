@@ -10,7 +10,7 @@ define([
     'libs/backbone-forms/src/templates/bootstrap',
     'jquery-ui'
 ].concat({{html _editors(false)}}), function ($, _, Backbone, Form, collection, Model, template) {
-    var fields = {{html _fields() }};
+    var fields = {{html JSON.stringify(schema.edit_fields) }};
 var EditView = Backbone.View.extend({
   //  el:'#content',
     tagName:'div',
@@ -55,6 +55,20 @@ var EditView = Backbone.View.extend({
         var errors = this.form.commit();
 
         var save = this.form.getValue();
+        //handle nested objects.
+        _(save).each(function(v,k){
+
+          if (k && k.indexOf('.') > -1){
+              var split = k.split('.');
+              var last = split.pop();
+              var obj = save;
+              _(split).each(function(kk,vv){
+                 obj = (obj[kk] = {});
+              });
+              obj[last] =v;
+              delete save[k];
+          }
+        })
         if (!errors) {
             this.form.model.save(save, {success:this.onSuccess, error:this.onError});
         } else {

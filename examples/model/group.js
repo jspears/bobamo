@@ -6,7 +6,7 @@ var GroupSchema = new Schema({
     description:{type:String},
     created_at:{type:Date},
     modified_at:{type:Date}
-});
+},{display:{labelAttr:'name'}});
 
 GroupSchema.pre('save', function (next) {
     if (this.isNew) {
