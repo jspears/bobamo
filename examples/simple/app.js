@@ -4,9 +4,9 @@
 
 var express = require('express')
     , routes = require('./routes')
-    , User = require('../model/user')
-    , Group = require('../model/group')
-    , Employee = require('../model/employee')
+    , User = require('mojaba/examples/model/user')
+    , Group = require('mojaba/examples/model/group')
+    , Employee = require('mojaba/examples/model/employee')
     , mojaba = require('mojaba')
     , jqtpl = require('jqtpl')
     ;

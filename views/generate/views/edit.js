@@ -36,6 +36,9 @@ var EditView = Backbone.View.extend({
         console.log('error', arguments);
         var $error = $('.error-list', this.$el);
         if (errors) {
+            if (errors.responseText){
+                errors = JSON.parse(errors.responseText);
+            }
             var fields = this.form.fields;
             _.each(errors.error.errors, function (v, k) {
                 var field = fields[v.path];

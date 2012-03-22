@@ -4,7 +4,7 @@
   , "version": "0.2.0"
   , "private": true
   , "dependencies": {
-      "mojaba": "0.2.0"
+      "mojaba": "latest"
     , "express":"2.5.8"
     , "passport":"latest"
     , "passport-local":"latest"
