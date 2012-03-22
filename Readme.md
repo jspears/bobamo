@@ -27,7 +27,7 @@ You can also specify a context to host both the rest and javascript from
 
 You can find examples of this under examples/simple and examples/login-example.
 
-
+A running example of the simple app is [here](http://mojaba.herokuapp.com/mojaba/index.html#)
 
 
 ## Subclass
