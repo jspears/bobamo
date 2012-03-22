@@ -7,14 +7,14 @@ require.config({
   baseUrl:'${baseUrl}/js',
   paths: {
     loader: 'libs/backbone/loader',
-    Underscore: 'libs/underscore/underscore',
-    Backbone: 'libs/backbone/backbone',
+    underscore: 'libs/underscore/underscore-1.3.1-amd',
+    Backbone: 'libs/backbone/backbone-0.9.1-amd',
    'jquery-ui':'libs/backbone-forms/test/lib/jquery-ui/jquery-ui-1.8.14.custom.min',
    'Backbone.Form':'libs/backbone-forms/src/backbone-forms',
    'jquery-editors':'libs/backbone-forms/src/jquery-ui-editors',
    'bootstrap':'libs/bootstrap/js',
     templates: '../templates',
-    tpl: '../tpl',
+    tpl: '../tpl'
   }
 
 });

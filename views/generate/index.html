@@ -8,6 +8,7 @@
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
+        <script src="js/json2.js"></script>
     <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <!-- Place this tag in your head or just before your close body tag -->
     <![endif]-->
@@ -30,6 +31,14 @@
     <!--<link rel="apple-touch-icon" sizes="72x72" href="${baseUrl}/images/apple-touch-icon-72x72.png">-->
     <!--<link rel="apple-touch-icon" sizes="114x114" href="${baseUrl}/images/apple-touch-icon-114x114.png">-->
     <script>
+        //a stub for IE.
+        if (!window.console){
+            window.console = {
+                log:function(){},
+                error:function(){},
+                warn:function(){}
+            }
+        }
         window.useAuthentication = {{html useAuthentication}};
         {{if useAuthentication }}
             window.isAuthenticated = {{html isAuthenicated }};

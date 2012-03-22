@@ -12,7 +12,6 @@ define([
 ].concat({{html _editors(false)}}), function ($, _, Backbone, Form, collection, Model, template) {
     var fields = {{html JSON.stringify(schema.edit_fields) }};
 var EditView = Backbone.View.extend({
-  //  el:'#content',
     tagName:'div',
     template:_.template(template),
     events:{
@@ -26,11 +25,7 @@ var EditView = Backbone.View.extend({
     onErrorItemClick:function(evt){
         var $el = $(evt.currentTarget).data('scroll-to')
         $el.effect("bounce", { times:3 }, 300);
-//        $('html, body').animate({
-//            scrollTop: $el.offset().top - $('div.navbar.navbar-fixed-top').height(),
-//            easing:'easeInQuad',
-//            duration:1500
-//        });
+
     },
     onError:function (model, errors, stuff) {
         console.log('error', arguments);

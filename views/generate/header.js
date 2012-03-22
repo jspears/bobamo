@@ -1,4 +1,4 @@
-define(['Backbone', 'jquery', 'Underscore', 'text!tpl/header.html'], function (Backbone, $, _,  headerTmpl) {
+define(['Backbone', 'jquery', 'underscore', 'text!tpl/header.html'], function (Backbone, $, _,  headerTmpl) {
 
     var HeaderView = Backbone.View.extend({
 

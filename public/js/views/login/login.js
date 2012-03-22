@@ -1,4 +1,4 @@
-define(['Backbone', 'jquery', 'Underscore', 'text!tpl/login.html'], function (Backbone, $, _, loginTmpl) {
+define(['Backbone', 'jquery', 'underscore', 'text!tpl/login.html'], function (Backbone, $, _, loginTmpl) {
 
     var LoginView = Backbone.View.extend({
         el:        '#content',

@@ -1,7 +1,7 @@
 // Filename: app.js
 define([
     'jquery',
-    'Underscore',
+    'underscore',
     'Backbone',
     'router',
     'views/header'

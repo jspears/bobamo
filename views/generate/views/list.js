@@ -1,7 +1,7 @@
 // Filename: views/${schema.modelName}/list
 define([
     'jquery',
-    'Underscore',
+    'underscore',
     'Backbone',
     'collections/${schema.modelName}',
     'text!templates/${schema.modelName}/table.html',
@@ -28,12 +28,10 @@ define([
             'paginate-change .pager_table':'doPage',
             'sorter-change .sortable':'onSort'
         },
-
+        template:_.template(tableTemplate),
         initialize:function () {
             this.collection = collection;
-            //  this.collection.bind("reset", this.renderList, this);
-//            this.collection.bind("add", this.renderItem, this);
-
+            return this;
         },
         renderItem:function (item) {
 
@@ -41,18 +39,17 @@ define([
                 var lel = new ListItemView({model:item}).render().el;
                 this.$ul.append(lel);
             }
-            else
-                console.log('trying to add item but not rendered yet', item);
+            return this;
         },
         renderList:function () {
             this.$ul = this.$el.find('tbody').empty();
-            this.collection.models.forEach(this.renderItem, this);
+            _.each(this.collection.models, this.renderItem, this);
             return this;
         },
         sorts:[],
         doPage:function(evt){
-
-            this.update('Loading page <b>'+evt.page+'</b> of {items}')
+            this.update('Loading page <b>'+evt.page+'</b> of {items}');
+            return this;
         },
         update:function (message) {
             var $p = this.$paginate.paginate('wait', message);
@@ -69,7 +66,6 @@ define([
             });
 
             data.sort = sort.join(',');
-            console.log('sort', data.sort);
             this.collection.fetch({
                 data:data,
                 success:function (arg, resp) {
@@ -82,7 +78,6 @@ define([
             return this;
         },
         onSort:function (evt) {
-            console.log('onSort', evt);
             var obj = {field:evt.field, direction:evt.direction, label:evt.label};
             this.sorts = _.filter(this.sorts, function (v, k) {
                 return v.field != obj.field;
@@ -96,36 +91,22 @@ define([
         },
         render:function (obj) {
             this.$container = obj && obj.container ? $(obj.container) : $('#content');
-            this.collection.reset();
-            if (this.$paginate)
-                this.$paginate.remove();
-            if (this.$table)
-                this.$table.remove();
-            var $el = this.$el;
-            $el.empty();
-
-            this.$paginate = $('<div class="pager_table"></div>').paginate({
-                limit:10,
-                item:'${schema.title}',
-                items:'${schema.plural}'
-            });
-            this.$table = $(tableTemplate);
+            this.$table = $(this.template());
+            this.$paginate = $('.pager_table', this.$table).paginate();
             $('.sortable', this.$table).sorter();
-
-            $el.append(this.$table);
-            $el.append(this.$paginate);
+            this.$el.append(this.$table);
             this.update();
-            this.$container.empty().append($el);
+            this.$container.empty().append(this.$el);
             return this;
         }
     });
     var ListItemView = Backbone.View.extend({
-
         tagName:"tr",
         template:_.template(tableItemTemplate),
         initialize:function () {
             this.model.bind("change", this.render, this);
             this.model.bind("destroy", this.close, this);
+            return this;
         },
 
         render:function (eventName) {

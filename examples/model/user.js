@@ -11,13 +11,16 @@ var UserSchema = new Schema({
     ],
     meta:{
           stars:Number,
-      favorite:Number
+      favorite:{type:Number,display:{title:'Favorite'}}
     },
 
     created_at:{type:Date, display:{display:'none'}},
     created_by:{type:Schema.ObjectId, ref:'user'},
     modified_at:{type:Date}
-}, {safe:true, strict:true, display:{fields:['username','first_name','last_name','password','twitter','email','groups', 'meta.favorite']}});
+}, {safe:true, strict:true, display:{
+    fields:['username','first_name','last_name','password','twitter','email','groups', 'meta.favorite'],
+    list_fields:['username','first_name','last_name','twitter','email']
+}});
 
 function sha1b64(password) {
     return crypto.createHash('sha1').update(password).digest('base64');

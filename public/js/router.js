@@ -1,7 +1,7 @@
 // Filename: router.js
 define([
     'jquery',
-    'Underscore',
+    'underscore',
     'Backbone',
     'libs/querystring'], function ($, _, Backbone, query) {
     var AppRouter = Backbone.Router.extend({

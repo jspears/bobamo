@@ -1,4 +1,6 @@
-define([], function () {
+define(['underscore'], function (_) {
+
+
     /*!
      * querystring
      * Copyright(c) 2010 TJ Holowaychuk <tj@vision-media.ca>
@@ -34,7 +36,7 @@ define([], function () {
         var part = parts.shift();
         // end
         if (!part) {
-            if (Array.isArray(parent[key])) {
+            if (_.isArray(parent[key])) {
                 parent[key].push(val);
             } else if ('object' == typeof parent[key]) {
                 parent[key] = val;
@@ -47,21 +49,21 @@ define([], function () {
         } else {
             var obj = parent[key] = parent[key] || [];
             if (']' == part) {
-                if (Array.isArray(obj)) {
+                if (_.isArray(obj)) {
                     if ('' != val) obj.push(val);
                 } else if ('object' == typeof obj) {
-                    obj[Object.keys(obj).length] = val;
+                    obj[_.keys(obj).length] = val;
                 } else {
                     obj = parent[key] = [parent[key], val];
                 }
                 // prop
             } else if (~part.indexOf(']')) {
                 part = part.substr(0, part.length - 1);
-                if (!isint.test(part) && Array.isArray(obj)) obj = promote(parent, key);
+                if (!isint.test(part) && _.isArray(obj)) obj = promote(parent, key);
                 parse(parts, obj, part, val);
                 // key
             } else {
-                if (!isint.test(part) && Array.isArray(obj)) obj = promote(parent, key);
+                if (!isint.test(part) && _.isArray(obj)) obj = promote(parent, key);
                 parse(parts, obj, part, val);
             }
         }
@@ -79,7 +81,7 @@ define([], function () {
             parse(parts, parent, 'base', val);
             // optimize
         } else {
-            if (!isint.test(key) && Array.isArray(parent.base)) {
+            if (!isint.test(key) && _.isArray(parent.base)) {
                 var t = {};
                 for (var k in parent.base) t[k] = parent.base[k];
                 parent.base = t;
@@ -96,7 +98,7 @@ define([], function () {
 
     function parseObject(obj) {
         var ret = { base:{} };
-        Object.keys(obj).forEach(function (name) {
+        _.each(_.keys(obj), function (name) {
             merge(ret, name, obj[name]);
         });
         return ret.base;
@@ -107,9 +109,8 @@ define([], function () {
      */
 
     function parseString(str) {
-        return String(str)
-            .split('&')
-            .reduce(
+        return _.reduce(new String(str).split('&'),
+
             function (ret, pair) {
                 try {
                     pair = decodeURIComponent(pair.replace(/\+/g, ' '));
@@ -154,7 +155,7 @@ define([], function () {
      */
 
     var stringify = function (obj, prefix) {
-        if (Array.isArray(obj)) {
+        if (_.isArray(obj)) {
             return stringifyArray(obj, prefix);
         } else if ('[object Object]' == toString.call(obj)) {
             return stringifyObject(obj, prefix);
@@ -208,7 +209,7 @@ define([], function () {
 
     function stringifyObject(obj, prefix) {
         var ret = []
-            , keys = Object.keys(obj)
+            , keys = _.keys(obj)
             , key;
 
         for (var i = 0, len = keys.length; i < len; ++i) {
@@ -236,7 +237,7 @@ define([], function () {
         var v = obj[key];
         if (undefined === v) {
             obj[key] = val;
-        } else if (Array.isArray(v)) {
+        } else if (_.isArray(v)) {
             v.push(val);
         } else {
             obj[key] = [v, val];
