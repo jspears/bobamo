@@ -18,6 +18,14 @@ var EmployeeSchema = new Schema({
     reports:[
         {type:Schema.ObjectId, ref:"employee"} //keep track of the reports.
     ]
+}, {
+    display:{
+        fieldsets:[
+            {legend:'Identity', fields:['firstName','lastName','title', 'department']},
+            {legend:'Contact', fields:['officePhone', 'cellPhone','email','twitterId']},
+            {legend:'Profile', fields:['picture','blogUrl', 'manager','reports']}
+        ]
+    }
 });
 
 EmployeeSchema.pre('save', function (next) {

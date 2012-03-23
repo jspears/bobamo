@@ -9,9 +9,9 @@ define([
 ].concat({{html _editors(false)}}), function (_,EditView, collection, Model, template) {
     "use strict";
 
-    var fields = {{html JSON.stringify(schema.edit_fields) }};
+    var fieldsets = {{html JSON.stringify(schema.fieldsets) }};
     return EditView.extend({
-        fields:fields,
+        fieldsets:fieldsets,
         template:_.template(template),
         collection:collection,
         model:Model,

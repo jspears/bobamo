@@ -5,7 +5,8 @@ define([
     'Backbone.Form',
     'replacer',
     'libs/backbone-forms/src/templates/bootstrap',
-    'jquery-ui'
+    'jquery-ui',
+    'libs/table/jquery.wiz'
 ], function ($, _, Backbone, Form, replacer) {
     "use strict";
 
@@ -104,20 +105,20 @@ define([
             var config = _.extend({id:id}, this.config);
             var form = this.form = new Form({
                 model:model,
-                fieldsets:[
+                fieldsets:this.fieldsets || [
                     {legend:replacer(title, config), fields:this.fields}
                 ]
             });
             var $fm = $('.form-container', this.$el);
+            var isWiz = this.fieldsets.length > 1;
             if (id) {
                 model.fetch({success:function () {
-                    var $fel = $(form.render().el)
-                    $fm.append($fel);
-
+                    $fm.append(form.render().el);
                 }});
             } else {
-                var $fel = $(form.render().el)
-                $fm.append($fel);
+                $fm.append(form.render().el);
+                if (isWiz)
+                    $fm.wiz();
             }
             $(this.options.container).empty().append($el);
             return this;
