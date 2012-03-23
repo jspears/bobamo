@@ -27,14 +27,14 @@ You can also specify a context to host both the rest and javascript from
 
 You can find examples of this under examples/simple and examples/login-example.
 
-A running example of the simple app is [here](http://mojaba.herokuapp.com/mojaba/index.html#)
+A running example of the simple app is [here](http://mojaba-speajus.rhcloud.com/mojaba/index.html)
 
 
 ## Subclass
 Because everything is scoped within requirejs, subclassing is pretty easy. Say you wanted to do something to the
 user view create a javascript file 
   
-  js/views/user/list.js
+  public/js/views/user/list.js
   
 ```
   require(['Backbone','jquery', 'js/super/views/user/list'], function(Backbone, $, ListView){
