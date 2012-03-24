@@ -15,7 +15,8 @@ define([
         events:{
             'click button.save':'onSave',
             'click button.cancel':'onCancel',
-            'click ul.error-list li':'onErrorItemClick'
+            'click ul.error-list li':'onErrorItemClick',
+            'submit form':'onSave'
         },
         initialize:function () {
             _.bindAll(this);
@@ -31,6 +32,9 @@ define([
             if (errors) {
                 if (errors.responseText) {
                     errors = JSON.parse(errors.responseText);
+                }else if (_.isString(errors.error)){
+                    var $e = $(replacer('<li><span class="alert-heading pointer">{error}</li>',errors));
+                    $error.prepend($e);
                 }
                 var fields = this.form.fields;
                 _.each(errors.error.errors, function (v, k) {
@@ -45,7 +49,8 @@ define([
             }
         },
 
-        onSave:function () {
+        onSave:function (e) {
+            e.preventDefault();
             $('.error-list').empty().hide();
             $('.success-list').empty().hide();
             this.form.validate();
@@ -118,7 +123,7 @@ define([
             } else {
                 $fm.append(form.render().el);
                 if (isWiz)
-                    $('.form-wrap', this.$el).wiz();
+                    $('.form-wrap', this.$el).wiz({replace:$('.save', this.$el)});
             }
             $(this.options.container).empty().append($el);
             return this;
