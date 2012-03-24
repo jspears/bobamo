@@ -11,8 +11,10 @@
         this.options = $.extend({}, $.fn.sort.defaults, options)
         this.$fieldsets = $('fieldset', element);
         this.$el = $(element);
+        this.$el.last().addClass('tab-content')
         this.$el.prepend('<ul class="nav nav-tabs nav-stacked steps"></ul>');
         this.$el.addClass('tabbable tabs-left');
+
         var $ul = this.$ul = $('.steps',this.$el);
         this.$fieldsets.each(function(i,e){
             var l = i;

@@ -118,7 +118,7 @@ define([
             } else {
                 $fm.append(form.render().el);
                 if (isWiz)
-                    $fm.wiz();
+                    $('.form-wrap', this.$el).wiz();
             }
             $(this.options.container).empty().append($el);
             return this;
