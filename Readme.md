@@ -78,7 +78,7 @@ state is dramatically easier.  All data access is done through JSON/REST calls. 
 * Pagination - Pagination is implemented in list views.
 * Sortable - Fields are sortable.
 * Easy - Well easy is in the eye of the beholder.
-
+* Wizard Support - If the fields are grouped as described below you get a wizard interface.   Nice if you like wizards.
 
 
 
