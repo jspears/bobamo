@@ -34,6 +34,7 @@
 
             var self = this;
             this.$prev.on('click',  function (e) {
+                if (self.current > 0)
                 self.step(self.current - 1);
             });
             this.$next.on('click',  function (e) {

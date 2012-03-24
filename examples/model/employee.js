@@ -21,7 +21,7 @@ var EmployeeSchema = new Schema({
 }, {
     display:{
         fieldsets:[
-            {legend:'Identity', fields:['firstName','lastName','title', 'department']},
+            {legend:'Identity',  help:'Enter your identity information here.', fields:['firstName','lastName','title', 'department']},
             {legend:'Contact', fields:['officePhone', 'cellPhone','email','twitterId']},
             {legend:'Profile', fields:['picture','blogUrl', 'manager','reports']}
         ]
