@@ -102,6 +102,25 @@ A Field can have the following annotations
 * dataType [see backbone forms](https://github.com/powmedia/backbone-forms) 'String', 'Number', 'Array','Object','Date'
 * ro - read only
 * display - 'none' do send to client, 'hidden', hidden field, visible (default).
+* wizards - To create a wizard just define the fields in the model that should be in each step like this
+
+```javascript
+var EmployeeSchema = new Schema({
+    name:{type:String}
+    ... other properteis
+
+}, {
+
+display:{
+        fieldsets:[
+            {legend:'Identity',  help:'Enter your identity information here.', fields:['firstName','lastName','title', 'department']},
+            {legend:'Contact', fields:['officePhone', 'cellPhone','email','twitterId']},
+            {legend:'Profile', fields:['picture','blogUrl', 'manager','reports']}
+        ]
+    }
+});
+
+```
 
 Soon you should be able to edit these via an admin UI.
 Many-To-One support is coming.

@@ -74,6 +74,7 @@
         }
         ;
         $.fn.wiz = function (option) {
+            var args = Array.prototype.slice.call(arguments, 1);
             return this.each(function (s) {
                 var $this = $(this)
                     , data = $this.data('wiz')
@@ -83,7 +84,8 @@
 //                label:$this.attr('data-label')
                 };
                 if (!data) $this.data('wiz', (data = new Wizard(this, options)))
-                if (typeof option == 'string') data[option]()
+                if (typeof option == 'string')
+                    data[option].apply(data,args);
             })
         }
 

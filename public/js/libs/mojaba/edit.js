@@ -22,10 +22,22 @@ define([
             _.bindAll(this);
         },
         onErrorItemClick:function (evt) {
-            var $el = $(evt.currentTarget).data('scroll-to')
+            var d = $(evt.currentTarget).data();
+            var $el = d['scroll-to']
             $el.effect("bounce", { times:3 }, 300);
-
+            this.focusStep(d.field);
         },
+        focusStep:function(field){
+            if (this.isWiz){
+                _(this.fieldsets).find(function(v,k){
+                    if (v.fields.indexOf(field) > -1){
+                        $('.form-wrap', this.$el).wiz('step', k);
+                        return true;
+                    }
+                }, this);
+            }
+        },
+
         onError:function (model, errors, stuff) {
             console.log('error', arguments);
             var $error = $('.error-list', this.$el);
@@ -33,18 +45,20 @@ define([
                 if (errors.responseText) {
                     errors = JSON.parse(errors.responseText);
                 }else if (_.isString(errors.error)){
-                    var $e = $(replacer('<li><span class="alert-heading pointer">{error}</li>',errors));
-                    $error.prepend($e);
+                    $error.prepend( $(replacer('<li><span class="alert-heading pointer">{error}</li>',errors)));
                 }
                 var fields = this.form.fields;
+                var fField;
                 _.each(errors.error.errors, function (v, k) {
                     var field = fields[v.path];
                     if (field && field.$el)
                         field.$el.addClass('error');
                     var $e = $(
-                        replacer('<li><span class="alert-heading pointer">"{path}" is in error: </span>{message}</li>',v)).data('scroll-to', field.$el);
+                        replacer('<li><span class="alert-heading pointer">"{path}" is in error: </span>{message}</li>',v)).data({'scroll-to': field.$el, field:v.path});
+                    fField = v.path
                     $error.prepend($e);
                 }, this);
+                this.focusStep(fField);
                 $error.show('slow');
             }
         },
@@ -59,6 +73,8 @@ define([
             var save = this.form.getValue();
             //handle nested objects.
             _(save).each(function (v, k) {
+                if (_.isEmpty(v))
+                    v = null;
 
                 if (k && k.indexOf('.') > -1) {
                     var split = k.split('.');
@@ -69,7 +85,10 @@ define([
                     });
                     obj[last] = v;
                     delete save[k];
+                }else{
+                    save[k] =v;
                 }
+
             });
             if (!errors) {
                 this.form.model.save(save, {success:this.onSuccess, error:this.onError});
@@ -115,14 +134,14 @@ define([
                 ]
             });
             var $fm = $('.form-container', this.$el);
-            var isWiz = this.fieldsets.length > 1;
+            this.isWiz = this.fieldsets.length > 1;
             if (id) {
                 model.fetch({success:function () {
                     $fm.append(form.render().el);
                 }});
             } else {
                 $fm.append(form.render().el);
-                if (isWiz)
+                if (this.isWiz)
                     $('.form-wrap', this.$el).wiz({replace:$('.save', this.$el)});
             }
             $(this.options.container).empty().append($el);

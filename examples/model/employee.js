@@ -1,10 +1,8 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var EmployeeSchema = new Schema({
-    id_:{type:Number},
     firstName:{type:String},
     lastName:{type:String},
-    managerId_:Number,
     title:{type:String},
     department:{type:String},
     officePhone:{type:String},
@@ -12,7 +10,7 @@ var EmployeeSchema = new Schema({
     email:{type:String},
     city:{type:String},
     picture:{type:String},
-    twitterId:{type:String},
+    twitterId:{type:String,validate: /^@[a-zA-Z0-9]*$/i },
     blogUrl:{type:String},
     manager:{type:Schema.ObjectId, ref:"employee"}, //keep track of the employee
     reports:[
@@ -28,9 +26,11 @@ var EmployeeSchema = new Schema({
     }
 });
 
-EmployeeSchema.pre('save', function (next) {
-    next();
-});
+//EmployeeSchema.pre('save', function (next) {
+//    if (this.manager == '' )
+//        delete this.manager;
+//    next();
+//});
 //This will be exposed as /api/employees/search/Stuff
 EmployeeSchema.statics.search = function(q, term) {
     var regex = {$regex:new RegExp(term || q.term, 'i')}
