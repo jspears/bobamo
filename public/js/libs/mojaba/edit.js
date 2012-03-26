@@ -67,6 +67,7 @@ define([
             e.preventDefault();
             $('.error-list').empty().hide();
             $('.success-list').empty().hide();
+            console.log('changed', this.form.model.changed);
             this.form.validate();
             var errors = this.form.commit();
 
