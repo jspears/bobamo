@@ -134,15 +134,18 @@ define([
                 ]
             });
             var $fm = $('.form-container', this.$el);
-            this.isWiz = this.fieldsets.length > 1;
+            var isWiz = _.isUndefined(this.isWizard) ? this.fieldsets.length > 1 : this.isWizard;
+            var $del = this.$el;
             if (id) {
                 model.fetch({success:function () {
                     $fm.append(form.render().el);
+                    if (isWiz)
+                        $('.form-wrap', $del).wiz({replace:$('.save', $del)});
                 }});
             } else {
                 $fm.append(form.render().el);
-                if (this.isWiz)
-                    $('.form-wrap', this.$el).wiz({replace:$('.save', this.$el)});
+                if (isWiz)
+                    $('.form-wrap',$del).wiz({replace:$('.save', $del)});
             }
             $(this.options.container).empty().append($el);
             return this;

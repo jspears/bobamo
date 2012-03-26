@@ -61,8 +61,8 @@ define([
 
             var self = this;
             var data = {
-                limit:10,
-                skip:Math.max(0, parseInt($p.attr('data-skip')) - 1) //TODO fix the paginator
+                limit:parseInt($p.attr('data-limit')),
+                skip:Math.max(0, parseInt($p.attr('data-skip')))
             };
             var sort = [];
             _.each(this.sorts, function (v, k) {

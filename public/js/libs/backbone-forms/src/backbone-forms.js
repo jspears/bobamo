@@ -377,6 +377,7 @@
                            //Concatenating HTML as strings won't work so we need to insert field elements into a placeholder
                            var $fieldset = $(templates.fieldset({
                                legend:(fs.legend) ? '<legend>' + fs.legend + '</legend>' : '',
+                               help:(fs.help) ? fs.help : '',
                                fields:'<div class="bbf-placeholder"></div>'
                            }));
                            var $fieldsContainer = $('<div></div>');

@@ -17,7 +17,8 @@ function generate(total, skip, limit, filterTotal) {
     total = 0 + total;
     skip = 0 + skip;
     limit = 0 + limit;
-    filterTotal = Math.max(0,total - 100);
+    if (filterTotal)
+    filterTotal = Math.max(0,total - filterTotal);
     var end = Math.min(skip + limit, total);
     console.log('total', skip, limit, end, filterTotal)
 
@@ -30,13 +31,14 @@ function generate(total, skip, limit, filterTotal) {
 
 require(['../public/js/libs/table/jquery.mojaba-paginate'], function ($) {
     $(function () {
-        $('.paginate').paginate();
         var $ul = $('#list');
-        $('#listPage').paginate().on('paginate-change', function (event) {
+        $('.paginate').paginate().on('paginate-change', function (event) {
             var $this = $(this);
             $this.paginate('wait');
+            var rand = $this.hasClass('random')
             setTimeout(function onGenerate() {
-                var resp = generate(Math.round(10000 * Math.random()), event.skip, event.limit);
+
+                var resp = rand && generate(Math.round(10000 * Math.random()), event.skip, event.limit) || generate(event.total, event.skip, event.limit) ;
                 $this.paginate('update', resp);
                 $ul.empty().append.apply($ul, resp.payload);
             }, 1000);
@@ -50,6 +52,7 @@ require(['../public/js/libs/table/jquery.mojaba-paginate'], function ($) {
 </head>
 <body>
 <div class="paginate page_navigation span12"></div>
+<div class="paginate page_navigation span12" data-total="11" data-skip="0" data-limit="10"></div>
 <div class="paginate page_navigation span12" data-total="103" data-filter-total="0" data-limit="10"></div>
 <div class="paginate page_navigation span12" data-total="2220" data-filter-total="50" data-skip="22" data-limit="10" data-items="Goobs"></div>
 <div class="paginate page_navigation span12" data-total="103" data-skip="22" data-limit="10"></div>

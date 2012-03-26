@@ -61,7 +61,7 @@ define(['jquery'], function ($) {
             var $c = $(e.currentTarget)
             var page = $c.attr('data-page');
             $('.btn-primary', this.$el).removeClass('btn-primary');
-            var skip = this.options.skip = limit * (page - 1) + 1;
+            var skip = this.options.skip = limit * Math.max(page-1,0);
             this.$element.attr('data-skip', skip);
             this.drawButtons();
             this.makeRequest(page);
@@ -98,7 +98,7 @@ define(['jquery'], function ($) {
             var opts = this.options;
             var total = parseInt(_d(opts.filterTotal) ? opts.filterTotal : opts.total), limit = parseInt(opts.limit), skip = parseInt(opts.skip);
             var pageCount = Math.ceil(total / limit);
-            var curpage = skip && Math.ceil(skip / limit) || 1;
+            var curpage = skip && Math.ceil(skip / limit) + 1 || 1;
             var btnTotal = 0;
             if (pageCount == 1){
                 return this;
@@ -147,7 +147,7 @@ define(['jquery'], function ($) {
             return $btn;
         },
         makeRequest:function (page) {
-            this.$element.trigger({type:'paginate-change', page:page, limit:parseInt(this.options.limit), skip:parseInt(this.options.skip - 1)});
+            this.$element.trigger({type:'paginate-change', page:page, total:this.options.total, limit:parseInt(this.options.limit), skip:parseInt(this.options.skip)});
             this.load({limit:this.options.limit, skip:this.options.skip})
         },
         wait:function (message) {
@@ -187,13 +187,26 @@ define(['jquery'], function ($) {
         });
         return opts;
     }
+    function parseAttrInt($el, attrs) {
+        attrs = $.isArray(attrs) ? attrs : Array.prototype.slice.call(arguments, 1);
+        var opts = {}
+        var re = /([a-z])([A-Z])/g;
+        $.each(attrs, function (k, v) {
+            var attr = v.replace(re, '$1-$2').toLowerCase();
+            var val = $el.attr('data-' + attr);
+            if (typeof val !== 'undefined')
+                opts[v] = parseInt(val);
+        });
+        return opts;
+    }
 
     $.fn.paginate = function (option, args) {
       //  var args = Array.prototype.slice.call(arguments, 1);
         return this.each(function (s) {
+
             var $this = $(this)
                 , data = $this.data('paginate')
-                , options = typeof option == 'object' && option || parseAttr($this, 'limit', 'skip', 'total', 'filterTotal', 'item', 'items');
+                , options = typeof option == 'object' && option || $.extend({},parseAttrInt($this, 'limit', 'skip', 'total', 'filterTotal'), parseAttr($this, 'item','items'));
             if (!data) $this.data('paginate', (data = new Paginate(this, options)))
             if (typeof option == 'string') {
                 data[option].call(data, args);
@@ -214,11 +227,15 @@ define(['jquery'], function ($) {
         messages:{
             wait:'<b class="icon-wait"/>Loading...',
             none:'No {items:items} found{filter}.',
-            multiple:'Displaying <b>{skip}</b> to <b>{end}</b> of <b>{ctotal}</b> {items:items}{filter}{sort}.',
+            multiple:'Displaying <b>{cskip}</b> to <b>{end}</b> of <b>{ctotal}</b> {items:items}{filter}{sort}.',
             one:'Found <b>one</b> {item:item}{filter}.',
             few:'Found <b>{count:a few}</b> {items:items}{filter}{sort}.',
             filternone:'<b class="icon-filter"/> No {items:items} found matching{filter:filter}{sort}.',
             filtermsg:',<b class="icon-search"/> filtering {fcount} {items:items}'
+        },
+        cskip:function(){
+            var o = this.options;
+          return (parseInt(o && o.skip) || 0) + 1;
         },
         ctotal:function () {
             var o = this.options;

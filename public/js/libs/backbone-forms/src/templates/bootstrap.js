@@ -14,7 +14,7 @@
     ',
 
     fieldset: '\
-      <fieldset>\
+      <fieldset title="{{help}}">\
         {{legend}}\
         {{fields}}\
       </fieldset>\
