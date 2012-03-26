@@ -1,24 +1,19 @@
-var id = window.location.hash.replace(/.*id=([^&]*).*/, "$1");
-console.log('id', id);
 define([
     'underscore',
     'Backbone',
     'libs/mojaba/edit',
-    'text!/../mojaba/admin/'+id,
-    'text!tpl/admin/edit.html'
-], function (_,Backbone, EditView, collection, template) {
+    'text!templates/admin/${schema.modelName}/edit.html'
+], function (_,Backbone, EditView, template) {
     "use strict";
-    var resp = JSON.parse(collection).payload;
 
-    var fieldsets = resp.fieldsets;
-    delete resp.fieldsets;
-    delete resp.edit_fields;
-    delete resp.list_fields;
-    console.log('fieldsets', fieldsets);
+    var fieldsets = {{html JSON.stringify(schema.fieldsets) }};
+    var schema = {{html JSON.stringify(schema.schemaFor()) }};
+
     var Model = Backbone.Model.extend({
-        schema:resp,
-        url:'admin/model/'+id,
+        schema:schema,
+        url:'admin/model/${schema.modelName}',
         parse:function(resp){
+            console.log('response',resp);
             return resp.payload;
         },
         idAttribute:'modelName',
@@ -44,7 +39,7 @@ define([
         config:{
             title:'Model',
             plural:'Models',
-            modelName:id
+            modelName:'${schema.modelName}'
         }
     });
 });
