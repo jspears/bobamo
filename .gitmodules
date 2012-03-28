@@ -1,0 +1,3 @@
+[submodule "public/js/libs/jquery-miniColors"]
+	path = public/js/libs/jquery-miniColors
+	url = https://github.com/claviska/jquery-miniColors/
