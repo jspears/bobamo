@@ -65,8 +65,3 @@
 	background: url(images/line.gif) center no-repeat;
 }
 
-.miniColors-trigger:before {
-   content:'\2318';
-    text-shadow: none;
-    color: white;
-}
