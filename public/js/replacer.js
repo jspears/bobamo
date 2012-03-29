@@ -3,6 +3,8 @@ define(['underscore'], function (_) {
 
     return function (tmpl, opt) {
         var o = opt || this;
+        if (!tmpl)
+            return;
         return tmpl.replace(re, function onReplace(j, k, l) {
             var v = o[k];
             if (_.isUndefined(v)) {

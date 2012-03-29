@@ -39,7 +39,7 @@
                             (this.$prev = $('<button class="btn prev">'+this.options.prev+'</button>')),
                             (this.$next = $('<button class="btn next btn-primary">'+this.options.next+'</button>')))
             if (this.options.replace)
-                $(this.options.replace).replaceWith($btns);
+                $(this.options.replace).empty().append($btns);
             else
                 this.$el.append($btns);
 
