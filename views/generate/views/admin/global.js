@@ -1,7 +1,7 @@
 define([
     'underscore',
     'Backbone',
-    'libs/mojaba/edit',
+    'libs/bobamo/edit',
     'text!templates/admin/global.html',
     'jquery-ui',
     'libs/backbone-forms/src/jquery-ui-editors',

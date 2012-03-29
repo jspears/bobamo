@@ -1,10 +1,10 @@
 {
-    "name": "mojaba-login-example"
-  , "description":"An example mojaba project with Login and modification"
+    "name": "bobamo-login-example"
+  , "description":"An example bobamo project with Login and modification"
   , "version": "0.2.0"
   , "private": true
   , "dependencies": {
-      "mojaba": "latest"
+      "bobamo": "latest"
     , "express":"2.5.8"
     , "passport":"latest"
     , "passport-local":"latest"

@@ -1,4 +1,5 @@
-#Mojaba
+#Bobamo
+### changed the name to avoid stepping on someones toes.
 Its basically a crud infrastructure for [mongoose](http://mongoosejs.com), [backbone](http://documentcloud.github.com/backbone/), [mers](https://github.com/jspears/mers),
 [backbone forms](https://github.com/powmedia/backbone-forms) and [twitter bootstrap](http://twitter.github.com/bootstrap/). The idea
 is you define your model and a little extra and it generates the crud on demand.    It doesn't leave you in the
@@ -6,14 +7,14 @@ box though, you can easily change any part of the generated stuff by making it s
 directory.   This allows for easy customization.   You can at your own risk modify the scaffolding generated in views/generator
 
 ##Express
-Recently Mojaba has been refactored as a express plugin.  This gives an easy installation method, (npm) and
+Recently Bobamo has been refactored as a express plugin.  This gives an easy installation method, (npm) and
 relatively easy configuration.
 
-Just add mojaba to your package.json, npm install then configure app.js to use mojaba
+Just add bobamo to your package.json, npm install then configure app.js to use bobamo
 
 ```javascript
 
- app.use(mojaba.express({uri:'mongodb://localhost/mojaba_development'}, express))
+ app.use(bobamo.express({uri:'mongodb://localhost/bobamo_development'}, express))
 
 ```
 Note passing express in, please bear with me as I figure out how to get rid of that, but to make it work its needed.
@@ -21,13 +22,13 @@ You can also specify a context to host both the rest and javascript from
 
 ```javascript
 
- app.use('your-api', mojaba.express({uri:'mongodb://localhost/mojaba_development'}, express))
+ app.use('your-api', bobamo.express({uri:'mongodb://localhost/bobamo_development'}, express))
 
 ```
 
 You can find examples of this under examples/simple and examples/login-example.
 
-A running example of the simple app is [here](http://mojaba-speajus.rhcloud.com/mojaba/index.html)
+A running example of the simple app is [here](http://bobamo-speajus.rhcloud.com/bobamo/index.html)
 
 
 ## Subclass
@@ -52,17 +53,17 @@ That's it.   Because the file is in the same spot, require will load it instead 
 is now uder the js/super/ designation.   
 
 ## Override
-Mojaba uses express.static to first look for a static version of the file.  If it finds it, it returns it.  This allows
+Bobamo uses express.static to first look for a static version of the file.  If it finds it, it returns it.  This allows
 for easy modification of existing code.  Just put it in the corresponding public/ directory and it will be returned
 instead of the scaffolding.
 
 
 ## Why?
-What makes Mojaba different, than railwayjs, rails, grails, roo...
+What makes Bobamo different, than railwayjs, rails, grails, roo...
 
 * No scaffolding commands.  Because the infrastructure is built at runtime, through intraspection of the Mongoose Model,
 no scaffolding required.
-* Extendable, as features get added to Mojaba you can benefit from them without loosing what you have.   See the subclassing
+* Extendable, as features get added to Bobamo you can benefit from them without loosing what you have.   See the subclassing
   up top.  It should make it easier to use the parts you want and skip the parts you don't.
 * Single language.  No more writing server side in Ruby/PHP/Java and client side in javascript, its all javascript so
   less context switches, easier to share code between client/server.

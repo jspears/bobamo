@@ -1,6 +1,6 @@
 define([
     'underscore',
-    'libs/mojaba/edit',
+    'libs/bobamo/edit',
     'collections/${schema.modelName}',
     'models/${schema.modelName}',
     'text!templates/${schema.modelName}/edit.html',

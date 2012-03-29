@@ -1,7 +1,7 @@
 // Filename: views/${schema.modelName}/list
 define([
     'underscore',
-    'libs/mojaba/list',
+    'libs/bobamo/list',
     'collections/${schema.modelName}',
     'text!templates/${schema.modelName}/table.html',
     'text!templates/${schema.modelName}/table-item.html'

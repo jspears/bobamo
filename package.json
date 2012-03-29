@@ -1,7 +1,7 @@
 {
-    "name": "mojaba"
+    "name": "bobamo"
   , "description":"A scaffoldless crud thing using bootstrap, passport, mongoose, backbone and jquery"
-  , "version": "0.3.2"
+  , "version": "0.3.5"
   , "private": false
   , "dependencies": {
      "jqtpl": ">= 0.0.1"

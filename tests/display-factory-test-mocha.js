@@ -50,7 +50,7 @@ describe('Factory', function () {
             console.log(JSON.stringify(app));
             app.should.have.property('options')
             app.options.should.have.property('display');
-            app.options.display.should.have.property('title', "Mojaba");
+            app.options.display.should.have.property('title', "Bobamo");
             done();
         });
     });

@@ -3,7 +3,7 @@ var assert = require('assert');
 var employee = require('../examples/model/employee');
 
 before(function (done) {
-    mongoose.connect("mongodb://localhost/mojaba_development");
+    mongoose.connect("mongodb://localhost/bobamo_development");
 //    var c = mongoose.connection;
 //    c.db.dropDatabase(function () {
 //        done();
@@ -18,7 +18,7 @@ describe('testing add user', function () {
             email:'jbonham@ledzepplin.com',
             firstName:'John',
             lastName:'Bonham',
-            twitterId:'jbonham',
+            twitterId:'@jbonham',
             officePhone:'555-222-3333',
             cellPhone:'555-222-3334',
             description:'Awesome Drummer'
@@ -28,7 +28,7 @@ describe('testing add user', function () {
             email:'jpage@ledzepplin.com',
             firstName:'James',
             lastName:'Page',
-            twitterId:'jpage',
+            twitterId:'@jpage',
             officePhone:'555-222-3333',
             cellPhone:'555-222-3334',
             description:'Awesome Guitarist'
@@ -38,7 +38,7 @@ describe('testing add user', function () {
             email:'plant@ledzepplin.com',
             firstName:'Robert',
             lastName:'Plant',
-            twitterId:'plants',
+            twitterId:'@plants',
             officePhone:'555-222-3333',
             cellPhone:'555-222-3334',
             description:'Awesome Singer'
@@ -48,7 +48,7 @@ describe('testing add user', function () {
             email:'jpjones@ledzepplin.com',
             firstName:'John Paul',
             lastName:'Jones',
-            twitterId:'johnpauljohns',
+            twitterId:'@johnpauljohns',
             officePhone:'555-222-3333',
             cellPhone:'555-222-3334',
             description:'Awesome Basist/Keyboardist'

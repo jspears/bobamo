@@ -1,1 +1,1 @@
-module.exports.express = require('./lib/mojaba-express');
+module.exports.express = require('./lib/bobamo-express.js');

@@ -1,4 +1,4 @@
-define(['underscore', 'Backbone', 'libs/mojaba/list', 'text!tpl/admin/table.html',
+define(['underscore', 'Backbone', 'libs/bobamo/list', 'text!tpl/admin/table.html',
     'text!tpl/admin/table-item.html'], function (_, Backbone, ListView, tableTemplate, listItemTemplate) {
 
     var Model = Backbone.Model.extend({

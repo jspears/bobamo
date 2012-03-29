@@ -1,4 +1,4 @@
-define(['libs/mojaba/delete'], function (DeleteView) {
+define(['libs/bobamo/delete'], function (DeleteView) {
     "use strict";
 
     return DeleteView.extend({

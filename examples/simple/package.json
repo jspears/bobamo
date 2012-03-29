@@ -1,11 +1,11 @@
 {
-    "name": "mojaba-example-simple"
+    "name": "bobamo-example-simple"
   , "version": "0.0.1"
   , "private": false
   , "dependencies": {
       "express": "2.5.8"
     , "jade": ">= 0.0.1"
-    , "mojaba":"latest"
+    , "bobamo":"0.3.5"
     , "jqtpl":"latest"
    , "mongoose":"latest"
   }

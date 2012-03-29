@@ -1,5 +1,5 @@
-define(['underscore', 'Backbone', 'libs/mojaba/edit',
-    'text!templates/admin/edit.html', 'libs/editors/unit-editor', 'libs/editors/color-editor', 'libs/editors/placeholder-editor'], function (_, Backbone, EditView, template) {
+define(['underscore', 'Backbone', 'libs/bobamo/edit',
+    'text!templates/admin/display.html', 'libs/editors/unit-editor', 'libs/editors/color-editor', 'libs/editors/placeholder-editor'], function (_, Backbone, EditView, template) {
     var fieldsets = {{html JSON.stringify(factory.fieldsets()) }};
     var schema = {{html JSON.stringify(factory.schemaFor()) }};
     var Model = Backbone.Model.extend({

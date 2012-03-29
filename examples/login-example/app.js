@@ -5,13 +5,13 @@
 var express = require('express')
     , jqtpl = require('jqtpl')
     , fs = require('fs')
-    , mojaba = require('mojaba')
+    , bobamo = require('bobamo')
     , passport = require('./lib/passport')
     , mongoose = require('mongoose')
     ;
 
 var app = module.exports = express.createServer();
-//app.use(mojaba.express({mongoose:mongoose, uri:'mongodb://localhost/mojaba_development'}, express));
+//app.use(bobamo.express({mongoose:mongoose, uri:'mongodb://localhost/bobamo_development'}, express));
 
 // Configuration
 app.configure(function () {
@@ -27,7 +27,7 @@ app.configure(function () {
     app.use(passport.initialize());
     app.use(passport.session());
     app.use(app.router);
-    //  app.use(mojaba.express());
+    //  app.use(bobamo.express());
     app.dynamicHelpers({
         isAuthenicated:function (req, res) {
             return req.isAuthenticated();
@@ -67,14 +67,14 @@ app.all(/\/api\/*/, function (req, res, next) {
 });
 
 app.configure('development', function () {
-    app.use(mojaba.express({mongoose:mongoose}, express))
-    mongoose.connect('mongodb://localhost/mojaba_development');
+    app.use(bobamo.express({mongoose:mongoose}, express))
+    mongoose.connect('mongodb://localhost/bobamo_development');
     app.use(express.errorHandler({ dumpExceptions:true, showStack:true }));
 });
 
 app.configure('production', function () {
-    app.use(mojaba.express({mongoose:mongoose}, express))
-    mongoose.connect('mongodb://localhost/mojaba');
+    app.use(bobamo.express({mongoose:mongoose}, express))
+    mongoose.connect('mongodb://localhost/bobamo');
     app.use(express.errorHandler());
 });
 

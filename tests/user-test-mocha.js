@@ -1,6 +1,6 @@
 var mongoose = require('mongoose'), User = require('../examples/model/user'), assert = require('assert'), should =require('should');
 before(function () {
-    mongoose.connect('mongodb://localhost/mojaba_development')
+    mongoose.connect('mongodb://localhost/bobamo_development')
 })
 
 describe('Testing User Schema', function () {

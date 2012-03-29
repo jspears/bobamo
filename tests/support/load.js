@@ -1,7 +1,7 @@
 //This drops the db and loads it.   This is just for setting the stuff up.
 function load(uri, file, alldone) {
     file = file || __dirname + '/directory.csv';
-    uri = uri || 'mongodb://localhost/mojaba_development';
+    uri = uri || 'mongodb://localhost/bobamo_development';
     alldone = alldone || function () {
         console.log('all done');
         process.exit(0)

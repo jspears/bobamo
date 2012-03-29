@@ -4,10 +4,10 @@
 
 var express = require('express')
     , routes = require('./routes')
-    , User = require('mojaba/examples/model/user')
-    , Group = require('mojaba/examples/model/group')
-    , Employee = require('mojaba/examples/model/employee')
-    , mojaba = require('mojaba')
+    , User = require('bobamo/examples/model/user')
+    , Group = require('bobamo/examples/model/group')
+    , Employee = require('bobamo/examples/model/employee')
+    , bobamo = require('bobamo')
     , jqtpl = require('jqtpl')
     ;
 
@@ -25,13 +25,13 @@ app.configure(function () {
 });
 
 app.configure('development', function () {
-    app.use('/mojaba', mojaba.express({uri:'mongodb://localhost/mojaba_development'}, express));
+    app.use('/bobamo', bobamo.express({uri:'mongodb://localhost/bobamo_development'}, express));
 
     app.use(express.errorHandler({ dumpExceptions:true, showStack:true }));
 });
 
 app.configure('production', function () {
-    app.use('/mojaba', mojaba.express({uri:'mongodb://localhost/mojaba'}, express));
+    app.use('/bobamo', bobamo.express({uri:'mongodb://localhost/bobamo'}, express));
 
     app.use(express.errorHandler());
 });
