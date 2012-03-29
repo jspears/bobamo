@@ -104,7 +104,7 @@
         }
 
         $.fn.wiz.defaults = {
-            titleTemplate:'Step {step}: {title}',
+            titleTemplate:'<b>Step {step}</b>: {title}',
             listItemTemplate:'<li><a  class="step" href="#?step={step}">{content}</a></li>',
             next:'Next &raquo;',
             prev:'&laquo; Previous',
