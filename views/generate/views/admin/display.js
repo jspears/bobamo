@@ -51,13 +51,12 @@ define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!templates/
             require([ 'text!templates/admin/preview.html', 'libs/bootstrap/js/bootstrap-modal'], function(preview){
                 var template = _.template(preview, {title:'Display Changes', previewUrl:'${base}/bobamo/index.html?checksum='+obj.id});
 
-                self.$modal = $(template);
-                $('body').append(self.$modal)
-                $('.save', self.$modal).on('click', $.proxy(self.onSave,self));
-                self.$modal.modal();
-                self.$modal.on('hidden', function(){
+                var $modal = $(template);
+                $('.save', $modal).on('click', $.proxy(self.onSave,self));
+                $modal.modal().on('hidden', function(){
                     $(this).remove();
-                })
+                });
+                $('body').append($modal)
             });
             }});
         },
