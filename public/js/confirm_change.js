@@ -38,6 +38,7 @@ define(['Backbone', 'underscore', 'jquery', 'text!tpl/confirm_change.html', 'lib
             this.$modal = $(this.template(fill));
             $(this.el).append(this.$modal)
             this.$modal.modal(modal);
+            this.$modal.on('hidden', function(){  $(this).remove(); })
         }
     })
     return ConfirmView;

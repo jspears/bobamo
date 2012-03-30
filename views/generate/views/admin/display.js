@@ -31,7 +31,12 @@ define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!templates/
 
         events:{
             'click .preview':'onPreview',
-            'click .save':'onInstall'
+            'click .save':'onInstall',
+            'click .default': 'onDefault'
+        },
+        onDefault:function(){
+            console.log('default')
+            $.ajax({data:{install:true}, type:'POST', url:'admin/less', success:this.onSuccess, error:this.onError});
         },
         onInstall:function(e){
             console.log('onInstall', this.model, this.model.set);
@@ -48,6 +53,7 @@ define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!templates/
 
                 self.$modal = $(template);
                 $('body').append(self.$modal)
+                $('.save', self.$modal).on('click', $.proxy(self.onSave,self));
                 self.$modal.modal();
                 self.$modal.on('hidden', function(){
                     $(this).remove();

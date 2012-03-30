@@ -74,8 +74,8 @@ define(['Backbone.Form', 'underscore', 'jquery'], function (Form, _, $) {
                     this.$select.html('\u0192');
                     this.$input.val(res[1]);
                 } else {
-                    this.$input.val(res[1]);
-                    this.$select.html(res[2]);
+                    this.$input.val(res[2]);
+                    this.$select.html(res[3]);
                 }
             } else
                 this.$input.val(value);
