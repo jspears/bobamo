@@ -6,6 +6,20 @@ var BobamoPlugin = function (options) {
 }
 sutil.inherits(BobamoPlugin, Plugin);
 module.exports = BobamoPlugin;
+BobamoPlugin.prototype.app = function(){
+    var self = this;
+    var mongoose = this.options.mongoose;
+    return new function () {
+        this.__defineGetter__('modelPaths', function () {
+            var ret = {};
+            _u.each(mongoose.models, function (v, k) {
+                ret[v.modelName] = new MModel(v, self);
+            }, this);
+            return ret;
+        });
+    }
+}
+
 BobamoPlugin.prototype.routes = function () {
     var apiPath = this.options.apiUri || this.pluginUrl + '/rest/';
     var app = this.app;

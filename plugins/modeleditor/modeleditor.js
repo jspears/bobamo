@@ -1,8 +1,8 @@
-var Plugin = require('../../lib/plugin-api'), util = require('util'), EditModel = require('../../lib/edit-display-model');
+var Plugin = require('../../lib/plugin-api'), util = require('util'), EditModel = require('./edit-display-model');
 
 var EditPlugin = function() {
     Plugin.apply(this, arguments);
-    this.editModel = this.options.editModel || new EditModel();
+    this.editModel = this.options.editModel || new EditModel(this.options);
 }
 util.inherits(EditPlugin, Plugin);
 
