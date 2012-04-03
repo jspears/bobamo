@@ -4,7 +4,7 @@
 // Require.js allows us to configure shortcut alias
 // Their usage will become more apparent futher along in the tutorial.
 require.config({
-  baseUrl:'${baseUrl}/js',
+  baseUrl:'${baseUrl}js',
   paths: {
     loader: 'libs/backbone/loader',
     underscore: 'libs/underscore/underscore-1.3.1-amd',

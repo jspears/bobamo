@@ -1,8 +1,8 @@
-define(['underscore', 'Backbone', 'libs/bobamo/list', 'text!tpl/admin/table.html',
-    'text!tpl/admin/table-item.html'], function (_, Backbone, ListView, tableTemplate, listItemTemplate) {
+define(['underscore', 'Backbone', 'libs/bobamo/list', 'text!${pluginUrl}/templates/admin/table.html',
+    'text!${pluginUrl}/templates/admin/table-item.html'], function (_, Backbone, ListView, tableTemplate, listItemTemplate) {
 
     var Model = Backbone.Model.extend({
-        urlRoot:'admin',
+        urlRoot:'${pluginUrl}/admin',
         schema:{
             modelName:{
                 type:'String'
@@ -40,7 +40,7 @@ define(['underscore', 'Backbone', 'libs/bobamo/list', 'text!tpl/admin/table.html
 
     var Collection = Backbone.Collection.extend({
         model:Model,
-        url:'admin/',
+        url:'${pluginUrl}/admin/',
         parse:function(resp){
           return resp.payload;
         },

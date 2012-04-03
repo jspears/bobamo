@@ -1,5 +1,5 @@
 define([
-    'modelcollections/${schema.modelName}'
+    'modelcollections/${model.modelName}'
 ], function(ns) {
   {{if isAdmin}}
       var data = {{html JSON.stringify(modelData)}}

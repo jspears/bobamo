@@ -1,12 +1,12 @@
-define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!templates/admin/display.html', 'jquery-ui',
+define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!${pluginUrl}/templates/admin/display.html', 'jquery-ui',
     'libs/backbone-forms/src/jquery-ui-editors', 'libs/editors/unit-editor', 'libs/editors/color-editor', 'libs/editors/placeholder-editor'], function (_, $, Backbone, EditView, template) {
 
-    var fieldsets = eval('(+{{html JSON.stringify(lessFactory.fieldsets()) }})');
-    var schema = eval('({{html JSON.stringify(lessFactory.schemaFor()) }})');
+    var fieldsets = {{html JSON.stringify(lessFactory.fieldsets())}};
+    var schema = {{html JSON.stringify(lessFactory.schemaFor())}};
     var id = '${lessFactory.checksum}';
     var Model = Backbone.Model.extend({
         schema:schema,
-        urlRoot:'admin/less',
+        urlRoot:'less/admin',
         parse:function (resp) {
             console.log('response', resp);
             return resp.payload && resp.payload.variables || resp.payload || resp;
@@ -38,7 +38,7 @@ define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!templates/
         },
         onDefault:function () {
             console.log('default')
-            $.ajax({data:{install:true}, type:'POST', url:'admin/less', success:this.onSuccess, error:this.onError});
+            $.ajax({data:{install:true}, type:'POST', url:'less/admin', success:this.onSuccess, error:this.onError});
         },
         onInstall:function (e) {
             console.log('onInstall', this.model, this.model.set);
@@ -50,7 +50,7 @@ define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!templates/
             var self = this;
             var save = this.form.getValue();
             this.form.model.save(save, {success:function onPreviewSave(obj) {
-                require([ 'text!templates/admin/preview.html', 'libs/bootstrap/js/bootstrap-modal'], function (preview) {
+                require([ 'text!less/templates/admin/preview.html', 'libs/bootstrap/js/bootstrap-modal'], function (preview) {
                     var template = _.template(preview, {title:'Display Changes', previewUrl:'${base}/bobamo/index.html?checksum=' + obj.id});
 
                     var $modal = $(template);

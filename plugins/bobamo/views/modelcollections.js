@@ -5,15 +5,15 @@ define([
     "use strict";
     //we define these together because they often link together and if they are in seperate callbacks bad things happen.
   //  var defaults = {{html _defaults()}};
-    var schema = {{html JSON.stringify(schema.schemaFor(schema.fieldsets || schema.edit_fields))}};
+    var schema = {{html JSON.stringify(model.schemaFor(model.fieldsets || model.edit_fields))}};
     var Model = Backbone.Model.extend({
-        urlRoot:'/${api}/${schema.modelName}',
+        urlRoot:'${api}/${model.modelName}',
         schema:schema,
        // defaults:defaults,
         initialize: function() {
         }
         ,parse:function(resp) {
-            console.log('/${api}/${schema.modelName}model#parse', resp);
+            console.log('/${api}/${model.modelName}model#parse', resp);
             return resp.payload ? resp.payload : resp;
         },
         get:function(key){
@@ -31,12 +31,12 @@ define([
     });
     var Collection = Backbone.Collection.extend({
         model: Model,
-        url:'/${api}/${schema.modelName}',
+        url:'${api}/${model.modelName}',
         initialize: function() {
 
         },
         parse:function(resp) {
-            console.log('Collection#parse ${schema.modelName}', resp.payload);
+            console.log('Collection#parse ${model.modelName}', resp.payload);
             return resp.payload ? resp.payload : resp;
         }
     });

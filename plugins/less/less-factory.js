@@ -2,29 +2,13 @@ var fs = require('fs'), path = require('path'), _u = require('underscore'), infl
 /**
  * CssFactory for Less
  */
-function CssFactory() {
+function CssFactory(options) {
+    this.options = _u.extend({}, options);
     this.__defineGetter__('variables', function () {
-        var readp = [];
-        var m = module;
-        var vis = {};
-        while (typeof vis[m.id] === 'undefined') {
-            var p = path.join(path.dirname(m.filename), '/../public/js/libs/bootstrap/less/variables.less');
-            if (path.existsSync(p)) {
-                readp.push(p)
-            }
-
-            if (m.parent.parent === null || m.parent == m) {
-
-                break;
-            }
-            vis[m.id] = true;
-            m = module.parent;
-
-        }
-        ;
+        var readp = this.options.paths;
         var vars = {};
         readp.forEach(function (v, k) {
-            this.readVariables(fs.readFileSync(v, 'utf-8').split('\n'), vars, v);
+            this.readVariables(fs.readFileSync(path.join(v, 'variables.less'), 'utf-8').split('\n'), vars, v);
         }, this);
 
         return vars;
@@ -222,7 +206,7 @@ CssFactory.prototype.createCss = function (onCreate, variables, imports) {
         variables.imports = this.default_imports;
     }
     if (!variables.paths) {
-        variables.paths = this.paths;
+        variables.paths = this.options.paths;
     }
 
     var str = this._imports(variables.imports);

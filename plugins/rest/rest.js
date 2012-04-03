@@ -1,12 +1,20 @@
-var Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), mers = require('mers');
+var Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), mutil = require('mers/lib/util'), mers = require('mers');
 var RestPlugin = function () {
     Plugin.apply(this, arguments);
     if (!this.options.apiUrl)
-        this.options.apiUrl = this.baseUri+'/rest';
+        this.options.apiUrl = this.baseUrl+'rest';
 }
 util.inherits(RestPlugin, Plugin);
+RestPlugin.prototype.filters = function(){
+    this.app.all(this.options.apiUrl+'/*', function (req, res, next) {
+        req.query.transform = mutil.split(req.query.transform, ',', ['_idToId']);
+        next();
+    });
+
+}
 RestPlugin.prototype.routes = function () {
     var options = this.options;
+
     this.app.use(options.apiUrl , mers(_u.extend({}, options, {
         transformers:{
             labelval:function (m) {

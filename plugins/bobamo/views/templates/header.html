@@ -1,11 +1,11 @@
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <div class="container">
-            <a class="brand" href="#">${_app(true).title}</a>
+            <a class="brand" href="#">${appModel.title}</a>
 
             <div class="nav-collapse mainnav">
                 <ul class="nav">
-                    {{each(i,l) _models(true)}}
+                    {{each(i,l) appModel.modelPaths}}
                        <li class="${l.modelName}" id="menu${l.modelName}">
                           <a href="#/${l.modelName}/list">${l.plural}</a>
                        </li>
@@ -19,8 +19,8 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li><a href="#/admin/global">Application</a></li>
-                            <li class="active"><a href="#/admin/list">Models</a></li>
-                            <li><a href="#/admin/display">Display</a></li>
+                            <li class="active"><a href="#/modeleditor/admin/list">Models</a></li>
+                            <li><a href="#/less/admin/display">Display</a></li>
 
                         </ul>
                     </li>

@@ -2,15 +2,15 @@ define([
     'underscore',
     'Backbone',
     'libs/bobamo/edit',
-    'text!templates/admin/${schema.modelName}/edit.html',
+    'text!${pluginUrl}/templates/admin/edit.html',
     'jquery-ui',
     'libs/backbone-forms/src/jquery-ui-editors',
     'libs/editors/multi-editor'
 ], function (_,Backbone, EditView, template) {
     "use strict";
 
-    var fieldsets = {{html JSON.stringify(schema.fieldsets) }};
-    var schema = {{html JSON.stringify(schema.schemaFor()) }};
+    var fieldsets = {{html JSON.stringify(model.fieldsets) }};
+    var schema = {{html JSON.stringify(model.schemaFor()) }};
     schema.fieldsets.itemToString = function(obj){
         var fields = '['+obj.fields.join(',')+']';
         if (fields.length > 30)
@@ -20,7 +20,7 @@ define([
     }
     var Model = Backbone.Model.extend({
         schema:schema,
-        url:'admin/model/${schema.modelName}',
+        url:'${pluginUrl}/admin/model/${model.modelName}',
         parse:function(resp){
             console.log('response',resp);
             return resp.payload;
@@ -48,7 +48,7 @@ define([
         config:{
             title:'Model',
             plural:'Models',
-            modelName:'${schema.modelName}'
+            modelName:'${model.modelName}'
         }
     });
 });

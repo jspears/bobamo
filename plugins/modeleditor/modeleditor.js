@@ -1,25 +1,35 @@
-var Plugin = require('../../lib/plugin-api'), util = require('util'), EditModel = require('./edit-display-model');
+var Plugin = require('../../lib/plugin-api'), util = require('util'), EditModel = require('./edit-display-model'), _u = require('underscore');
 
 var EditPlugin = function() {
     Plugin.apply(this, arguments);
-    this.editModel = this.options.editModel || new EditModel(this.options);
 }
 util.inherits(EditPlugin, Plugin);
 
+var extRe = /\.(js|html|css|htm)$/i;
+
 EditPlugin.prototype.routes = function () {
 
-    Plugin.prototype.routes.call(this);
+    this.app.all(this.pluginUrl + '*', function (req, res, next) {
+        res.local('editModel', new EditModel(res.local('appModel')));
+        next();
+    }.bind(this));
+
     var base = this.pluginUrl;
     console.log('base', base);
-    this.app.all(this.pluginUrl + '*', function (req, res, next) {
-        res.locals('editFactory', this.editModel);
-        next();
-    });
+    var jsView = this.baseUrl + 'js/views/'+this.name;
+    this.app.get(this.baseUrl+'js/views/modeleditor/admin/:type/:view', function (req, res, next) {
+        var view = 'admin/'+req.params.view;
 
-    this.app.get(base + 'admin/', function (req, res) {
+        var editModel = new EditModel(res.local('appModel'));
+        res.local('model', editModel.modelPaths[req.params.type]);
+        res.local('pluginUrl', this.pluginUrl);
+        this.generate(res, view);
+    }.bind(this))
+    this.app.get(base + '/admin', function (req, res) {
 
         var models = [];
-        this.editModel.models.forEach(function (v, k) {
+        var editModel = res.local('editModel');
+        editModel.models.forEach(function (v, k) {
             var m = _u.extend({}, v);
             delete m.paths;
             delete m._paths;
@@ -36,8 +46,9 @@ EditPlugin.prototype.routes = function () {
         })
     }.bind(this));
 
-    this.app.get(base + 'admin/model/:modelName', function (req, res) {
-        var model = _u.extend({},  this.editModel.modelPaths[req.params.modelName].model);
+    this.app.get(base + '/admin/model/:modelName', function (req, res) {
+        var editModel = res.local('editModel');
+        var model = _u.extend({},  editModel.modelPaths[req.params.modelName].model);
         delete model._paths;
         res.send({
             status:0,
@@ -45,14 +56,15 @@ EditPlugin.prototype.routes = function () {
         })
     }.bind(this));
 
-    this.app.get(base + 'admin/:modelName', function (req, res) {
+    this.app.get(base + '/admin/:modelName', function (req, res) {
+        var editModel = res.local('editModel');
         res.send({
             status:0,
-            payload: this.editModel.modelPaths[req.params.modelName].schemaFor()
+            payload: editModel.modelPaths[req.params.modelName].schemaFor()
         })
     }.bind(this));
 
-    this.app.put(base + 'admin/model/:id', function (req, res) {
+    this.app.put(base + '/admin/model/:id', function (req, res) {
 
         var obj = _u.extend({}, req.body);
         _u.each(obj, function (v, k) {
@@ -75,6 +87,7 @@ EditPlugin.prototype.routes = function () {
             payload:{_id:req.params.id}
         })
     }.bind(this));
+    Plugin.prototype.routes.apply(this, arguments);
 
 }
 module.exports = EditPlugin;

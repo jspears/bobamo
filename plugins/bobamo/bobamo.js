@@ -6,39 +6,11 @@ var BobamoPlugin = function (options) {
 }
 sutil.inherits(BobamoPlugin, Plugin);
 module.exports = BobamoPlugin;
-BobamoPlugin.prototype.appModel = function () {
-    var self = this;
-    var mongoose = this.options.mongoose;
-    return new function () {
-        this.__defineGetter__('modelPaths', function () {
-            var ret = {};
-            _u.each(mongoose.models, function (v, k) {
-                ret[v.modelName] = new MModel(v, self);
-            }, this);
-            return ret;
-        });
-    }
-}
 
-BobamoPlugin.prototype.routes = function (options) {
-    var appModel = options.appModel;
-
-    function makeOptions(req) {
-        var type = req.params.type;
-        var opts = {};
-        if (type) {
-            opts.schema = appModel.schemaFor(type);
-            opts.model = appModel.modelFor(type)
-
-        }
-        return opts;
-    }
-
-    var apiPath = this.options.apiUri || this.pluginUrl + '/rest/';
-    var app = this.app;
-    var base = this.pluginUrl;
-
-    app.get(base + '/*', function (req, res, next) {
+var extRe = /\.(js|html|css|htm)$/i;
+BobamoPlugin.prototype.filters = function(options){
+    var apiPath = this.options.apiUri || this.baseUrl + 'rest';
+    this.app.get(this.baseUrl + '*', function (req, res, next) {
         var useAuth = req.isAuthenticated ? true : false;
         res.local('useAuthentication', useAuth)
         res.local('isAuthenticated', useAuth ? req.isAuthenicated() : false);
@@ -46,44 +18,65 @@ BobamoPlugin.prototype.routes = function (options) {
         res.local('baseUrl', this.baseUrl);
         res.local('params', req.params);
         res.local('query', req.query);
-        res.local('appModel', appModel);
+        res.local('appModel', options.appModel);
         res.local('options', options);
         next();
-    });
-    app.get(base + '/:view', function (req, res, next) {
-        this.generate(res,  req.params.view, makeOptions(req));
     }.bind(this));
-    app.get(base + '/js/:view', function (req, res, next) {
-        this.generate(res,  req.params.view, makeOptions(req));
-    });
-    app.get(base + '/js/:super?/views/:view', function (req, res, next) {
-        this.generate(res,  req.params.view, makeOptions(req));
-    });
-    app.get(base + '/js/:super?/views/:type/:view', function (req, res, next) {
-        this.generate(res, 'views/' + req.params.view, makeOptions(req));
-    });
 
-    app.get(base + '/js/:super?/:clazz/:type', function (req, res, next) {
-        this.generate(res,  req.params.view, makeOptions(req));
-    });
+}
+BobamoPlugin.prototype.routes = function (options) {
+    var appModel = options.appModel;
 
-    app.get(base + '/js/:super?/:view', function (req, res, next) {
-        this.generate(res, req.params.view, makeOptions(req));
+    function makeOptions(req) {
+        var type = req.params.type;
+        var opts = {};
+        if (type) {
+            type = type.replace(extRe, '');
+            opts.schema = appModel.schemaFor(type);
+            opts.model = appModel.modelFor(type)
 
-    });
-    app.get(base + '/templates/:super?/:type/:view', function (req, res, next) {
-        this.generate(res,  req.params.view, makeOptions(req));
+        }
+        return opts;
+    }
 
-    });
-    app.get(base + '/tpl/:super?/:view', function (req, res, next) {
-        this.generate(res, 'templates/' + req.params.view, makeOptions(req));
 
-    });
+    var app = this.app;
+    var base = this.baseUrl;
+
+    app.get(base + ':view', function (req, res, next) {
+        this.generate(res,  req.params.view, makeOptions(req), next);
+    }.bind(this));
+    app.get(base + 'js/:view', function (req, res, next) {
+        this.generate(res,  req.params.view, makeOptions(req), next);
+    }.bind(this));
+    app.get(base + 'js/:super?/views/:view', function (req, res, next) {
+        this.generate(res,  req.params.view, makeOptions(req), next);
+    }.bind(this));
+    app.get(base + 'js/:super?/views/:type/:view', function (req, res, next) {
+        this.generate(res, 'views/' + req.params.view, makeOptions(req), next);
+    }.bind(this));
+
+    app.get(base + 'js/:super?/:view/:type.:format', function (req, res, next) {
+        this.generate(res,  req.params.view+'.'+req.params.format, makeOptions(req), next);
+    }.bind(this));
+
+    app.get(base + 'js/:super?/:view', function (req, res, next) {
+        this.generate(res, req.params.view, makeOptions(req), next);
+
+    }.bind(this));
+    app.get(base + 'templates/:super?/:type/:view', function (req, res, next) {
+        this.generate(res,  'templates/'+req.params.view, makeOptions(req), next);
+
+    }.bind(this));
+    app.get(base + 'tpl/:super?/:view', function (req, res, next) {
+        this.generate(res, 'templates/' + req.params.view, makeOptions(req), next);
+
+    }.bind(this));
 }
 BobamoPlugin.prototype.editorFor = function (path, p, Model) {
     var defaults = {};
     var opts = p.options || {};
-    var apiPath = this.options.apiUri || this.pluginUrl + '/rest/';
+    var apiPath = this.options.apiUri || this.baseUrl + '/rest/';
     if (opts.display && opts.display.display == 'none' || ( path[0] == '_' && path != '_id')) {
         return null;
     }
@@ -185,5 +178,6 @@ BobamoPlugin.prototype.editorFor = function (path, p, Model) {
             }
         })
     }
-    return _u.extend({}, defaults, opts.display);
+    var ret = _u.extend({type:'Text'}, defaults, opts.display);
+    return ret;
 }
