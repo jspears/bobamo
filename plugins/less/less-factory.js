@@ -1,4 +1,4 @@
-var fs = require('fs'), path = require('path'), _u = require('underscore'), inflection = require('./inflection'), crypto = require('crypto'), less = require('less');
+var fs = require('fs'), path = require('path'), _u = require('underscore'), inflection = require('../../lib/inflection'), crypto = require('crypto'), less = require('less');
 /**
  * CssFactory for Less
  */
@@ -126,7 +126,9 @@ CssFactory.prototype.schemaFor = function (vars) {
  */
 CssFactory.prototype.fieldsets = function (vars) {
     vars = vars || this.variables;
-    var fieldsets = [{legend:'Imports', fields:['imports','paths']}];
+    var fieldsets = [
+        {legend:'Imports', fields:['imports', 'paths']}
+    ];
     _u(vars).each(function (v, k) {
         fieldsets.push({legend:inflection.titleize(inflection.humanize(k)), fields:Object.keys(v)})
     }, this)
@@ -182,25 +184,25 @@ CssFactory.prototype.createCache = function (onCreate, variables, isDefault) {
             return onCreate(err);
 
         if (isDefault)
-            self.checksum = id || obj.checksum ;
+            self.checksum = id || obj.checksum;
         obj.id = id || obj.checksum;
         var c = self.cache(obj);
         onCreate(null, c);
     }, variables);
 
 }
-CssFactory.prototype.current = function(onSend, cacheId){
+CssFactory.prototype.current = function (onSend, cacheId) {
     var c = this._cache[cacheId || this.checksum];
-    if (c){
-      c.lastAccess = Date.now();
-      onSend(null, c);
-    }else{
+    if (c) {
+        c.lastAccess = Date.now();
+        onSend(null, c);
+    } else {
         this.createCache(onSend, {}, true);
     }
     return this;
 }
 
-CssFactory.prototype.getCache = function(id){
+CssFactory.prototype.getCache = function (id) {
     return this._cache[id];
 }
 
@@ -216,17 +218,17 @@ CssFactory.prototype.cache = function (obj) {
 var valRe = /^(#|px|%|em|in|cm|mm|ex|pt|pc|px)$/;
 CssFactory.prototype.createCss = function (onCreate, variables, imports) {
     variables = variables || {};
-    if (!variables.imports){
-        variables.imports =  this.default_imports;
+    if (!variables.imports) {
+        variables.imports = this.default_imports;
     }
-    if (!variables.paths){
+    if (!variables.paths) {
         variables.paths = this.paths;
     }
 
     var str = this._imports(variables.imports);
     _u(variables).each(function onBodyPost(k, v) {
         if (k == 'imports' || k == 'paths') return;
-        if (v && k && _u.isString(v) && _u.isString(k) &! valRe.test(k))
+        if (v && k && _u.isString(v) && _u.isString(k) & !valRe.test(k))
             str.push('@' + v + ': ' + k + ';\n');
     });
 

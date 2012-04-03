@@ -6,7 +6,7 @@ var BobamoPlugin = function (options) {
 }
 sutil.inherits(BobamoPlugin, Plugin);
 module.exports = BobamoPlugin;
-BobamoPlugin.prototype.app = function(){
+BobamoPlugin.prototype.appModel = function () {
     var self = this;
     var mongoose = this.options.mongoose;
     return new function () {
@@ -20,47 +20,63 @@ BobamoPlugin.prototype.app = function(){
     }
 }
 
-BobamoPlugin.prototype.routes = function () {
+BobamoPlugin.prototype.routes = function (options) {
+    var appModel = options.appModel;
+
+    function makeOptions(req) {
+        var type = req.params.type;
+        var opts = {};
+        if (type) {
+            opts.schema = appModel.schemaFor(type);
+            opts.model = appModel.modelFor(type)
+
+        }
+        return opts;
+    }
+
     var apiPath = this.options.apiUri || this.pluginUrl + '/rest/';
     var app = this.app;
     var base = this.pluginUrl;
-    app.get(base+'/*', function(req,res,next){
+
+    app.get(base + '/*', function (req, res, next) {
         var useAuth = req.isAuthenticated ? true : false;
-        res.local('useAuthentication', useAuth )
-        res.local('isAuthenticated', useAuth && req.isAuthenicated() : null);
+        res.local('useAuthentication', useAuth)
+        res.local('isAuthenticated', useAuth ? req.isAuthenicated() : false);
         res.local('api', apiPath);
         res.local('baseUrl', this.baseUrl);
         res.local('params', req.params);
         res.local('query', req.query);
+        res.local('appModel', appModel);
+        res.local('options', options);
         next();
     });
     app.get(base + '/:view', function (req, res, next) {
-        this.generate(res, 'views/'+req.params.view, makeOptions(req));
-    });
+        this.generate(res,  req.params.view, makeOptions(req));
+    }.bind(this));
     app.get(base + '/js/:view', function (req, res, next) {
-        this.generate(res, 'views/'+req.params.view, makeOptions(req));
+        this.generate(res,  req.params.view, makeOptions(req));
     });
     app.get(base + '/js/:super?/views/:view', function (req, res, next) {
-        this.generate(res, 'views/'+req.params.view, makeOptions(req));
+        this.generate(res,  req.params.view, makeOptions(req));
     });
     app.get(base + '/js/:super?/views/:type/:view', function (req, res, next) {
-        this.generate(res, 'views/'+req.params.view, makeOptions(req));
+        this.generate(res, 'views/' + req.params.view, makeOptions(req));
     });
 
     app.get(base + '/js/:super?/:clazz/:type', function (req, res, next) {
-        this.generate(res, 'views/'+req.params.view, makeOptions(req));
+        this.generate(res,  req.params.view, makeOptions(req));
     });
 
     app.get(base + '/js/:super?/:view', function (req, res, next) {
-        this.generate(res, 'views/'+req.params.view, makeOptions(req));
+        this.generate(res, req.params.view, makeOptions(req));
 
     });
     app.get(base + '/templates/:super?/:type/:view', function (req, res, next) {
-        this.generate(res, 'views/'+req.params.view, makeOptions(req));
+        this.generate(res,  req.params.view, makeOptions(req));
 
     });
     app.get(base + '/tpl/:super?/:view', function (req, res, next) {
-        this.generate(res, 'views/templates/'+req.params.view, makeOptions(req));
+        this.generate(res, 'templates/' + req.params.view, makeOptions(req));
 
     });
 }

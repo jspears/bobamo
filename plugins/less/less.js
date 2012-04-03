@@ -1,35 +1,36 @@
 var Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), mers = require('mers'), LessFactory = require('./less-factory');
 var LessPlugin = function (options, app, name) {
     Plugin.apply(this, arguments);
-    if (!options.lessFactory)
-        options.lessFactory = new LessFactory();
+    if (!this.options.lessFactory)
+        this.lessFactory = this.options.lessFactory = new LessFactory();
 
 
 }
-util.inherits(LessPlugin, Plugin);
+sutil.inherits(LessPlugin, Plugin);
 
-LessPlugin.prototype.editors = function(){
+LessPlugin.prototype.editors = function () {
     return ['ColorEditor', 'UnitEditor', 'PlaceholderEditor'];
 }
 
-
-LessPlugin.prototype.routes = function(){
-    var base = this.pluginUrl;
-    var lessFactory = this.options.lessFactory;
-
-    app.all(base+'*', function(req,res,next){
-        res.local('lessFactory', lessFactory);
+LessPlugin.prototype.filters = function () {
+    this.app.get(this.baseUrl + '*', function (req, res, next) {
+        res.local('lessFactory', this.lessFactory);
         next();
-    });
+    }.bind(this));
+}
 
+LessPlugin.prototype.routes = function () {
+    var base = this.pluginUrl;
+    var lessFactory = this.lessFactory;
+    var app = this.app;
     app.get(base + 'less/:id?', function (req, res, next) {
         res.contentType('text/css');
-        lessFactory.current(function onCss(err, obj){
+        lessFactory.current(function onCss(err, obj) {
             if (err) return next(err);
             res.send(obj.payload);
-        }, req.params.id );
+        }, req.params.id);
     });
-    app.get(base + 'admin/:id?', function(req,res,next){
+    app.get(base + 'admin/:id?', function (req, res, next) {
         var obj = _u.extend({}, lessFactory.getCache(req.params.id || req.body.id));
         delete obj.payload;
 
