@@ -10,7 +10,7 @@ var extRe = /\.(js|html|css|htm)$/i;
 EditPlugin.prototype.routes = function () {
 
     this.app.all(this.pluginUrl + '*', function (req, res, next) {
-        res.local('editModel', new EditModel(res.local('appModel')));
+        res.local('editModel', new EditModel(this.pluginManager.appModel));
         next();
     }.bind(this));
 
@@ -20,7 +20,7 @@ EditPlugin.prototype.routes = function () {
     this.app.get(this.baseUrl+'js/views/modeleditor/admin/:type/:view', function (req, res, next) {
         var view = 'admin/'+req.params.view;
 
-        var editModel = new EditModel(res.local('appModel'));
+        var editModel = new EditModel(this.pluginManager.appModel);
         res.local('model', editModel.modelPaths[req.params.type]);
         res.local('pluginUrl', this.pluginUrl);
         this.generate(res, view);

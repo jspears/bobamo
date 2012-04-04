@@ -1,9 +1,9 @@
-var Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), path = require('path'), static = require('connect/lib/middleware/static');
-var PublicPlugin = function () {
+var Plugin = require('../../lib/plugin-api'), util = require('util'), path = require('path'), static = require('connect/lib/middleware/static');
+var StaticPlugin = function () {
     Plugin.apply(this, arguments);
 }
-util.inherits(PublicPlugin, Plugin);
-PublicPlugin.prototype.filters = function () {
+util.inherits(StaticPlugin, Plugin);
+StaticPlugin.prototype.filters = function () {
     var prefix = this.baseUrl;
     var sdir = path.join(this.path, 'public');
     var psdir = path.join(this.path, '../../', 'public');
@@ -21,6 +21,6 @@ PublicPlugin.prototype.filters = function () {
         next();
     });
 }
-PublicPlugin.prototype.routes = function () {
+StaticPlugin.prototype.routes = function () {
 }
-module.exports = PublicPlugin;
+module.exports = StaticPlugin;

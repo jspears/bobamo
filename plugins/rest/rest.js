@@ -14,11 +14,11 @@ RestPlugin.prototype.filters = function(){
 }
 RestPlugin.prototype.routes = function () {
     var options = this.options;
-
+    var pluginManager = this.pluginManager;
     this.app.use(options.apiUrl , mers(_u.extend({}, options, {
         transformers:{
             labelval:function (m) {
-                var model = options.displayFactory.modelFor(m.modelName);
+                var model = pluginManager.appModel.modelFor(m.modelName);
                 var labelAttr = model && model.labelAttr;
                 return function (obj) {
                     return {

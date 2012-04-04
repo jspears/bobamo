@@ -1,4 +1,4 @@
-// Filename: views/${schema.modelName}/list
+// Filename: ${baseUrl}/js/views/list.js
 define([
     'underscore',
     'libs/bobamo/list',
