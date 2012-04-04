@@ -1,0 +1,13 @@
+{
+    "name": "geo-plugin-example"
+  , "version": "0.0.1"
+  , "private": false
+  , "dependencies": {
+      "express": "2.5.8"
+    , "jade": ">= 0.0.1"
+    , "bobamo":"0.3.5"
+    , "jqtpl":"latest"
+   , "mongoose":"latest"
+    ,"geocoder":"latest"
+  }
+}

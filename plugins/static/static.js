@@ -3,6 +3,21 @@ var StaticPlugin = function () {
     Plugin.apply(this, arguments);
 }
 util.inherits(StaticPlugin, Plugin);
+StaticPlugin.prototype.editors = function () {
+    return ['Text', 'Checkbox',
+        'Checkboxes',
+        'Date',
+        'DateTime',
+        'Hidden',
+        'List',
+        'NestedModel',
+        'Number',
+        'Object',
+        'Password',
+        'Radio',
+        'Select',
+        'TextArea', 'MultiEditor'];
+}
 StaticPlugin.prototype.filters = function () {
     var prefix = this.baseUrl;
     var sdir = path.join(this.path, 'public');

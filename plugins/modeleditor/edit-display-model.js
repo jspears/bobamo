@@ -1,9 +1,8 @@
 var _u = require('underscore');
-var global_options = {};
 var EditApp = function (App, options) {
     this.app = App;
-    this.options = _u.extend(global_options, options);
-
+    this.options = _u.extend({}, options);
+    this.editors = this.options.editors;
     this.__defineGetter__('models', function () {
         return _u.map(this.modelPaths, function (k, v) {
             return k
@@ -13,7 +12,7 @@ var EditApp = function (App, options) {
     this.__defineGetter__('modelPaths', function () {
         var ret = {};
         _u.each(this.app.modelPaths, function onModelPaths(v, k) {
-            ret[k] = new EditModel(k, v);
+            ret[k] = new EditModel(k, v, {editors:this.editors});
         }, this);
         return ret;
     });
@@ -36,12 +35,12 @@ EditApp.prototype.modelFor = function (model) {
 EditApp.prototype.schemaFor = function (model, fields) {
     return this.schema;
 }
-var EditModel = function (k, Model) {
+var EditModel = function (k, Model, options) {
     this.model = Model;
     this.modelName = k;
     this.title = this.model.title;
     this.plural = this.model.plural;
-
+    this.editors = options.editors;
 
     this.__defineGetter__('paths', function () {
         var paths = this.schema;
@@ -121,7 +120,7 @@ EditModel.prototype.schemaFor = function () {
     }
 
     var obj = (this._schema.paths = { subSchema:{}, type:'Object'}).subSchema;
-
+    var editors = this.editors;
     _u(this.model.paths).each(function (v, k) {
 //        if (k.indexOf('.') > -1)
 //            return;
@@ -152,19 +151,7 @@ EditModel.prototype.schemaFor = function () {
                 title:'Editor',
                 help:'The editor to use with field',
                 type:'Select',
-                options:['Text', 'Checkbox',
-                    'Checkboxes',
-                    'Date',
-                    'DateTime',
-                    'Hidden',
-                    'List',
-                    'NestedModel',
-                    'Number',
-                    'Object',
-                    'Password',
-                    'Radio',
-                    'Select',
-                    'TextArea', 'MultiEditor']
+                options:editors
             },
             dataType:{
                 title:'Data Type',
@@ -179,7 +166,7 @@ EditModel.prototype.schemaFor = function () {
             }
         }
 
-    })
+    }, this);
 
     return this._schema;
 

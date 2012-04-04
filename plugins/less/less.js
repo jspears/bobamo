@@ -25,7 +25,6 @@ LessPlugin.prototype.filters = function () {
         res.local('lessFactory', this.lessFactory);
         next();
     }.bind(this));
-    var lessAdmin
     Plugin.prototype.filters.apply(this, arguments);
 }
 

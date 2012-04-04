@@ -9,7 +9,6 @@ util.inherits(GeneratorPlugin, Plugin);
 
 module.exports = GeneratorPlugin;
 
-
 GeneratorPlugin.prototype.filters = function (options) {
     var apiPath = this.options.apiUri || this.baseUrl + 'rest';
     this.app.get(this.baseUrl + '*', function (req, res, next) {
