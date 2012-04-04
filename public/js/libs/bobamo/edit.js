@@ -122,10 +122,13 @@ define([
         doCancel:function () {
              window.location.hash = replacer('#/{modelName}/list', this.config);
         },
+        createModel:function(opts){
+          return new this.model(opts);
+        },
         render:function (opts) {
             var $el = this.$el.empty().append(this.template());
             var id = opts && (opts.id || opts._id);
-            var model = new this.model(opts);
+            var model = this.createModel(opts);
             var title = id ? '<i class="icon-edit"></i> Edit {title} [{id}]' : '<i class="icon-plus"></i>Create New {title}';
             var config = _.extend({id:id}, this.config);
             var form = this.form = new Form({

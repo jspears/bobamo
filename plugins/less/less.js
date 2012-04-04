@@ -65,7 +65,7 @@ LessPlugin.prototype.routes = function () {
         }, req.body);
     });
 
-    app.put(base + 'admin/:id?', function (req, res, next) {
+    app.put(base + '/admin/:id?', function (req, res, next) {
         delete req.body.variables;
         delete req.body.created;
         delete req.body.payload;

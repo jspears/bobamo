@@ -50,8 +50,8 @@ define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!${pluginUr
             var self = this;
             var save = this.form.getValue();
             this.form.model.save(save, {success:function onPreviewSave(obj) {
-                require([ 'text!less/templates/admin/preview.html', 'libs/bootstrap/js/bootstrap-modal'], function (preview) {
-                    var template = _.template(preview, {title:'Display Changes', previewUrl:'${base}/bobamo/index.html?checksum=' + obj.id});
+                require([ 'text!${pluginUrl}/templates/admin/preview.html', 'libs/bootstrap/js/bootstrap-modal'], function (preview) {
+                    var template = _.template(preview, {title:'Display Changes', previewUrl:'${baseUrl}index.html?checksum=' + obj.id});
 
                     var $modal = $(template);
                     $('.save', $modal).on('click', $.proxy(self.onSave, self));
