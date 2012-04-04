@@ -10,7 +10,12 @@ var LessPlugin = function (options, app, name) {
 
 }
 sutil.inherits(LessPlugin, Plugin);
-
+LessPlugin.prototype.admin = function(){
+    return {
+        href:'#/less/admin/display',
+        title:'Display Settings'
+    };
+}
 LessPlugin.prototype.editors = function () {
     return ['ColorEditor', 'UnitEditor', 'PlaceholderEditor'];
 }

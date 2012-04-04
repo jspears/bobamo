@@ -6,7 +6,12 @@ var EditPlugin = function() {
 util.inherits(EditPlugin, Plugin);
 
 var extRe = /\.(js|html|css|htm)$/i;
-
+EditPlugin.prototype.admin = function(){
+    return {
+        href:'#/modeleditor/admin/list',
+        title:'Model Settings'
+    };
+}
 EditPlugin.prototype.routes = function () {
 
     this.app.all(this.pluginUrl + '*', function (req, res, next) {

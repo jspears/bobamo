@@ -21,6 +21,7 @@ GeneratorPlugin.prototype.filters = function (options) {
         res.local('params', req.params);
         res.local('query', req.query);
         res.local('appModel', this.pluginManager.appModel);
+        res.local('pluginManager', this.pluginManager);
         res.local('options', options);
         next();
     }.bind(this));

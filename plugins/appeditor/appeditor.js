@@ -3,7 +3,12 @@ var AppEditorPlugin = function (options, app, name) {
     Plugin.apply(this, arguments);
 }
 require('util').inherits(AppEditorPlugin, Plugin);
-
+AppEditorPlugin.prototype.admin = function(){
+    return {
+        href:'#/appeditor/admin/edit',
+        title:'Application Details'
+    };
+}
 AppEditorPlugin.prototype.routes = function (options) {
 
     this.app.get(this.pluginUrl + '/admin/:id', function (req, res, next) {
