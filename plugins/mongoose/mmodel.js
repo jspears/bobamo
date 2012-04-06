@@ -21,14 +21,21 @@ module.exports = function MModel(m, manager) {
     this.edit_fields = display.edit_fields;
     this.labelAttr = display.labelAttr;
     this.fieldsets = display.fieldsets;
+    this.all_fields = [];
+    this.__defineGetter__('list_fields', function(){
+        if (display.list_fields)
+            return display.list_fields;
+
+    });
     this.__defineGetter__('paths', function () {
         var ret = {};
-        m.schema.eachPath(function (k, v) {
-            ret[k] = new MField(k, manager.pluginFor(k, v, m));
-        });
-        _u.each(m.schema.virtuals, function (v, k) {
-            ret[k] = new MField(k, manager.pluginFor(k, v, m));
-        });
+        _u.each(m.schema.tree, function (v,k) {
+            ret[k] = new MField(k, manager.pluginFor(k, v, m, this));
+        }, this);
+
+//        _u.each(m.schema.virtuals, function (v, k) {
+//            ret[k] = new MField(k, manager.pluginFor(k, v, m, this));
+//        }, this);
 
         return ret;
     });

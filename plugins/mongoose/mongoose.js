@@ -24,11 +24,26 @@ MongoosePlugin.prototype.appModel = function (options) {
 }
 
 MongoosePlugin.prototype.editorFor = function (path, p, Model) {
+    var schema = Model.schema;
+    var tmpP = schema.paths[path] || schema.virtuals[path];
+    if (tmpP)
+        p = tmpP
     var defaults = {};
     var opts = p.options || {};
     var apiPath = this.options.apiUri || this.baseUrl + 'rest/';
     if (opts.display && opts.display.display == 'none' || ( path[0] == '_' && path != '_id')) {
         return null;
+    }
+
+    if (!tmpP){
+        var obj = { subSchema:{}, type:'Object'}
+        _u(p).each(function(v,k){
+            var ref = Model.schema[path+'.'+k];
+            var editor = this.pluginManager.pluginFor(path+'.'+k, ref || v, Model);
+            if (editor)
+                obj.subSchema[k] = editor;
+        }, this);
+        return obj;
     }
     if (p.instance == 'ObjectID') {
         if (opts.ref) {
@@ -63,8 +78,16 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
             });
         } else {
             var type = util.depth(p, 'options.type');
+            if (type instanceof Array){
+                console.log('it is an array');
+                _u.extend(defaults, {
+                   type:'List'
+                });
+                if (type.length){
+                    var o = type[0];
 
-            if (type) {
+                }
+            }else if (type) {
 
                 switch (type) {
                     case Array:
@@ -132,6 +155,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
     }
     var ret = _u.extend({type:'Text'}, defaults, opts.display);
     return ret;
+
 }
 
 

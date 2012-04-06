@@ -71,47 +71,60 @@ describe('Testing Util', function () {
             a.should.have.property('d', true);
             done();
         });
-        it('should return the value', function(done){
-            var a = { b:{c:1}, d:false,e:1}
-            util.depth(a,'d').should.eql(false);
-            util.depth(a,'e').should.eql(1);
-            util.depth(a,'b.c').should.eql(1);
+        it('should return the value', function (done) {
+            var a = { b:{c:1}, d:false, e:1}
+            util.depth(a, 'd').should.eql(false);
+            util.depth(a, 'e').should.eql(1);
+            util.depth(a, 'b.c').should.eql(1);
             done();
         })
     })
-    describe('util.options', function(){
-        it('should return options', function(done){
+    describe('util.options', function () {
+        it('should return options', function (done) {
             var a = {};
             util.options(a);
             a.should.not.have.property('options');
             done();
         })
-        it('should return options', function(done){
+        it('should return options', function (done) {
             var a = {options:'a'};
             util.options(a).should.eql('a');
-            a.should.have.property('options','a');
+            a.should.have.property('options', 'a');
             done();
         })
 
     });
-    describe('util.defaultOrSet', function(){
-       it('should return the value', function(done){
-           var a = {b:[1]};
-           util.defaultOrSet(a, 'b', []).push(2);
-           a.should.have.property('b').eql([1,2]);
-           done();
-       })
+    describe('util.defaultOrSet', function () {
+        it('should return the value', function (done) {
+            var a = {b:[1]};
+            util.defaultOrSet(a, 'b', []).push(2);
+            a.should.have.property('b').eql([1, 2]);
+            done();
+        })
 
     });
-    describe('util.defaultOrSet', function(){
-        it('should create c', function(done){
+    describe('util.defaultOrSet', function () {
+        it('should create c', function (done) {
             var a = {b:[1]};
             util.defaultOrSet(a, 'c', []).push(1);
             util.defaultOrSet(a, 'c', []).push(2);
-            a.should.have.property('c').eql([1,2]);
+            a.should.have.property('c').eql([1, 2]);
             done();
         })
 
     });
+    describe('util.flatten', function () {
+        it('should flatten the keys', function (done) {
+            var a = { b:{subSchema:{c:1}},
+                d:2,
+                e:{subSchema:{ f:{subSchema:{ g:3}}}}
+            };
+            var out = util.flatten(a);
+            out.should.have.property('b.c',1);
+            out.should.have.property('d', 2);
+            out.should.have.property('e.f.g', 3);
+            done();
+        });
+    })
 
 });

@@ -20,7 +20,7 @@ define(['jquery', 'Backbone', 'confirm_change', 'replacer'], function ($, Backbo
             var redir = this.options.redirect;
             confirm.render('show', function onDelete() {
                 $.ajax({type:'delete',
-                    url:replacer('api/{modelName}', config),
+                    url:replacer('rest/{modelName}', config),
                     data:{
                         _id:opts.id
                     },

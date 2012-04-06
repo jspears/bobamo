@@ -45,7 +45,7 @@ GeneratorPlugin.prototype.routes = function (options) {
     var base = this.baseUrl;
     app.get(base, function (req, res, next) {
         res.redirect(this.baseUrl + 'index.html');
-    });
+    }.bind(this));
     app.get(base + ':view', function (req, res, next) {
         this.generate(res, req.params.view, makeOptions(req), next);
     }.bind(this));

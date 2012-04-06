@@ -50,7 +50,7 @@ define(['Backbone.Form', 'jquery', 'underscore'], function (Form, $, _) {
         getValue:function(){
             var $children =this.$el.children();
             for(var i=0,l=$children.length; i<l; i++){
-                if($($children[i]).attr('data-none') == 'null'){
+                if($children[i].selected && $($children[i]).attr('data-none') == 'null'){
                     return null;
                 }
             }

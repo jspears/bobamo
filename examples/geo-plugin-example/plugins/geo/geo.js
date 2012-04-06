@@ -6,8 +6,15 @@ var GeoPlugin = function () {
 util.inherits(GeoPlugin, PluginApi);
 module.exports = GeoPlugin;
 GeoPlugin.prototype.editors = function(){ return ['GeoEditor']}
-GeoPlugin.prototype.editorFor = function(path, property, obj){
-    console.log('editor for', path,property);
+GeoPlugin.prototype.editorFor = function(path, property, Model){
+//    console.log('editor for', path,property);
+//    if (path == 'location')
+    if (property && property.lat && property.lng){
+            return {
+                type:'MapEditor'
+
+            }
+    }
 }
 GeoPlugin.prototype.routes = function(){
 
