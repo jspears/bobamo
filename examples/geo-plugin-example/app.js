@@ -25,7 +25,7 @@ app.configure(function () {
 
 app.configure('development', function () {
     mongoose.connect('mongodb://localhost/geomodel_development');
-    app.use(bobamo.express({mongoose:mongoose, plugin:['geo']}, express));
+    app.use(bobamo.express({mongoose:mongoose, plugin:['geo']}));
 
     app.use(express.errorHandler({ dumpExceptions:true, showStack:true }));
 });
