@@ -147,8 +147,9 @@ var UserSchema = new Schema({
     modified_at:{type:Date}
 }, {safe:true, strict:true, display:{title:'User', plural:'Users', fields:['username','first_name','last_name']});
 ```
+
 #Plugins
-## Bobamo is built on plugins.   The main plugins are generator, less, mongoose, rest  and  static. These create
+Bobamo is built on plugins.   The main plugins are generator, less, mongoose, rest  and  static. These create
 the basic application.  In addition there is appeditor, modeleditor, package which add a little extra functionality but
 aren't done yet.
 
@@ -160,12 +161,11 @@ In your setup you can specify which plugins to load.
  app.use(bobamo.express({mongoose:mongoose, plugin:['geo']}));
 ```
 
-
 or you can just add a plugin to the defaults.
+
 ```javascript
 
  app.use(bobamo.express({mongoose:mongoose, plugins:['geo', 'less', ...]}));
-
 
 ```
 
@@ -176,14 +176,15 @@ In addition you can specify the plugin dirs.
 {
  pluginDir:['/path/to/your/plugin/dir'] //
 }
-
+```
 
 ##API
 The plugin api tries to stay out of your way, use convention as much as possible and otherwise provide useful functionality without much effort.
-To create a plugin create in your project create a file in  <yourproject>plugin/<yourplugin>/<yourplugin>.js
+To create a plugin create in your project create a file in  &lt;yourproject&gt;/plugins/&lt;yourplugin&gt;/&lt;yourplugin&gt;.js
 
-Then subclass the plugin-api in  <yourproject>/plugin/<yourplugin>/<yourplugin>.js
-```
+Then subclass the plugin-api in  &lt;yourproject&gt;/plugins/&lt;yourplugin&gt;/&lt;yourplugin&gt;.js
+
+```javascript
 //file:examples/geo-plugin-example/plugin/geo/geo.js
 
 var PluginApi = require('bobamo').PluginApi, util = require('util');
@@ -223,11 +224,11 @@ You will need to add this plugin to your app.js
 
 By default it will serve static files from
 
-plugin/<plugin>/public
+plugin/&lt;yourplugin&gt;/public
 
 and serve jqtpl templates from
 
-plugin/<plugin>/views
+plugin/&lt;yourplugin&gt;/views
 
 
 
