@@ -147,3 +147,92 @@ var UserSchema = new Schema({
     modified_at:{type:Date}
 }, {safe:true, strict:true, display:{title:'User', plural:'Users', fields:['username','first_name','last_name']});
 ```
+#Plugins
+## Bobamo is built on plugins.   The main plugins are generator, less, mongoose, rest  and  static. These create
+the basic application.  In addition there is appeditor, modeleditor, package which add a little extra functionality but
+aren't done yet.
+
+
+##To configure plugins
+In your setup you can specify which plugins to load.
+
+```javascript
+ app.use(bobamo.express({mongoose:mongoose, plugin:['geo']}));
+```
+
+
+or you can just add a plugin to the defaults.
+```javascript
+
+ app.use(bobamo.express({mongoose:mongoose, plugins:['geo', 'less', ...]}));
+
+
+```
+
+The PluginManager will look in plugins, node_modules/bobamo/plugins for the plugin.  It loads whichever it finds first.
+In addition you can specify the plugin dirs.
+
+```javascript
+{
+ pluginDir:['/path/to/your/plugin/dir'] //
+}
+
+
+##API
+The plugin api tries to stay out of your way, use convention as much as possible and otherwise provide useful functionality without much effort.
+To create a plugin create in your project create a file in  <yourproject>plugin/<yourplugin>/<yourplugin>.js
+
+Then subclass the plugin-api in  <yourproject>/plugin/<yourplugin>/<yourplugin>.js
+```
+//file:examples/geo-plugin-example/plugin/geo/geo.js
+
+var PluginApi = require('bobamo').PluginApi, util = require('util');
+
+var GeoPlugin = function () {
+    PluginApi.apply(this, arguments);
+}
+util.inherits(GeoPlugin, PluginApi);
+module.exports = GeoPlugin;
+/**
+Allow MapEditors to be discovered from other modules.
+**/
+GeoPlugin.prototype.editors = function(){ return ['MapEditor']}
+/**
+  Whenever it incounters a model with lat and lng properties it will
+  assume it is geo coordinates and return a map editor.
+
+**/
+GeoPlugin.prototype.editorFor = function(path, property, Model){
+    if (property && property.lat && property.lng){
+            return {
+                type:'MapEditor',
+                subSchema:{
+                    lat:{type:'Hidden'},
+                    lng:{type:'Hidden'}
+                }
+            }
+    }
+}
+```
+
+You will need to add this plugin to your app.js
+
+```javascript
+ app.use(bobamo.express({mongoose:mongoose, plugin:['geo']}));
+```
+
+By default it will serve static files from
+
+plugin/<plugin>/public
+
+and serve jqtpl templates from
+
+plugin/<plugin>/views
+
+
+
+
+
+
+
+

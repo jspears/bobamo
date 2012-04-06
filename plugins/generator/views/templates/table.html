@@ -1,0 +1,19 @@
+<div>
+<h4 class="pull-left">${model.plural}</h4><a href="#/${model.modelName}/edit" class="btn btn-mini pull-right"><b class="icon-edit"></b>Create ${model.title} </a>
+<table class="table table-striped top-line">
+    <thead style="white-space: nowrap">
+        <tr>
+            {{each(i,l) model.list_fields}}
+                <th data-field="${l}" class="elementActivate sortable">${model.pathFor(l).title}</th>
+            {{/each}}
+        </tr>
+        <tr>&nbsp;
+        </tr>
+    </thead>
+    <tbody/>
+    <tfoot>
+        <tr></tr>
+    </tfoot>
+</table>
+ <div class="pager_table" data-limit="10" data-item="${model.title}" data-items="${model.plural}"></div>
+</div>

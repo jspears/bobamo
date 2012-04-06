@@ -1,0 +1,36 @@
+.dropdown-menu {
+    max-height: 400px;
+    overflow-y: scroll;
+    width: 220px;
+}
+
+.list-item {
+    padding-top: 6px;
+    padding-left: 56px;
+}
+
+.no-reports {
+    display: none;
+}
+.control-group.error input,
+.control-group.error select,
+.control-group.error textarea {
+    /*outline: 1px solid red;*/
+    box-shadow: 0 0 5px  rgba(255, 0,0, 1);
+    -webkit-box-shadow: 0 0 5px  rgba(255, 0,0, 1);
+    -moz-box-shadow: 0 0 5px rgba(255, 0,0, 1);
+    border:1px solid rgba(255,0,0, 0.8);
+}
+
+.pointer, .elementActivate {
+    cursor: pointer;
+}
+.top-line {
+    margin-top:1em;
+    border-top:1px solid #dcdcdc;
+}
+@import url(http://fonts.googleapis.com/css?family=Righteous);
+.logoFont {
+   font-family: Righteous;
+    font-weight: normal;
+}

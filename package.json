@@ -9,6 +9,7 @@
     , "mers":">= 0.3.8"
     , "underscore":"latest"
     , "less":"latest"
+    , "connect":"latest"
   }
   ,"devDependencies":{
     "mocha":"latest"

@@ -1,0 +1,8 @@
+{{each(i,l) model.list_fields}}
+<td><%= item.get('${l}') %></td>
+{{/each}}
+<td>
+    <a href="#/${model.modelName}/edit?id=<%=item.id%>"><i class="icon-edit"></i>Edit</a>
+    <a href="#/${model.modelName}/delete?id=<%=item.id%>"><i class="icon-remove"></i>Delete</a>
+
+</td>
