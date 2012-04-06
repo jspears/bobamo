@@ -11,8 +11,11 @@ GeoPlugin.prototype.editorFor = function(path, property, Model){
 //    if (path == 'location')
     if (property && property.lat && property.lng){
             return {
-                type:'MapEditor'
-
+                type:'MapEditor',
+                subSchema:{
+                    lat:{type:'Hidden'},
+                    lng:{type:'Hidden'}
+                }
             }
     }
 }

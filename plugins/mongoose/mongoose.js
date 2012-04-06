@@ -25,7 +25,7 @@ MongoosePlugin.prototype.appModel = function (options) {
 
 MongoosePlugin.prototype.editorFor = function (path, p, Model) {
     var schema = Model.schema;
-    var tmpP = schema.paths[path] || schema.virtuals[path];
+    var tmpP = schema && (schema.paths[path] || schema.virtuals[path] );
     if (tmpP)
         p = tmpP
     var defaults = {};
@@ -35,13 +35,13 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
         return null;
     }
 
-    if (!tmpP){
+    if (! tmpP  && Model) {
         var obj = { subSchema:{}, type:'Object'}
-        _u(p).each(function(v,k){
-            var ref = Model.schema[path+'.'+k];
-            var editor = this.pluginManager.pluginFor(path+'.'+k, ref || v, Model);
-            if (editor)
-                obj.subSchema[k] = editor;
+        _u(p).each(function (v, k) {
+            var ref = schema && schema[path + '.' + k];
+                var editor = this.pluginManager.pluginFor(path + '.' + k, ref || v, Model);
+                if (editor)
+                    obj.subSchema[k] = editor;
         }, this);
         return obj;
     }
@@ -77,17 +77,21 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                 multiple:true
             });
         } else {
-            var type = util.depth(p, 'options.type');
-            if (type instanceof Array){
+            var type = p && (util.depth(p, 'options.type') || p.type);
+            if (type instanceof Array) {
                 console.log('it is an array');
                 _u.extend(defaults, {
-                   type:'List'
+                    type:'List'
                 });
-                if (type.length){
-                    var o = type[0];
-
-                }
-            }else if (type) {
+//                if (type.length) {
+//                    var o = type[0];
+//                    var s = defaults.listType = {};
+//                    _u.each(o, function onListType(v, k) {
+//                        s[k] = this.pluginManager.pluginFor(k, v, o);
+//                    }, this);
+//                    console.log('defaults', defaults);
+//                }
+            } else if (type) {
 
                 switch (type) {
                     case Array:
