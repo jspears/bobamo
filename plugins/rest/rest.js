@@ -1,4 +1,4 @@
-var Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), mutil = require('mers/lib/util'), mers = require('mers');
+var Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), mutil = require('mers/lib/util');
 var RestPlugin = function () {
     Plugin.apply(this, arguments);
     if (!this.options.apiUrl)
@@ -15,6 +15,7 @@ RestPlugin.prototype.filters = function(){
 RestPlugin.prototype.routes = function () {
     var options = this.options;
     var pluginManager = this.pluginManager;
+    var mers = options.mers || require('mers');
     this.app.use(options.apiUrl , mers(_u.extend({}, options, {
         transformers:{
             labelval:function (m) {

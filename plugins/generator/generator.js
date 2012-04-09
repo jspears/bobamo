@@ -14,7 +14,7 @@ GeneratorPlugin.prototype.filters = function (options) {
     this.app.get(this.baseUrl + '*', function (req, res, next) {
         var useAuth = req.isAuthenticated ? true : false;
         res.local('useAuthentication', useAuth)
-        res.local('isAuthenticated', useAuth ? req.isAuthenicated() : false);
+        res.local('isAuthenticated', useAuth ? req.isAuthenticated() : false);
         res.local('api', apiPath);
         res.local('baseUrl', this.baseUrl);
         res.local('params', req.params);

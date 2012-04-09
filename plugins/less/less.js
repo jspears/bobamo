@@ -1,4 +1,4 @@
-var Plugin = require('../../lib/plugin-api'), path = require('path'), util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), mers = require('mers'), LessFactory = require('./less-factory');
+var Plugin = require('../../lib/plugin-api'), path = require('path'), _u = require('underscore'), sutil = require('util'),  LessFactory = require('./less-factory');
 var LessPlugin = function (options, app, name) {
     Plugin.apply(this, arguments);
     var dirPath = path.join(this.path, 'less');
