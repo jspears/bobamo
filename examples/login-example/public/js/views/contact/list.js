@@ -1,4 +1,4 @@
-define(['Backbone', 'jquery', 'Underscore', 'text!tpl/contact.html'], function (Backbone, $, _, contactTmpl) {
+define(['Backbone', 'jquery', 'underscore', 'text!tpl/contact.html'], function (Backbone, $, _, contactTmpl) {
 
     var ContactView = Backbone.View.extend({
         el:'#content',

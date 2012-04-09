@@ -73,7 +73,7 @@ EditPlugin.prototype.routes = function () {
         })
     }.bind(this));
 
-    this.app.put(base + '/admin/model/:id', function (req, res) {
+    this.app.put(base + '/admin/model/:id', function (req, res, next) {
 
         var obj = _u.extend({}, req.body);
         _u.each(obj, function (v, k) {
@@ -91,10 +91,14 @@ EditPlugin.prototype.routes = function () {
             }
         });
         console.log('edited ', obj);
-        res.send({
-            status:0,
-            payload:{_id:req.params.id}
-        })
+        this.save(obj, function(err, data){
+            if (err)
+                return next(err);
+            res.send({
+                status:0,
+                payload:data
+            })
+        });
     }.bind(this));
     Plugin.prototype.routes.apply(this, arguments);
 

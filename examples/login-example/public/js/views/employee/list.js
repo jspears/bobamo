@@ -1,4 +1,4 @@
-define(['Backbone', 'jquery', 'Underscore', 'collections/employee', 'text!tpl/employee-list-item.html'], function (Backbone, $, _, collection, employeeListItem) {
+define(['Backbone', 'jquery', 'underscore', 'collections/employee', 'text!tpl/employee-list-item.html'], function (Backbone, $, _, collection, employeeListItem) {
     var EmployeeListView = Backbone.View.extend({
 //        el:'#content',
         tagName:'ul',

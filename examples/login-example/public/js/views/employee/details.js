@@ -1,4 +1,4 @@
-define(['Backbone', 'jquery', 'Underscore', 'collections/employee', 'views/employee/list', 'text!tpl/employee-details.html', 'text!tpl/employee-full.html'], function (Backbone, $, _, collection, EmployeeListView, detailsTmpl, fullTmpl) {
+define(['Backbone', 'jquery', 'underscore', 'collections/employee', 'views/employee/list', 'text!tpl/employee-details.html', 'text!tpl/employee-full.html'], function (Backbone, $, _, collection, EmployeeListView, detailsTmpl, fullTmpl) {
     var EmployeeFullView = Backbone.View.extend({
 
         tagName:"div", // Not required since 'div' is the default if no el or tagName specified
