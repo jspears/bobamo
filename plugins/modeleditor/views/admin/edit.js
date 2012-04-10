@@ -9,8 +9,8 @@ define([
 ], function (_,Backbone, EditView, template) {
     "use strict";
 
-    var fieldsets = {{html JSON.stringify(model.fieldsets) }};
-    var schema = {{html JSON.stringify(model.schemaFor()) }};
+    var fieldsets = eval('({{html JSON.stringify(model.fieldsets) }})');
+    var schema = eval('({{html JSON.stringify(model.schemaFor()) }})');
     schema.fieldsets.itemToString = function(obj){
         var fields = '['+obj.fields.join(',')+']';
         if (fields.length > 30)
@@ -37,7 +37,6 @@ define([
             }
             return Backbone.Model.prototype.get.call(this, key);
         }
-
     });
     return EditView.extend({
         fieldsets:fieldsets,

@@ -41,13 +41,36 @@ var EditModel = function (k, Model, options) {
     this.title = this.model.title;
     this.plural = this.model.plural;
     this.editors = options.editors;
+    this.__defineGetter__('data', function(){
+        var obj = {};
+        _u(this.model.paths).each(function(v,k){
+           obj[k] = _u.extend({},v);
+           var sub = v.subSchema;
+           var cur = obj[k];
+           while(sub){
+               _u(sub).each(function(vv,kk){
+                   if (kk !== 'subSchema'){
+                       cur[kk] = vv;
+                   }
 
+               });
+
+               sub = sub.subSchema;
+
+           }
+        });
+
+        return obj;
+    });
     this.__defineGetter__('paths', function () {
         var paths = this.schema;
         return _u.map(this.schema, function (v, k) {
             paths[k].path = k;
         });
     })
+    this.__defineGetter__('fields', function(){
+        return Object.keys(util.flatten(this.model.paths))    ;
+    });
     this.__defineGetter__('fieldsets', function (v, k) {
         var fieldsets = [
             {
@@ -55,14 +78,15 @@ var EditModel = function (k, Model, options) {
                 fields:['title', 'plural', 'hidden', 'labelAttr', 'fieldsets', 'list_fields']
             }
         ];
-        _u(this.model.paths).each(function (v, k) {
+        _u(this.fields).each(function (k) {
             fieldsets.push({
-                legend:'Property [' + k + ']',
+                legend:this.title+'.' + k,
                 fields:['paths.' + k + '.title', 'paths.' + k + '.help', 'paths.' + k + '.views', 'paths.' + k + '.type', 'paths.' + k + '.dataType', 'paths.' + k + '.required']
             })
-        });
+        }, this);
         return fieldsets;
     })
+
 }
 EditModel.prototype.schema = {
     plural:{
@@ -86,7 +110,7 @@ EditModel.prototype.schema = {
     }
 };
 EditModel.prototype.schemaFor = function () {
-
+    var fields = this.fields;
     var schema = this._schema = _u.extend({}, this.schema);
     this._schema.fieldsets = {
         type:'List',
@@ -103,7 +127,7 @@ EditModel.prototype.schemaFor = function () {
             fields:{
                 title:'Fields to be used in this fieldset',
                 type:'MultiEditor',
-                options:Object.keys(this.model.paths)
+                options:fields
             }
         }
 
@@ -111,20 +135,17 @@ EditModel.prototype.schemaFor = function () {
     this._schema.list_fields = {
         type:'List',
         listType:'Select',
-        options:Object.keys(this.model.paths),
+        options:fields,
         help:'Fields to Show in the List View',
         title:'List View',
         sortable:true
     }
 
     var obj = (this._schema.paths = { subSchema:{}, type:'Object'}).subSchema;
-    var editors = this.editors;
     _u(this.model.paths).each(function (v, k) {
-//        if (k.indexOf('.') > -1)
-//            return;
-        console.log('k', k, 'v', v);
         obj[k] = {type:'Object'};
         obj[k].subSchema =createSubSchema(this.editors, k, v);
+
 
     }, this);
 
@@ -171,7 +192,11 @@ function createSubSchema(editors, k, v) {
             type:'Checkbox'
         }
     }
-
+    if (v.subSchema){
+        _u(v.subSchema).each(function(vv,kk){
+            obj[kk] = {type:'Object', subSchema:createSubSchema(editors, kk, vv)};
+        });
+    }
     return obj;
 }
 var EditField = function (Field) {
