@@ -57,7 +57,7 @@ EditPlugin.prototype.routes = function () {
 
     this.app.get(base + '/admin/model/:modelName', function (req, res) {
         var editModel = res.local('editModel');
-        var model = _u.extend({},  editModel.modelPaths[req.params.modelName].data);
+        var model = _u.extend({},  editModel.modelPaths[req.params.modelName].model);
         delete model._paths;
         res.send({
             status:0,

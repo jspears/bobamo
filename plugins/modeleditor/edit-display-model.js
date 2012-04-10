@@ -41,35 +41,15 @@ var EditModel = function (k, Model, options) {
     this.title = this.model.title;
     this.plural = this.model.plural;
     this.editors = options.editors;
-    this.__defineGetter__('data', function(){
-        var obj = {};
-        _u(this.model.paths).each(function(v,k){
-           obj[k] = _u.extend({},v);
-           var sub = v.subSchema;
-           var cur = obj[k];
-           while(sub){
-               _u(sub).each(function(vv,kk){
-                   if (kk !== 'subSchema'){
-                       cur[kk] = vv;
-                   }
 
-               });
-
-               sub = sub.subSchema;
-
-           }
-        });
-
-        return obj;
-    });
     this.__defineGetter__('paths', function () {
         var paths = this.schema;
         return _u.map(this.schema, function (v, k) {
             paths[k].path = k;
         });
     })
-    this.__defineGetter__('fields', function(){
-        return Object.keys(util.flatten(this.model.paths))    ;
+    this.__defineGetter__('fields', function () {
+        return Object.keys(util.flatten(this.model.paths));
     });
     this.__defineGetter__('fieldsets', function (v, k) {
         var fieldsets = [
@@ -80,7 +60,7 @@ var EditModel = function (k, Model, options) {
         ];
         _u(this.fields).each(function (k) {
             fieldsets.push({
-                legend:this.title+'.' + k,
+                legend:this.title + '.' + k,
                 fields:['paths.' + k + '.title', 'paths.' + k + '.help', 'paths.' + k + '.views', 'paths.' + k + '.type', 'paths.' + k + '.dataType', 'paths.' + k + '.required']
             })
         }, this);
@@ -144,7 +124,7 @@ EditModel.prototype.schemaFor = function () {
     var obj = (this._schema.paths = { subSchema:{}, type:'Object'}).subSchema;
     _u(this.model.paths).each(function (v, k) {
         obj[k] = {type:'Object'};
-        obj[k].subSchema =createSubSchema(this.editors, k, v);
+        obj[k].subSchema = createSubSchema(this.editors, k, v);
 
 
     }, this);
@@ -192,11 +172,9 @@ function createSubSchema(editors, k, v) {
             type:'Checkbox'
         }
     }
-    if (v.subSchema){
-        _u(v.subSchema).each(function(vv,kk){
-            obj[kk] = {type:'Object', subSchema:createSubSchema(editors, kk, vv)};
-        });
-    }
+    _u(v.subSchema).each(function (vv, kk) {
+        obj[kk] = {type:'Object', subSchema:createSubSchema(editors, kk, vv)};
+    });
     return obj;
 }
 var EditField = function (Field) {

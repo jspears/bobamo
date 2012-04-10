@@ -26,10 +26,16 @@ define([
             return resp.payload;
         },
         idAttribute:'modelName',
+        set:function(a,b,c,d){
+           return Backbone.Model.prototype.set.call(this, a,b,c,d)
+        },
         get:function(key){
             if (key && key.indexOf('.') > -1){
                 var split = key.split('.');
                 var val = this.attributes;
+                if (split.length > 3){
+                    split.splice(2,0, 'subSchema');
+                }
                 while (split.length && val)
                     val = val[split.shift()];
 
