@@ -1,6 +1,7 @@
-var Plugin = require('../../lib/plugin-api');
+var Plugin = require('../../lib/plugin-api'), _u = require('underscore');
 var AppEditorPlugin = function (options, app, name) {
     Plugin.apply(this, arguments);
+    this._appModel = {};
 }
 require('util').inherits(AppEditorPlugin, Plugin);
 AppEditorPlugin.prototype.admin = function(){
@@ -9,10 +10,24 @@ AppEditorPlugin.prototype.admin = function(){
         title:'Application Details'
     };
 }
+AppEditorPlugin.prototype.appModel = function(){
+    return this._appModel;
+}
+AppEditorPlugin.prototype.configure = function(options){
+    _u.extend(this._appModel,options);
+
+}
+AppEditorPlugin.prototype.filters = function(){
+    this.app.get(this.pluginUrl+'*', function(req,res,next){
+        res.local('pluginManager', this.pluginManager);
+        next();
+    }.bind(this));
+    Plugin.prototype.filters.apply(this, arguments);
+}
 AppEditorPlugin.prototype.routes = function (options) {
 
     this.app.get(this.pluginUrl + '/admin/:id', function (req, res, next) {
-        var appModel = this.pluginManager.appModel;
+        var appModel = this._appModel;
         res.send({
             payload:appModel,
             status:1
@@ -20,17 +35,23 @@ AppEditorPlugin.prototype.routes = function (options) {
     }.bind(this));
 
     this.app.post(this.pluginUrl + '/admin', function (req, res, next) {
-        res.send({
-            status:0,
-            payload:{}
-        })
+        this.save(req.body, function(err, obj){
+            this.configure(req.body);
+            res.send({
+                status:0,
+                payload:obj
+            })
+        }.bind(this));
     }.bind(this));
 
     this.app.put(this.pluginUrl + '/admin', function (req, res, next) {
-        res.send({
-            status:0,
-            payload:{}
-        })
+        this.save(req.body, function(err, obj){
+            this.configure(req.body);
+            res.send({
+                status:0,
+                payload:obj
+            })
+        }.bind(this));
     }.bind(this));
 
     Plugin.prototype.routes.apply(this, arguments);

@@ -2,6 +2,7 @@ var Plugin = require('../../lib/plugin-api'), util = require('util'), EditModel 
 
 var EditPlugin = function() {
     Plugin.apply(this, arguments);
+    this._appModel = {};
 }
 util.inherits(EditPlugin, Plugin);
 
@@ -11,6 +12,12 @@ EditPlugin.prototype.admin = function(){
         href:'#/modeleditor/admin/list',
         title:'Model Settings'
     };
+}
+EditPlugin.prototype.appModel = function(){
+    return this._appModel;
+}
+EditPlugin.prototype.configure = function(conf){
+    return _u.extend(this._appModel, conf);
 }
 EditPlugin.prototype.routes = function () {
 
@@ -90,15 +97,18 @@ EditPlugin.prototype.routes = function () {
                 delete obj[k];
             }
         });
-        console.log('edited ', obj);
-        this.save(obj, function(err, data){
+        var sobj = {modelPaths:{}};
+        sobj.modelPaths[req.params.id] = obj;
+        console.log('edited ', sobj);
+        this.save(sobj, function(err, data){
             if (err)
                 return next(err);
+            this.configure(sobj);
             res.send({
                 status:0,
                 payload:data
             })
-        });
+        }.bind(this));
     }.bind(this));
     Plugin.prototype.routes.apply(this, arguments);
 

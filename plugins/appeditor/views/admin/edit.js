@@ -17,6 +17,10 @@ define([
             type:'MultiEditor',
             help:'Which Models to allow users to view',
             options:eval('({{html JSON.stringify(Object.keys(appModel.modelPaths))}})')
+        },
+        plugins:{
+            type:'List',
+            help:'The order in which to process plugins'
         }
     }
     var Model = Backbone.Model.extend({
@@ -43,7 +47,8 @@ define([
     return EditView.extend({
         fieldsets:[
             {legend:'Application', fields:['title', 'version', 'description']},
-            {'legend':'Models', fields:['models']}
+            {'legend':'Models', fields:['models']},
+            {'legend': 'Plugins', fields:['plugins']}
         ],
         template:_.template(template),
         model:Model,
@@ -58,7 +63,8 @@ define([
                 title:'${appModel.title}',
                 description:'${appModel.description}',
                 version:'${appModel.version}',
-                models:{{html JSON.stringify(Object.keys(appModel.modelPaths))}}
+                models:eval('({{html JSON.stringify(Object.keys(appModel.modelPaths))}})'),
+                plugins:eval('({{html JSON.stringify(pluginManager.pluginNames())}})')
             });
         }
     });
