@@ -20,7 +20,7 @@ define(['Backbone', 'jquery', 'underscore', 'text!tpl/login.html'], function (Ba
 
         login:    function (event) {
             event.preventDefault();
-            $.post('/', $(this.el).find('form').serialize(), this.onLogin);
+            $.post('passport', $(this.el).find('form').serialize(), this.onLogin);
         },
         onLogin:  function (res) {
             if (res.status === 0) {

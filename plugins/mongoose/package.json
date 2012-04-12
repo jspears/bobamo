@@ -1,0 +1,10 @@
+{
+    "name": "bobamo-mongoose"
+    , "description":"A plugin for Bobamo that provides mongoosejs support"
+    , "version": "0.4.0"
+    , "private": false
+    , "dependencies":{
+        "mongoose":"latest"
+    }
+
+}

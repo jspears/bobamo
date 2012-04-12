@@ -6,8 +6,6 @@
   , "dependencies": {
       "bobamo": "latest"
     , "express":"2.5.8"
-    , "passport":"latest"
-    , "passport-local":"latest"
     , "jqtpl":"latest"
   }
   

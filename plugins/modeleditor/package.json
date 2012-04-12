@@ -1,0 +1,9 @@
+{
+    "name": "bobamo-modeleditor"
+    , "description":"A plugin for Bobamo that creates a UI for editing the model"
+    , "version": "0.4.0"
+    , "private": false
+    , "dependencies":{
+    }
+
+}

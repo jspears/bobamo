@@ -1,0 +1,7 @@
+{
+    "name": "bobamo-appeditor"
+    , "description":"A plugin for Bobamo that allows for editing of global application properties"
+    , "version": "0.4.0"
+    , "private": false
+
+}

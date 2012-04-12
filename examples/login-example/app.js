@@ -5,7 +5,6 @@
 var express = require('express')
     , jqtpl = require('jqtpl')
     , bobamo = require('bobamo')
-    , passport = require('./lib/passport')
     , mongoose = require('mongoose')
     , User = require('bobamo/examples/model/user')
     , Employee = require('bobamo/examples/model/employee')
@@ -25,43 +24,15 @@ app.configure(function () {
     app.use(express.bodyParser());
     app.use(express.session({ secret:'big fat secret' }));
     app.use(express.methodOverride());
-    app.use(passport.initialize());
-    app.use(passport.session());
+    app.use(bobamo.express({mongoose:mongoose, plugin:'passport', authModel:User}, express))
     app.use(app.router);
 
 
 });
-app.post('/', function (req, res, next) {
-        next();
-    }, passport.authenticate('local', { failureRedirect:'/check' }), function (req, res, next) {
-        req.method = 'GET';
-        req.url = '/rest/user/' + req.user._id;
-        next();
-    }
-);
 
-app.get('/check', function (req, res, next) {
-    if (req.isAuthenticated && req.isAuthenticated()) {
-        req.method = 'GET';
-        req.url = '/rest/user/' + req.user._id;
-        next();
-    } else {
-        res.send({status:1, message:'Not Authenticated'})
-    }
-
-});
-app.get('/logout', function (req, res) {
-    req.logOut();
-    res.redirect('/');
-});
-app.all(/\/rest\/*/i, function (req, res, next) {
-    if (req.isAuthenticated && req.isAuthenticated())
-        return  next();
-    res.redirect('/check');
-});
 
 app.configure('development', function () {
-    app.use(bobamo.express({mongoose:mongoose}, express))
+
     mongoose.connection.on('open', function () {
         User.find({username:'admin'}, function (err, obj) {
             if (err) {

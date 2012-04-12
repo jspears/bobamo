@@ -1,0 +1,10 @@
+{
+    "name": "bobamo-generator"
+    , "description":"A plugin for Bobamo that generates crud forms"
+    , "version": "0.4.0"
+    , "private": false
+    , "dependencies":{
+        "jqtpl":"latest"
+    }
+
+}

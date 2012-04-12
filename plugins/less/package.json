@@ -1,0 +1,10 @@
+{
+    "name": "bobamo-less"
+    , "description":"A plugin for Bobamo that generates less style sheets"
+    , "version": "0.4.0"
+    , "private": false
+    , "dependencies":{
+        "less":"latest"
+    }
+
+}

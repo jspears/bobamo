@@ -41,8 +41,10 @@ var SessionModel = function (persist) {
                 var keys = Object.keys(conf.keys);
                 for(var i=0,l=keys.length; i<l;i++){
                     var name = keys[i];
-                    if (plugins[name] && ( v in plugins[name]))
-                        return plugins[name][v];
+                    if (!(_u.isUndefined(plugins[name])|| (_u.isUndefined(plugins[name][v])))){
+                        var ret = plugins[name][v];
+                        return ret;
+                    }
                 }
             }
 

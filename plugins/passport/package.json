@@ -1,0 +1,11 @@
+{
+    "name": "bobamo-passport"
+  , "description":"A Bobamo plugin to support authentication, via passport"
+  , "version": "0.2.0"
+  , "private": true
+  , "dependencies": {
+      "passport":"latest"
+    , "passport-local":"latest"
+  }
+  
+}
