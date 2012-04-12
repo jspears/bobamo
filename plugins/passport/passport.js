@@ -45,18 +45,18 @@ PassportPlugin.prototype.encryptCredentials = function (req, res, next) {
     req.body[passfield] = passHash;
     next();
 };
-
+PassportPlugin.prototype.onAuth = function(req,res){
+    res.send({
+        status:0,
+        payload:req.user
+    });
+}
 PassportPlugin.prototype.filters = function () {
     var app = this.app;
     app.post(this.pluginUrl, this.encryptCredentials.bind(this),
-        passport.authenticate('local', { failureRedirect:'/check' }), function (req, res) {
-            res.send({
-                status:0,
-                payload:req.user
-            });
-        });
+        passport.authenticate('local', { failureRedirect:'/check' }), this.onAuth.bind(this));
 
-    app.get(this.pluginUrl + '/check', this.ensureAuthenticated.bind(this));
+    app.get(this.pluginUrl + '/check', this.ensureAuthenticated.bind(this), this.onAuth.bind(this));
 
     app.get(this.pluginUrl + '/logout', function (req, res) {
         req.logOut();
