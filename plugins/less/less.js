@@ -70,7 +70,6 @@ LessPlugin.prototype.routes = function () {
             this.save(payload, function (err, resp) {
                 if (err)
                     return next(err);
-                this.configure(payload);
                 res.send({
                     status:0,
                     payload:payload
@@ -96,7 +95,6 @@ LessPlugin.prototype.routes = function () {
             this.save(payload, function (err, resp) {
                 if (err)
                     return next(err);
-                this.configure(payload);
                 res.send({
                     status:0,
                     payload:payload

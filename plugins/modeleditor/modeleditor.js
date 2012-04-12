@@ -103,7 +103,6 @@ EditPlugin.prototype.routes = function () {
         this.save(sobj, function(err, data){
             if (err)
                 return next(err);
-            this.configure(sobj);
             res.send({
                 status:0,
                 payload:data

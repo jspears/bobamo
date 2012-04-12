@@ -36,22 +36,20 @@ AppEditorPlugin.prototype.routes = function (options) {
 
     this.app.post(this.pluginUrl + '/admin', function (req, res, next) {
         this.save(req.body, function(err, obj){
-            this.configure(req.body);
             res.send({
                 status:0,
                 payload:obj
             })
-        }.bind(this));
+        }.bind(this), req);
     }.bind(this));
 
     this.app.put(this.pluginUrl + '/admin', function (req, res, next) {
         this.save(req.body, function(err, obj){
-            this.configure(req.body);
             res.send({
                 status:0,
                 payload:obj
             })
-        }.bind(this));
+        }.bind(this), req);
     }.bind(this));
 
     Plugin.prototype.routes.apply(this, arguments);
