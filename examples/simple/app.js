@@ -20,12 +20,14 @@ app.configure(function () {
 //    app.set('view engine', 'jade');
     app.use(express.bodyParser());
     app.use(express.methodOverride());
+    app.use(express.cookieParser());
+    app.use(express.session({secret:'super duper secret'}))
     app.use(app.router);
     app.use(express.static(__dirname + '/public'));
 });
 
 app.configure('development', function () {
-    app.use('/bobamo', bobamo.express({uri:'mongodb://localhost/bobamo_development'}, express));
+    app.use('/bobamo', bobamo.express({plugin:'session', uri:'mongodb://localhost/bobamo_development'}, express));
 
     app.use(express.errorHandler({ dumpExceptions:true, showStack:true }));
 });
