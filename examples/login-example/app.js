@@ -22,6 +22,7 @@ app.configure(function () {
     app.register('.js', jqtpl.express);
     app.use(express.cookieParser());
     app.use(express.bodyParser());
+    app.use(express.query());
     app.use(express.session({ secret:'big fat secret' }));
     app.use(express.methodOverride());
     app.use(bobamo.express({mongoose:mongoose, plugin:'passport', authModel:User}, express))

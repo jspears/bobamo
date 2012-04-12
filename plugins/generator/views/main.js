@@ -14,7 +14,10 @@ require.config({
    'jquery-editors':'libs/backbone-forms/src/jquery-ui-editors',
    'bootstrap':'libs/bootstrap/js',
     templates: '../templates',
-    tpl: '../tpl'
+{{each(k,j) pluginManager.pluginNames()}}
+    ${j}:'${baseUrl}${j}',
+{{/each}}
+    tpl: '../tpl',
   }
 
 });

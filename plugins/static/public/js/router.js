@@ -16,7 +16,7 @@ define([
         doLogin:function(actions){
             console.log('doLogin', arguments);
             var self = this;
-            return require(['views/login/login'], function (View) {
+            return require(['passport/js/views/login/login'], function (View) {
                 new View({router:self}).render('/'+(actions ? actions.indexOf('login') > -1 ? '/home'  : actions : '/home'));
             });
         },

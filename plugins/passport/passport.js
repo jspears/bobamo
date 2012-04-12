@@ -63,8 +63,9 @@ PassportPlugin.prototype.filters = function () {
         res.redirect(this.baseUrl);
     }.bind(this));
 
-   [this.baseUrl + '/rest/*'].forEach(function (v) {
-        this.app.all(v, this.ensureAuthenticated.bind(this));
+    [this.baseUrl + '/rest/*'].concat(this.options.restrict).forEach(function (v) {
+        if (v)
+            this.app.all(v, this.ensureAuthenticated.bind(this));
     }, this);
-
+    PluginApi.prototype.filters.apply(this, arguments);
 }
