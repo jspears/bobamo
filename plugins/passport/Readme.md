@@ -8,3 +8,14 @@ This plugin provides passport authentication support.
  passwordField // the default password field.
  strategy // the passport strategy to use defaults to LocalStrategy.
  protected // the list of urls to protect, defaults to all.
+
+##Request
+To require a route to be authenticated set authrequired.
+
+    ```javascript
+
+    app.all('/your/route', function(req,res, next){
+        req.authrequired = true
+     next();
+    });
+    ```

@@ -6,13 +6,18 @@ var PassportPlugin = function () {
     if (!this.options.authModel) {
         throw new Error("authModel option is required");
     }
+    this.usernameField = this.options.usernameField || 'username';
+    this.passwordField = this.options.passwordField || 'password';
     this.app.use(passport.initialize());
     this.app.use(passport.session());
 
 
     passport.use(this.options.strategy || new LocalStrategy(
         function (username, password, done) {
-            this.options.authModel.findOne({username:username, password:password}, done)
+            var obj = {};
+            obj[this.usernameField] = username;
+            obj[this.passwordField] = password;
+            this.options.authModel.findOne(obj, done)
         }.bind(this)
     ));
     passport.serializeUser(function (user, done) {
@@ -45,22 +50,37 @@ PassportPlugin.prototype.encryptCredentials = function (req, res, next) {
     req.body[passfield] = passHash;
     next();
 };
-PassportPlugin.prototype.onAuth = function(req,res){
+PassportPlugin.prototype.onAuth = function (req, res) {
     res.send({
         status:0,
         payload:req.user
     });
 }
 PassportPlugin.prototype.filters = function () {
+    var passfield = this.options.passwordField || 'password';
+    var authenticate = passport.authenticate('local', { failureRedirect:this.pluginUrl+'/check' });
     var app = this.app;
-    app.post(this.pluginUrl, this.encryptCredentials.bind(this),
-        passport.authenticate('local', { failureRedirect:'/check' }), this.onAuth.bind(this));
+    app.post(this.pluginUrl,  this.encryptCredentials.bind(this), authenticate, this.onAuth.bind(this));
 
     app.get(this.pluginUrl + '/check', this.ensureAuthenticated.bind(this), this.onAuth.bind(this));
 
     app.get(this.pluginUrl + '/logout', function (req, res) {
         req.logOut();
         res.redirect(this.baseUrl);
+    }.bind(this));
+
+    app.all(this.baseUrl + '*', function (req, res, next) {
+        if (req.authrequired) {
+            if (req.body[passfield])
+               return authenticate(req, res, next);
+        }
+        next();
+
+
+    }.bind(this), function (req, res, next) {
+        if (req.authrequired)
+            return  this.ensureAuthenticated(req, res, next)
+        return next();
     }.bind(this));
 
     [this.baseUrl + '/rest/*'].concat(this.options.restrict).forEach(function (v) {
