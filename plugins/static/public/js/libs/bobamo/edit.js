@@ -74,7 +74,7 @@ define([
             var save = this.form.getValue();
             //handle nested objects.
             _(save).each(function (v, k) {
-                if (_.isEmpty(v))
+                if (_.isString(v) && _.isEmpty(v))
                     v = null;
 
                 if (k && k.indexOf('.') > -1) {

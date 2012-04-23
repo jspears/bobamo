@@ -35,6 +35,7 @@
 
 .sorter .arrow.up {
     border-bottom: 4px solid black;
+    margin: 0 0 1px 0;
 }
 
 .sorter .arrow.activate {

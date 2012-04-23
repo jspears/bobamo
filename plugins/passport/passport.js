@@ -58,9 +58,9 @@ PassportPlugin.prototype.onAuth = function (req, res) {
 }
 PassportPlugin.prototype.filters = function () {
     var passfield = this.options.passwordField || 'password';
-    var authenticate = passport.authenticate('local', { failureRedirect:this.pluginUrl+'/check' });
+    var authenticate = passport.authenticate('local', { failureRedirect:this.pluginUrl + '/check' });
     var app = this.app;
-    app.post(this.pluginUrl,  this.encryptCredentials.bind(this), authenticate, this.onAuth.bind(this));
+    app.post(this.pluginUrl, this.encryptCredentials.bind(this), authenticate,   this.onAuth.bind(this));
 
     app.get(this.pluginUrl + '/check', this.ensureAuthenticated.bind(this), this.onAuth.bind(this));
 
@@ -72,7 +72,10 @@ PassportPlugin.prototype.filters = function () {
     app.all(this.baseUrl + '*', function (req, res, next) {
         if (req.authrequired) {
             if (req.body[passfield])
-               return authenticate(req, res, next);
+                this.encryptCredentials(req, res, function (err) {
+                    if (err) return next(err);
+                    return authenticate(req, res, next);
+                })
         }
         next();
 
