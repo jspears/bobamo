@@ -690,13 +690,14 @@
                        var errClass = Form.classNames.error;
 
                        this.$el.removeClass(errClass);
+                       if (this.$help){
+                         this.$help.empty();
 
-                       this.$help.empty();
-
-                       //Reset help text if available
-                       var helpMsg = this.schema.help;
-                       if (helpMsg) this.$help.html(helpMsg);
-                   },
+                        //Reset help text if available
+                           var helpMsg = this.schema.help;
+                          if (helpMsg) this.$help.html(helpMsg);
+                       }
+                 },
 
                /**
                 * Update the model with the new value from the editor

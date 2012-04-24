@@ -5,8 +5,9 @@ define(['Backbone.Form', 'jquery', 'underscore'], function (Form, $, _) {
             editors.Base.prototype.initialize.call(this, options);
 
             if (!this.schema || !(this.schema.options || this.schema.url)) throw "Missing required 'schema.options'";
-            if (!_.isUndefined(this.schema.multiple) || this.schema.multiple || this.schema.dataType == 'Array'){
+            if (this.schema && ( this.schema.multiple  !== false || this.schema.dataType == 'Array' || this.schema.type == 'Array' )){
                 this.$el.attr('multiple', 'multiple');
+                this._multiple = true;
             }
         },
         setValue:function (value) {

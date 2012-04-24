@@ -9,7 +9,31 @@ define([
     'libs/table/jquery.wiz'
 ], function ($, _, Backbone, Form, replacer) {
     "use strict";
+    function nullEmptyStr(obj){
+        _(obj).each(function(v,k){
+           if (k == '_id' && _.isEmpty(v) ){
+               delete obj[k];
+           }else if (_.isString(v) ){
 
+               obj[k] = _.isEmpty(v) ? null : v;
+           }
+           else if (_.isArray(v)){
+               obj[k] = _(v).filter(function(vv){
+                  if(_.isString(vv)){
+                     return !(_.isEmpty(vv));
+                  }else if (vv){
+                    nullEmptyStr(vv);
+                  }
+                  return true;
+               });
+
+           }
+           else if (_.isObject(v) &! _.isFunction(v)){
+               nullEmptyStr(v);
+           }
+        });
+
+    }
     var EditView = Backbone.View.extend({
         tagName:'div',
         events:{
@@ -72,10 +96,9 @@ define([
             var errors = this.form.commit();
 
             var save = this.form.getValue();
+            nullEmptyStr(save);
             //handle nested objects.
             _(save).each(function (v, k) {
-                if (_.isString(v) && _.isEmpty(v))
-                    v = null;
 
                 if (k && k.indexOf('.') > -1) {
                     var split = k.split('.');

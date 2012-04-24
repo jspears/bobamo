@@ -40,7 +40,7 @@ app.configure('production', function () {
 
 // Routes
 
-app.get('/', function(req,res){ res.redirect('/index.html')});
+app.get('/', function(req,res){ res.render('redir_index.html', {layout:false})});
 
 app.listen(3001);
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

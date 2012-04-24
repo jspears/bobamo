@@ -21,17 +21,18 @@ StaticPlugin.prototype.editors = function () {
 StaticPlugin.prototype.filters = function () {
     var prefix = this.baseUrl;
     var sdir = path.join(this.path, 'public');
-    var psdir = path.join(this.path, '../../', 'public');
-    console.log('sdir', sdir, psdir);
+    var psdir = path.join(process.cwd(), 'public');
+
     var public = static(sdir);
     var publicUser = static(psdir);
-
+    console.log("Public Dir: ", psdir);
     this.app.get(prefix + '*', function (req, res, next) {
         req._url = req.url;
         req.url = req.url.substring(prefix.length - 1);
+
         next();
 
-    }, public, publicUser, function (req, res, next) {
+    }, publicUser, public, function (req, res, next) {
         req.url = req._url;
         next();
     });

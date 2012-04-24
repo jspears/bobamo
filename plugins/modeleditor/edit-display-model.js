@@ -49,20 +49,24 @@ var EditModel = function (k, Model, options) {
         });
     })
     this.__defineGetter__('fields', function () {
-        return Object.keys(util.flatten(this.model.paths));
+        var fields = Object.keys(util.flatten(this.model.paths));
+        return fields;
     });
-    this.__defineGetter__('fieldsets', function (v, k) {
+    this.__defineGetter__('fieldsets', function () {
         var fieldsets = [
             {
                 legend:'Edit ' + this.title,
                 fields:['title', 'plural', 'hidden', 'labelAttr', 'fieldsets', 'list_fields']
             }
         ];
-        _u(this.fields).each(function (k) {
-            fieldsets.push({
+      //  var _paths = util.flatten(this.schemaFor());
+
+        _u(this.fields).each(function (v, k) {
+            var fieldset = {
                 legend:this.title + '.' + k,
-                fields:['paths.' + k + '.title', 'paths.' + k + '.help', 'paths.' + k + '.views', 'paths.' + k + '.type', 'paths.' + k + '.dataType', 'paths.' + k + '.required']
-            })
+                fields:['paths.' + k + '.title','paths.' + k + '.help', 'paths.' + k + '.views', 'paths.' + k + '.type', 'paths.' + k + '.dataType', 'paths.' + k + '.required']
+            };
+            fieldsets.push(fieldset);
         }, this);
         return fieldsets;
     })
@@ -89,6 +93,7 @@ EditModel.prototype.schema = {
         help:'This is a label that gives a sussinct description of object'
     }
 };
+
 EditModel.prototype.schemaFor = function () {
     var fields = this.fields;
     var schema = this._schema = _u.extend({}, this.schema);
@@ -123,9 +128,7 @@ EditModel.prototype.schemaFor = function () {
 
     var obj = (this._schema.paths = { subSchema:{}, type:'Object'}).subSchema;
     _u(this.model.paths).each(function (v, k) {
-        obj[k] = {type:'Object'};
-        obj[k].subSchema = createSubSchema(this.editors, k, v);
-
+        obj[k] = {type:'Object', subSchema:createSubSchema(this.editors, k, v) };
 
     }, this);
 
@@ -173,7 +176,7 @@ function createSubSchema(editors, k, v) {
         }
     }
     _u(v.subSchema).each(function (vv, kk) {
-        obj[kk] = {type:'Object', subSchema:createSubSchema(editors, kk, vv)};
+        obj[kk] = {type:'Object', labelAttr:{type:'Text', help:'A label for this attribute'},subSchema:createSubSchema(editors, kk, vv)};
     });
     return obj;
 }

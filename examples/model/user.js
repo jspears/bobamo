@@ -1,4 +1,12 @@
 var crypto = require('crypto'), mongoose = require('mongoose'), Schema = mongoose.Schema;
+var RoleSchema = new Schema({
+    name:{type:String},
+        read:{type:Boolean},
+        edit:{type:Boolean},
+        remove:{type:Boolean},
+    changeOwnership:{type:Boolean}
+
+})
 var UserSchema = new Schema({
     username:{type:String, required:true, unique:true, index:true, display:{help:'This must be a unique name'}},
     first_name:{type:String},
@@ -13,7 +21,7 @@ var UserSchema = new Schema({
           stars:Number,
       favorite:{type:Number,display:{title:'Favorite'}}
     },
-
+    roles:[RoleSchema],
     created_at:{type:Date, display:{display:'none'}},
     created_by:{type:Schema.ObjectId, ref:'user'},
     modified_at:{type:Date}

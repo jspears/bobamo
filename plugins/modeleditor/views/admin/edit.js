@@ -12,6 +12,9 @@ define([
     var fieldsets = eval('({{html JSON.stringify(model.fieldsets) }})');
     var schema = eval('({{html JSON.stringify(model.schemaFor()) }})');
     schema.fieldsets.itemToString = function (obj) {
+        if (obj.fields && _.isString(obj.fields)){
+              obj.fields = obj.fields.split(',');
+        }
         var fields = '[' + obj.fields.join(',') + ']';
         if (fields.length > 30)
             fields = fields.substring(0, 27) + '...';
