@@ -87,7 +87,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                     var o = type[0];
                     defaults.listType = 'Object';
                     var s = defaults.subSchema = {};
-                    if (o.paths)
+                    if (o && o.paths)
                         _u.each(o.paths, function onListType(v, k) {
                             s[k] = this.pluginManager.pluginFor(k, v, o);
                         }, this);
