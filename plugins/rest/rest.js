@@ -34,16 +34,6 @@ RestPlugin.prototype.routes = function () {
                     var o = obj.toObject ? obj.toObject() : obj;
                     o.id = obj._id;
                     delete o._id;
-                    delete o.id_;
-                    delete o.managerId_;
-                    if (M && M.modelName == 'user')
-                        o.password = '';
-                    var manager = obj.manager;
-                    o.managerFirstName = manager ? manager.firstName : '';
-                    o.managerLastName = manager ? manager.lastName : '';
-                    o.managerId = manager && manager._id ? manager._id.toString() : manager || '';
-                    delete o.reports;
-                    delete o.manager;
                     return o;
                 }
             }
