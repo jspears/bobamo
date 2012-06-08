@@ -18,10 +18,11 @@ module.exports = function MModel(m, manager) {
     this.__defineGetter__('finders', function () {
         var finders = [];
         _u(m.schema.statics).each(function (v, k) {
-            if (findRe.test(k) && v.length == 0) {
+            if ( (findRe.test(k) && v.length == 0 ) || v.display) {
                 finders.push({
                     title:inflection.titleize(inflection.humanize(k)),
-                    name:k
+                    name:k,
+                    display:v.display
                 });
             }
         });

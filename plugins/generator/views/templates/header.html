@@ -16,7 +16,7 @@
                         <ul class="dropdown-menu">
                             <li><a href="#/${l.modelName}/list">All ${l.plural}</a></li>
                             {{each(k, j) l.finders }}
-                            <li><a href="#/views/${l.modelName}/finder?f=${j.name}">${j.title}</a></li>
+                            <li><a href="#/views/${l.modelName}/finder/${j.name}">${j.title}</a></li>
                             {{/each}}
 
                              </ul>

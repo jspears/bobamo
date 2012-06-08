@@ -35,7 +35,9 @@ GeneratorPlugin.prototype.routes = function (options) {
         var opts = {};
         if (type) {
             type = type.replace(extRe, '');
-            opts.model = appModel.modelFor(type)
+            opts.model = appModel.modelFor(type);
+            opts.type = type;
+            opts.view = req.params.view;
         }
         return opts;
     }
@@ -53,8 +55,8 @@ GeneratorPlugin.prototype.routes = function (options) {
         res.redirect(this.baseUrl + (this.options.index || 'index.html'));
     }.bind(this));
 
-    app.get(base + 'js/:super?/views/:type/finder/:view', function (req, res, next) {
-        this.generate(res, 'views/finder.js', makeOptions(req), next);
+    app.get(base + 'js/:super?/views/:type/finder/:view.:format', function (req, res, next) {
+        this.generate(res, 'views/finder.'+req.params.format, makeOptions(req), next);
     }.bind(this));
 
     app.get(base + ':view', function (req, res, next) {

@@ -16,5 +16,15 @@ GroupSchema.pre('save', function (next) {
     }
     next();
 });
+GroupSchema.statics.search = function(q){
+   return this.find({});
+};
+GroupSchema.statics.search.display = {
+                           data:{search:''},
+                           schema:{
+                               search:{type:'Text', title:'Search'}
+                           },
+                           fieldsets:[{"legend":"Search Group","fields":["search"]}]
+}                       ;
 var Group = mongoose.model('group', GroupSchema);
 module.exports = Group;

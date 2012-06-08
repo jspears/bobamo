@@ -9,6 +9,7 @@ define([
         routes:       {
             'login/login*':'doLoginHome',
             'login/*actions':'doLogin',
+           // '/views/:type/finder/:finder':'defaultAction',
             '*actions':'defaultAction'
         },
         doLoginHome:function(){
@@ -37,7 +38,7 @@ define([
              }
 
             var paths = parts[0].split('/');
-            var obj = {};
+            var obj = {params:params};
             if (parts.length > 1) {
                 obj = query.parse(parts[1]);
             }
