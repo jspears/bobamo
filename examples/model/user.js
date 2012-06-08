@@ -30,6 +30,17 @@ var UserSchema = new Schema({
     list_fields:['username','first_name','last_name','twitter','email']
 }});
 
+UserSchema.statics.findA_thru_H = function onFindAH(){
+    return this.find().regex('username', /^[a-h]/i);
+}
+
+UserSchema.statics.findI_thru_P = function onFindIP(){
+    return this.find().regex('username', /^[i-p]/i);
+}
+UserSchema.statics.findQ_thru_Z = function onFindQZ(){
+    return this.find().regex('username', /^[q-z]/i);
+}
+
 function sha1b64(password) {
     return crypto.createHash('sha1').update(password).digest('base64');
 }

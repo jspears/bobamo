@@ -6,9 +6,27 @@
             <div class="nav-collapse mainnav">
                 <ul class="nav">
                     {{each(i,l) appModel.modelPaths}}
+                      {{if l.finders && l.finders.length }}
+                         <li class="dropdown ${l.modelName}" id="menu${l.modelName}">
+
+                           <a    class="dropdown-toggle"  data-toggle="dropdown">
+                            ${l.plural}
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#/${l.modelName}/list">All ${l.plural}</a></li>
+                            {{each(k, j) l.finders }}
+                            <li><a href="#/views/${l.modelName}/finder?f=${j.name}">${j.title}</a></li>
+                            {{/each}}
+
+                             </ul>
+                         </li>
+                      {{else}}
                        <li class="${l.modelName}" id="menu${l.modelName}">
-                          <a href="#/${l.modelName}/list">${l.plural}</a>
-                       </li>
+                        <a href="#/${l.modelName}/list">${l.plural}</a>
+                      </li>
+
+                     {{/if}}
                     {{/each}}
                     {{if pluginManager.admin.length}}
                     <li class="dropdown">

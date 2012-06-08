@@ -3,6 +3,7 @@ define([
     'jquery',
     'underscore',
     'Backbone',
+  // 'libs/backbone/backbone.queryparams',
     'libs/querystring'], function ($, _, Backbone, query) {
     var AppRouter = Backbone.Router.extend({
         routes:       {
@@ -27,7 +28,7 @@ define([
             $main.find('.'+clz).addClass('active');
 
         },
-        defaultAction:function (actions) {
+        defaultAction:function (actions, params) {
             // We have no matching route, lets display the home page
             var parts = (actions || 'home' ).replace(/^\/*/, '').split('?', 2);
             var self = this;
@@ -53,7 +54,7 @@ define([
             require([p], function (View) {
                 console.log('rendering ', p, View);
                // var view = self.views[p] || (self.views[p] =
-                var view = new View({router:AppRouter, container:'#content'});
+                var view = new View({router:AppRouter, container:'#content'}, obj);
                 view[ view.show ? 'show' : 'render'](obj);
             });
         }

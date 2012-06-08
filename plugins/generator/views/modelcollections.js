@@ -9,10 +9,7 @@ define([
     var Model = Backbone.Model.extend({
         urlRoot:'${api}/${model.modelName}',
         schema:schema,
-       // defaults:defaults,
-        initialize: function() {
-        }
-        ,parse:function(resp) {
+        parse:function(resp) {
             console.log('/${api}/${model.modelName}model#parse', resp);
             return resp.payload ? resp.payload : resp;
         },

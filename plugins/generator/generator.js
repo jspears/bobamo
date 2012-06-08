@@ -43,14 +43,20 @@ GeneratorPlugin.prototype.routes = function (options) {
 
     var app = this.app;
     var base = this.baseUrl;
-    if (this.options.index){
-        app.get(base+this.options.index, function(req,res,next){
+    if (this.options.index) {
+        app.get(base + this.options.index, function (req, res, next) {
             this.generate(res, 'index.html', makeOptions(req), next);
         }.bind(this))
     }
+
     app.get(base, function (req, res, next) {
         res.redirect(this.baseUrl + (this.options.index || 'index.html'));
     }.bind(this));
+
+    app.get(base + 'js/:super?/views/:type/finder/:view', function (req, res, next) {
+        this.generate(res, 'views/finder.js', makeOptions(req), next);
+    }.bind(this));
+
     app.get(base + ':view', function (req, res, next) {
         this.generate(res, req.params.view, makeOptions(req), next);
     }.bind(this));
@@ -60,6 +66,7 @@ GeneratorPlugin.prototype.routes = function (options) {
     app.get(base + 'js/:super?/views/:view', function (req, res, next) {
         this.generate(res, req.params.view, makeOptions(req), next);
     }.bind(this));
+
     app.get(base + 'js/:super?/views/:type/:view', function (req, res, next) {
         this.generate(res, 'views/' + req.params.view, makeOptions(req), next);
     }.bind(this));
