@@ -11,17 +11,13 @@ define([
     "use strict";
     function _null(v) {
         return v != null;
-    }
-
-    ;
+    };
     function _dir(v) {
         if (v.direction)
             return replacer('<span class="sortable elementActivate" data-field="{field}" data-label="{label}" data-direction="{direction}">{label}</span>',v);
 
         return null;
-    }
-
-    ;
+    };
     var ListView = Backbone.View.extend({
         tagName:'div',
         classNames:['span7'],
@@ -36,6 +32,8 @@ define([
             if (!this.collection){
                 throw new Error('collection must be defined');
             }
+            this.collection.on('reset', this.renderList, this);
+            this.collection.on('fetch', this.renderList, this);
             return this;
         },
         renderItem:function (item) {
@@ -47,8 +45,11 @@ define([
             return this;
         },
         renderList:function () {
+            console.log('renderList',arguments)
             this.$ul = this.$el.find('tbody').empty();
             _.each(this.collection.models, this.renderItem, this);
+            this.$paginate.paginate('update', {sort:this.sort_str ? ' sorting by: ' + this.sort_str : '', total:this.collection.total});
+            $('.sortable', this.$table).sorter();
             return this;
         },
         sorts:[],
@@ -71,13 +72,7 @@ define([
             });
 
             data.sort = sort.join(',');
-            this.collection.fetch({
-                data:data,
-                success:function (arg, resp) {
-                    self.renderList();
-                    resp.sort = self.sort_str ? ' sorting by: ' + self.sort_str : '';
-                    $p.paginate('update', resp).find('.sortable').sorter();
-                }});
+            this.collection.fetch({data:data});
             return this;
         },
         onSort:function (evt) {
@@ -96,9 +91,8 @@ define([
             this.$container = obj && obj.container ? $(obj.container) : $('#content');
             this.$table = $(this.template());
             this.$paginate = $('.pager_table', this.$table).paginate();
-            $('.sortable', this.$table).sorter();
             this.$el.append(this.$table);
-            this.update();
+            this.update('Loading {items}');
             this.$container.empty().append(this.$el);
             return this;
         }

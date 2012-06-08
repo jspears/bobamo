@@ -11,6 +11,7 @@ define([
         schema:schema,
         parse:function(resp) {
             console.log('/${api}/${model.modelName}model#parse', resp);
+
             return resp.payload ? resp.payload : resp;
         },
         get:function(key){
@@ -30,10 +31,11 @@ define([
         model: Model,
         url:'${api}/${model.modelName}',
         initialize: function() {
-
+             this.total = 0;
         },
         parse:function(resp) {
             console.log('Collection#parse ${model.modelName}', resp.payload);
+            this.total = resp.total;
             return resp.payload ? resp.payload : resp;
         }
     });
