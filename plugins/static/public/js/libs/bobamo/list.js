@@ -57,14 +57,14 @@ define([
             this.update('Loading page <b>' + evt.page + '</b> of {items}');
             return this;
         },
-        update:function (message) {
+        update:function (message, opt) {
             var $p = this.$paginate.paginate('wait', message);
 
             var self = this;
-            var data = {
+            var data = _.extend({
                 limit:parseInt($p.attr('data-limit')),
                 skip:Math.max(0, parseInt($p.attr('data-skip')))
-            };
+            },opt);
             var sort = [];
             _.each(this.sorts, function (v, k) {
                 if (!v.direction) return;
