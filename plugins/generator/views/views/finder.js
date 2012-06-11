@@ -13,7 +13,6 @@ define([
      var qform = {{html JSON.stringify(model.finder(view).display) || 'null' }};
     return View.extend({
         initialize:function(options, params){
-          console.log('inititlize?', arguments);
             var FM =     m.Collection.extend({
                 url:'${api}/${model.modelName}/finder/${view}'
             });
@@ -21,12 +20,20 @@ define([
             View.prototype.initialize.apply(this, arguments);
 
         },
+        events:{
+          submit:'onFormSubmit'
+        },
+        onFormSubmit:function(e){
+            e.preventDefault();
+            console.log('onFormSubmit',this.form.getValue());
+            this.collection.fetch({data:this.form.getValue()});
+        },
         template:_.template(tableTemplate),
- //       collection:collection,
         render:function(){
             View.prototype.render.apply(this, arguments);
             if (qform){
-                var form = new Form(qform).render();
+                var form = this.form = new Form(qform).render();
+                form.$el.append('<div class="form-actions"><button class="btn">Cancel</button><button type="submit" class="btn pull-right btn-primary save finish">Submit</button></div>')
                 this.$el.find('.table').before(form.el);
             }
 

@@ -16,14 +16,17 @@ GroupSchema.pre('save', function (next) {
     }
     next();
 });
-GroupSchema.statics.search = function(q){
-   return this.find({});
+GroupSchema.statics.search = function(q, search){
+   search = search || q.search || '.*';
+    var re = new RegExp(search,'gi');
+   return this.find({}).or([{name:re},{description:re}]);
 };
 GroupSchema.statics.search.display = {
                            data:{search:''},
                            schema:{
                                search:{type:'Text', title:'Search'}
                            },
+                           method:'GET',
                            fieldsets:[{"legend":"Search Group","fields":["search"]}]
 }                       ;
 var Group = mongoose.model('group', GroupSchema);
