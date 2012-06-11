@@ -49,7 +49,7 @@ var EditModel = function (k, Model, options) {
         });
     })
     this.__defineGetter__('fields', function () {
-        var fields = Object.keys(util.flatten(this.model.paths));
+      var fields = Object.keys(util.flatten(this.model.paths));
         return fields;
     });
     this.__defineGetter__('fieldsets', function () {
@@ -59,13 +59,14 @@ var EditModel = function (k, Model, options) {
                 fields:['title', 'plural', 'hidden', 'labelAttr', 'fieldsets', 'list_fields']
             }
         ];
-      //  var _paths = util.flatten(this.schemaFor());
+        //  var _paths = util.flatten(this.schemaFor());
 
-        _u(this.fields).each(function (v, k) {
+        _u(this.fields).each(function (k, v) {
             var fieldset = {
                 legend:this.title + '.' + k,
-                fields:['paths.' + k + '.title','paths.' + k + '.help', 'paths.' + k + '.views', 'paths.' + k + '.type', 'paths.' + k + '.dataType', 'paths.' + k + '.required']
+                fields:['paths.' + k + '.title', 'paths.' + k + '.help', 'paths.' + k + '.type', 'paths.' + k + '.dataType', 'paths.' + k + '.required']
             };
+
             fieldsets.push(fieldset);
         }, this);
         return fieldsets;
@@ -96,8 +97,8 @@ EditModel.prototype.schema = {
 
 EditModel.prototype.schemaFor = function () {
     var fields = this.fields;
-    var schema = this._schema = _u.extend({}, this.schema);
-    this._schema.fieldsets = {
+    var schema = _u.extend({}, this.schema);
+    schema.fieldsets = {
         type:'List',
         listType:'Object',
         help:'Fieldsets to use to edit object, if more than 1 a wizard is created.',
@@ -117,7 +118,7 @@ EditModel.prototype.schemaFor = function () {
         }
 
     }
-    this._schema.list_fields = {
+    schema.list_fields = {
         type:'List',
         listType:'Select',
         options:fields,
@@ -125,60 +126,62 @@ EditModel.prototype.schemaFor = function () {
         title:'List View',
         sortable:true
     }
+    schema.paths = _u.extend({type:'Object', subSchema:{}}, this.schema);
+    console.log('model',JSON.stringify(this.model));
 
-    var obj = (this._schema.paths = { subSchema:{}, type:'Object'}).subSchema;
-    _u(this.model.paths).each(function (v, k) {
-        obj[k] = {type:'Object', subSchema:createSubSchema(this.editors, k, v) };
-
-    }, this);
-
-    return this._schema;
+    _u(this.model.paths).each(this.createSubSchema(schema.paths), this);
+    console.log('schema',schema);
+    return schema;
 
 }
-function createSubSchema(editors, k, v) {
-    var obj = {
-        title:{
-            title:'Title',
-            help:'The title of the path',
-            type:'Text'
-        },
-        help:{
-            title:'Help',
-            help:'The help text to show next to item',
-            type:'Text'
-        },
-        views:{
-            title:'View',
-            help:'The views this property can be seen in.',
-            dataType:'Select',
-            options:[
-                {label:'List View', val:'list_view'},
-                {label:'Edit View', val:'edit_view'},
-                {label:'None', val:'no_view'}
-            ]
-        },
-        type:{
-            title:'Editor',
-            help:'The editor to use with field',
-            type:'Select',
-            options:editors
-        },
-        dataType:{
-            title:'Data Type',
-            help:'The Data Type of the field for html5 enabled browsers',
-            options:'text,tel,time,url,range,number,week,month,year,date,datetime,datetime-local,email,color'.split(','),
-            type:'Select'
-        },
-        required:{
-            title:'Required',
-            help:'Is this a required field.',
-            type:'Checkbox'
+
+EditModel.prototype.createSubSchema = function createSubSchema(ref) {
+
+    var editors = this.editors;
+
+    var schema = ref;
+
+    return function onCreateSubSchema(v, k) {
+
+        var obj = schema.subSchema[k] = {
+            type:'Object',
+            subSchema:{
+                title:{
+                    title:'Title',
+                    help:'The title of the path',
+                    type:'Text'
+                },
+                help:{
+                    title:'Help',
+                    help:'The help text to show next to item',
+                    type:'Text'
+                },
+                type:{
+                    title:'Editor',
+                    help:'The editor to use with field',
+                    type:'Select',
+                    options:editors
+                },
+                dataType:{
+                    title:'Data Type',
+                    help:'The Data Type of the field for html5 enabled browsers',
+                    options:'text,tel,time,url,range,number,week,month,year,date,datetime,datetime-local,email,color'.split(','),
+                    type:'Select'
+                },
+                required:{
+                    title:'Required',
+                    help:'Is this a required field.',
+                    type:'Checkbox'
+                }
+            }
+        };
+        if (v.subSchema){
+            obj.paths = _u.extend({type:'Object', subSchema:{}}, this.schema);
+            _u(v.subSchema).each(this.createSubSchema(obj.paths),this);
+
         }
+        return obj;
     }
-    _u(v.subSchema).each(function (vv, kk) {
-        obj[kk] = {type:'Object', labelAttr:{type:'Text', help:'A label for this attribute'},subSchema:createSubSchema(editors, kk, vv)};
-    });
-    return obj;
 }
 var EditField = function (Field) {
 
