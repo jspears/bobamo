@@ -80,7 +80,8 @@ state is dramatically easier.  All data access is done through JSON/REST calls. 
 * Sortable - Fields are sortable.
 * Easy - Well easy is in the eye of the beholder.
 * Wizard Support - If the fields are grouped as described below you get a wizard interface.   Nice if you like wizards.
-
+* Finders - Just add a static function with no arguments, or one with a display property
+    to your  mongoose class and a new finder is created.
 
 
 
@@ -147,6 +148,36 @@ var UserSchema = new Schema({
     modified_at:{type:Date}
 }, {safe:true, strict:true, display:{title:'User', plural:'Users', fields:['username','first_name','last_name']});
 ```
+
+#Finders
+Finders allow for custom queries to be created and listed in the menu.   To add a simple finder
+```javascript
+   UserSchema.statics.findA_thru_H = function onFindAH(){
+       return this.find().regex('username', /^[a-h]/i);
+   }
+
+```
+
+Finders add a new item to the dropdown from the header.
+
+You may need some input for a finder to work.  To do that add a display property to the function.
+```
+GroupSchema.statics.search = function(q, search){
+   search = search || q.search || '.*';
+    var re = new RegExp(search,'gi');
+   return this.find({}).or([{name:re},{description:re}]);
+};
+GroupSchema.statics.search.display = {
+                           data:{search:''},   //default data
+                           schema:{
+                               search:{type:'Text', title:'Search'} //see backbone forms for an explanation.
+                           },
+                           fieldsets:[{"legend":"Search Group","fields":["search"]}] //see backbone forms.
+}
+```
+
+This will create an form on top of the results that will submit to your form.   Currently only GET methods
+are supported, meaning read operations.
 
 #Plugins
 Bobamo is built on plugins.   The main plugins are generator, less, mongoose, rest  and  static. These create
