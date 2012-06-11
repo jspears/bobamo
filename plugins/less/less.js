@@ -42,7 +42,7 @@ LessPlugin.prototype.routes = function () {
             if (err) return next(err);
             res.send(obj.payload);
         }, req.params.id);
-    });
+    }.bind(this));
     app.get(base + '/admin/:id?', function (req, res, next) {
         var obj = _u.extend({}, lessFactory.getCache(req.params.id || req.body.id) || this._variables);
         delete obj.payload;
@@ -52,14 +52,14 @@ LessPlugin.prototype.routes = function () {
             payload:obj.variables
         })
 
-    });
+    }.bind(this));
     app.post(base + '/admin', function (req, res, next) {
         delete req.body.variables;
         delete req.body.created;
         delete req.body.payload;
         var install = req.body.install;
         delete req.body.install;
-
+        var pm = this.pluginManager;
         lessFactory.createCache(function (err, obj) {
             if (err)
                 return next(err);
@@ -77,7 +77,7 @@ LessPlugin.prototype.routes = function () {
 
             })
         }.bind(this), req.body);
-    });
+    }.bind(this));
 
     app.put(base + '/admin/:id?', function (req, res, next) {
         delete req.body.variables;
@@ -85,6 +85,8 @@ LessPlugin.prototype.routes = function () {
         delete req.body.payload;
         var id = req.body.id || req.params.id;
         var install = req.body.install;
+        var pm = this.pluginManager;
+
         lessFactory.createCache(function (err, obj) {
             if (err)
                 return next(err);
@@ -102,7 +104,7 @@ LessPlugin.prototype.routes = function () {
 
             })
         }.bind(this), req.body);
-    });
+    }.bind(this));
 
     Plugin.prototype.routes.call(this);
 }
