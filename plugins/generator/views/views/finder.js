@@ -25,10 +25,11 @@ define([
         onFormSubmit:function(e){
             e.preventDefault();
             console.log('onFormSubmit',this.form.getValue());
-            this.update();
+            this.$paginate.paginate('update', {skip:0}); //reset the skip.
+            this.update(null, {skip:0});
         },
-        update:function(mesg){
-            View.prototype.update.call(this, mesg, this.form && this.form.getValue() || null);
+        update:function(mesg, data){
+            View.prototype.update.call(this, mesg, _.extend({}, data,  this.form && this.form.getValue() || null));
         },
         template:_.template(tableTemplate),
         render:function(){
