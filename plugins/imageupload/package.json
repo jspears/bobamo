@@ -1,0 +1,12 @@
+{
+    "name": "bobamo-imageupload"
+    , "description":"A plugin for Bobamo that provides image upload public support"
+    , "version": "0.6.0"
+    , "private": false
+    , "dependencies":{
+        "blueimp-file-upload":"latest",
+        "imagemagick":"latest",
+        "fs-extra":"latest"
+    }
+
+}
