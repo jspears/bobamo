@@ -1,27 +1,29 @@
 <script id="template-download" type="text/x-tmpl">
     {% for (var i=0, file; file=o.files[i]; i++) { %}
     <li class="span2 template-download fade">
+        <span class="delete">
+                <button class="close" data-type="{%=file.delete_type%}" data-url="{%=file.delete_url%}">
+                    <!--<i class="icon-trash icon-white"></i>-->
+                    <!--{%=locale.fileupload.destroy%}-->   ×
+                </button>
+                </span>
+
         <div class="thumbnail">
             {% if (file.thumbnail_url) { %}
             <img src="{%=file.thumbnail_url%}">
             {% } %}
 
 
-
             <div class="caption">
-                <a href="{%=file.url%}" title="{%=file.name%}" rel="gallery" download="{%=file.name%}"> <h5 class="name">{%=file.name%}</h5></a>
+                <a href="{%=file.url%}" title="{%=file.name%}" rel="gallery" download="{%=file.name%}"><h5 class="name">
+                    {%=file.name%}</h5></a>
                 {% if (file.error) { %}
-                 <span class="label label-important error">{%=locale.fileupload.error%}</span>
-                     {%=locale.fileupload.errors[file.error] || file.error%}
+                <span class="label label-important error">{%=locale.fileupload.error%}</span>
+                {%=locale.fileupload.errors[file.error] || file.error%}
                 {% } else { %}
 
                 <span>{%=o.formatFileSize(file.size)%}</span>
-                <div class="delete">
-                <button class="btn btn-mini btn-danger" data-type="{%=file.delete_type%}" data-url="{%=file.delete_url%}">
-                    <i class="icon-trash icon-white"></i>
-                    {%=locale.fileupload.destroy%}
-                </button>
-                </div>
+
                 {% } %}
             </div>
         </div>

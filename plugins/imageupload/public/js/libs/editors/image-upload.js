@@ -48,7 +48,7 @@ define(['jquery', 'underscore',
                     self.value = self.value.concat(obj.result);
                 })
                 .bind('fileuploaddestroy', function (e, obj) {
-                   self.values = _.filter(self.value, function (v) {
+                   self.value = _.filter(self.value, function (v) {
                         var ret = v.delete_url != obj.url
                         return ret;
                     });
