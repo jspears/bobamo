@@ -1,5 +1,6 @@
-define(['jquery',
+define(['jquery', 'underscore',
     'Backbone.Form',
+
     'imageupload/js/libs/blueimp/tmpl.min',
     'text!imageupload/tpl/form.html',
     'text!imageupload/tpl/upload.html',
@@ -16,39 +17,48 @@ define(['jquery',
     'libs/bootstrap/js/bootstrap-modal'
 
 
-], function ($, Form, tmpl, formTmpl, uploadTmpl, downloadTmpl) {
+], function ($, _, Form, tmpl, formTmpl, uploadTmpl, downloadTmpl) {
+    "use strict;"
 
-    var liTmpl = '   <li class="span3"><div class="thumbnail"><img src="<%=thumbnail_url%>" alt="<%=name%>" height="80" width="80"></div></li>';
     var editors = Form.editors;
-    var UploadEditor = editors.UploadEditor = editors.Base.extend({
+    var ImageUpload = editors.ImageUpload = editors.Base.extend({
 
         initialize:function (options) {
             editors.Base.prototype.initialize.call(this, options);
-
         },
 
         render:function () {
-            if (uploadTmpl) {
+            if (!$('#template-upload').length) {
                 $('body').append(uploadTmpl);
-                uploadTmpl = null;
             }
-            if (downloadTmpl) {
+            if (!$('#template-download').length) {
                 $('body').append(downloadTmpl);
-                downloadTmpl = null;
             }
-            var $tmpl = $(formTmpl);
+            var $tmpl = this.$fileupload = $(formTmpl);
             var $dialog = $('<div></div>');
             $dialog.append($tmpl);
             this.$el.append($dialog);
-
-            $tmpl.fileupload().fileupload('add', {files:this.options.value});
+            var self = this;
+            $tmpl.fileupload().fileupload('add', {files:this.options.value})
+                .bind('fileuploaddone', function (e, obj) {
+                    self.value = self.value.concat(obj.result);
+                })
+                .bind('fileuploaddestroy', function (e, obj) {
+                   self.values = _.filter(self.value, function (v) {
+                        var ret = v.delete_url != obj.url
+                        return ret;
+                    });
+                });
             return this;
         },
         setValue:function (value, lng) {
+            this.$fileupload.fileupload('add', {files:value});
+            return this;
         },
         getValue:function () {
+            return _.map(this.value, function(v){ return v.id});
         }
     });
-    return UploadEditor;
+    return ImageUpload;
 
 })

@@ -1,9 +1,25 @@
-var Plugin = require('../../lib/plugin-api'), static = require('connect/lib/middleware/static'), fs = require('fs-extra'), path = require('path'), util = require('util'), path = require('path'), static = require('connect/lib/middleware/static'), _u = require('underscore'), imageMagick = require('imagemagick');
+var Plugin = require('../../lib/plugin-api'),
+    static = require('connect/lib/middleware/static'),
+    ImageInfo = require('./ImageInfo'),
+    fs = require('fs-extra'),
+    path = require('path'),
+    util = require('util'),
+    _u = require('underscore'),
+    imageMagick = require('imagemagick')
+    ;
 var ImageUploadPlugin = module.exports = function () {
     Plugin.apply(this, arguments);
 }
 util.inherits(ImageUploadPlugin, Plugin);
-
+ImageUploadPlugin.prototype.editorFor = function(path, property, Model){
+    var isArray = property instanceof Array;
+    if (isArray && property.length && property[0].ref == 'ImageInfo' || property.ref == ImageInfo){
+        return {
+            type:'ImageUpload',
+            multiple:isArray
+        }
+    }
+}
 ImageUploadPlugin.prototype.editors = function () {
     return ['Image']
 }
@@ -18,26 +34,33 @@ var options = {
     }
 };
 ImageUploadPlugin.prototype.routes = function () {
+
     var dir = path.dirname(module.filename);
 
     var fullDir = dir + '/public/images/full/';
     if (!fs.existsSync(fullDir)) {
         fs.mkdirSync(fullDir)
     }
+
+ //   this.app.get(this.baseUrl+'js/libs/editors/image-uploader.js', static(dir+'/public'));
     this.app.del(this.pluginUrl + '/:id', function (req, res, next) {
         var id = req.params.id;
-        if (id)
-            ['full'].concat(Object.keys(options.imageVersions)).forEach(function (k) {
-                var img = dir + '/public/images/' + k + '/' + id;
-                if (fs.existsSync(img)) {
-                    fs.unlinkSync(img);
-                }
-            })
-        res.send('');
+        if (id) {
+            ImageInfo.find({fileId:id}).remove(function (err, doc) {
+                if (err) return next(err);
+                ['full'].concat(Object.keys(options.imageVersions)).forEach(function (k) {
+                    var img = dir + '/public/images/' + k + '/' + id;
+                    if (fs.existsSync(img)) {
+                        fs.unlinkSync(img);
+                    }
+                })
+                res.send('');
+            });
+        }
     });
 
     this.app.get(this.pluginUrl, function (req, res, next) {
-        res.redirect(this.pluginUrl+'/index.html');
+        res.redirect(this.pluginUrl + '/index.html');
     });
 
     this.app.get(this.pluginUrl + '/images/:version/:id.:format?', function (req, res, next) {
@@ -97,7 +120,6 @@ ImageUploadPlugin.prototype.routes = function () {
             var name = path.basename(f.path);
             var obj = {
                 name:f.name,
-                id:name,
                 size:f.size,
                 type:f.type,
                 url:pluginUrl + '/images/full/' + name + '.' + type,
@@ -105,15 +127,25 @@ ImageUploadPlugin.prototype.routes = function () {
                 delete_type:'DELETE'
             };
 
-            _u.each(Object.keys(options.imageVersions), function (k) {
-                obj[k + '_url'] = pluginUrl + '/images/' + k + '/' + name + '.' + type;
-            })
+            new ImageInfo({
+                name:f.name,
+                fileId:name,
+                size:f.size,
+                type:f.type
+            }).save(function (err, r) {
+                    obj.id = r._id;
+                    _u.each(Object.keys(options.imageVersions), function (k) {
+                        obj[k + '_url'] = pluginUrl + '/images/' + k + '/' + name + '.' + type;
+                    })
 
-            infos.push(obj);
-            fs.copy(f.path, dir + '/public/images/full/' + name, doStuff)
+                    infos.push(obj);
+                    fs.copy(f.path, dir + '/public/images/full/' + name, doStuff)
+                });
+
         };
         doStuff();
 
 
     }.bind(this));
+    Plugin.prototype.routes.apply(this, arguments);
 }

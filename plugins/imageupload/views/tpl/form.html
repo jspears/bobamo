@@ -1,4 +1,4 @@
-<form action="." method="POST" enctype="multipart/form-data">
+<form action="${pluginUrl}" method="POST" enctype="multipart/form-data">
     <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
     <div class="row fileupload-buttonbar">
         <div class="span7">
@@ -34,8 +34,11 @@
     </div>
     <!-- The loading indicator is shown during file processing -->
     <div class="fileupload-loading"></div>
-    <br>
+    <!--<br>-->
     <!-- The table listing the files available for upload/download -->
-    <table role="presentation" class="table table-striped"><tbody class="files" data-toggle="modal-gallery" data-target="#modal-gallery"></tbody></table>
+    <!--<table role="presentation" class="table table-striped"><tbody class="files" data-toggle="modal-gallery" data-target="#modal-gallery"></tbody></table>-->
+    <ul role="presentation" class="thumbnails files" data-toggle="modal-gallery" data-target="#modal-gallery">
+
+    </ul>
 </form>
 

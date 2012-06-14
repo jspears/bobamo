@@ -19,9 +19,9 @@
         define([
          //   '../',
             'jquery',
-            'load-image',
-            'canvas-to-blob',
-            'imageupload/js/libs/blueimp/jquery.fileupload'
+            './load-image.min',
+            './canvas-to-blob.min',
+            './jquery.fileupload'
         ], factory);
     } else {
         // Browser globals:

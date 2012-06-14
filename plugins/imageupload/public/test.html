@@ -56,7 +56,7 @@
                 package:'/bobamo/package',
                 tpl:'../tpl',
                 'tmpl':'../imageupload/js/libs/blueimp/tmpl.min',
-                'load-image':'../imageupload/js/libs/blueimp/load-image.min',
+                'load-image':'../imageupload/js/libs/blueimp/load-image',
                 'canvas-to-blob':'../imageupload/js/libs/blueimp/canvas-to-blob.min'
             }
         });
@@ -65,14 +65,22 @@
 </head>
 <body>
 <h3>Test Page</h3>
-
+<button id="values">click</button>
 <div id="test"></div>
 <script type="text/javascript">
     require(['jquery', 'Backbone.Form', 'imageupload/js/libs/editors/image-upload'], function ($, Form) {
         var form = new Form({
             //Data to populate the form with
             data:{
-                files:[{"name":"Photo on 4-19-12 at 10.39 AM.jpg","id":"39562e3426ba1d4ab535a280cce7f2e0","size":228693,"type":"image/jpeg","url":"/bobamo/imageupload/images/full/39562e3426ba1d4ab535a280cce7f2e0.jpeg","delete_url":"/bobamo/imageupload/39562e3426ba1d4ab535a280cce7f2e0","delete_type":"DELETE","thumbnail_url":"/bobamo/imageupload/images/thumbnail/39562e3426ba1d4ab535a280cce7f2e0.jpeg"}]
+                files:[
+                    {"name":"Photo on 4-19-12 at 10.39 AM.jpg",
+                        "id":"2cf01446a41d4a9b7119feaf97e27ca0", "size":228693,
+                        "type":"image/jpeg",
+                        "url":"/bobamo/imageupload/images/full/2cf01446a41d4a9b7119feaf97e27ca0.jpeg",
+                        "delete_url":"/bobamo/imageupload/2cf01446a41d4a9b7119feaf97e27ca0", "delete_type":"DELETE",
+                        "created_at":new Date(),
+                        "thumbnail_url":"/bobamo/imageupload/images/thumbnail/2cf01446a41d4a9b7119feaf97e27ca0.jpeg"}
+                ]
             },
 
             //Schema
@@ -82,7 +90,9 @@
                 }
             }
         }).render();
-
+        $('#values').on('click', function () {
+            console.log(form.getValue());
+        });
         $('#test').append(form.el);
     })
 </script>
