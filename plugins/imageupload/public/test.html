@@ -1,0 +1,90 @@
+<!html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Test Upload Plugin</title>
+
+    <style>
+        body {
+            padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        }
+    </style>
+    <script>
+        //a stub for IE.
+        if (!window.console) {
+            window.console = {
+                log:function () {
+                },
+                error:function () {
+                },
+                warn:function () {
+                }
+            }
+        }
+        window.useAuthentication = false;
+
+    </script>
+    <link rel="stylesheet" href="../less/">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../js/libs/table/jquery.sorter.css">
+    <link rel="stylesheet" href="../js/libs/backbone-forms/src/backbone-forms.css">
+    <link rel="stylesheet" href="../js/libs/backbone-forms/test/lib/jquery-ui/flick/jquery-ui-1.8.14.custom.css">
+    <link rel="stylesheet" href="../js/libs/jquery-miniColors/jquery.miniColors.css">
+    <link href="/bobamo//favicon.ico" rel="shortcut icon">
+    <script type="text/javascript" src="../js/libs/require/require-jquery.js"></script>
+    <script type="text/javascript">
+        require.config({
+            baseUrl:'/bobamo/js',
+            paths:{
+                loader:'libs/backbone/loader',
+                underscore:'libs/underscore/underscore-1.3.1-amd',
+                Backbone:'libs/backbone/backbone-0.9.1-amd',
+                'jquery-ui':'libs/backbone-forms/test/lib/jquery-ui/jquery-ui-1.8.14.custom.min',
+                'Backbone.Form':'libs/backbone-forms/src/backbone-forms',
+                'jquery-editors':'libs/backbone-forms/src/jquery-ui-editors',
+                'bootstrap':'libs/bootstrap/js',
+                templates:'../templates',
+                session:'/bobamo/session',
+                static:'/bobamo/static',
+                imageupload:'/bobamo/imageupload',
+                appeditor:'/bobamo/appeditor',
+                modeleditor:'/bobamo/modeleditor',
+                less:'/bobamo/less',
+                generator:'/bobamo/generator',
+                rest:'/bobamo/rest',
+                mongoose:'/bobamo/mongoose',
+                package:'/bobamo/package',
+                tpl:'../tpl',
+                'tmpl':'../imageupload/js/libs/blueimp/tmpl.min',
+                'load-image':'../imageupload/js/libs/blueimp/load-image.min',
+                'canvas-to-blob':'../imageupload/js/libs/blueimp/canvas-to-blob.min'
+            }
+        });
+    </script>
+
+</head>
+<body>
+<h3>Test Page</h3>
+
+<div id="test"></div>
+<script type="text/javascript">
+    require(['jquery', 'Backbone.Form', 'imageupload/js/libs/editors/image-upload'], function ($, Form) {
+        var form = new Form({
+            //Data to populate the form with
+            data:{
+                files:[{"name":"Photo on 4-19-12 at 10.39 AM.jpg","id":"39562e3426ba1d4ab535a280cce7f2e0","size":228693,"type":"image/jpeg","url":"/bobamo/imageupload/images/full/39562e3426ba1d4ab535a280cce7f2e0.jpeg","delete_url":"/bobamo/imageupload/39562e3426ba1d4ab535a280cce7f2e0","delete_type":"DELETE","thumbnail_url":"/bobamo/imageupload/images/thumbnail/39562e3426ba1d4ab535a280cce7f2e0.jpeg"}]
+            },
+
+            //Schema
+            schema:{
+                files:{
+                    type:'UploadEditor'
+                }
+            }
+        }).render();
+
+        $('#test').append(form.el);
+    })
+</script>
+</body>
+</html>
