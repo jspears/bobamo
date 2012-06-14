@@ -113,7 +113,7 @@
                     that._forceReflow(data.context);
                     that._transition(data.context).done(
                         function () {
-                            if ((that._trigger('added', e, data) !== false) &&
+                            if ((that._trigger('added', e, data) !== false) &&  toUpload.length > 0 &&
                                 (options.autoUpload || data.autoUpload) &&
                                 data.autoUpload !== false && data.isValidated) {
                                 data.submit();

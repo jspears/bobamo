@@ -5,13 +5,13 @@ var ImageInfoSchema = new Schema({
     size:{type:Number},
     width:{type:Number},
     height:{type:Number},
-    created_at:{type:Date},
+    created_at:{type:Date, default:Date.now},
     fileId:{type:String},
     type:{type:String}
 
 });
 
-
-module.exports = mongoose.model('ImageInfo', ImageInfoSchema);
+module.exports = ImageInfoSchema;
+//module.exports = mongoose.model('ImageInfo', ImageInfoSchema);
 
 

@@ -1,4 +1,4 @@
-var crypto = require('crypto'), mongoose = require('mongoose'), Schema = mongoose.Schema;
+var crypto = require('crypto'), mongoose = require('mongoose'), Schema = mongoose.Schema, ImageInfo = require('../../plugins/imageupload/ImageInfo');
 var RoleSchema = new Schema({
     name:{type:String},
         read:{type:Boolean},
@@ -26,7 +26,7 @@ var UserSchema = new Schema({
     created_by:{type:Schema.ObjectId, ref:'user'},
     modified_at:{type:Date}
     ,
-    images:[{type:Schema.ObjectId, ref:'ImageInfo'}]
+    images:[ImageInfo]
 }, {safe:true, strict:true, display:{
     fields:['username','first_name','last_name','password','twitter','email','groups', 'meta.favorite', 'images'],
     list_fields:['username','first_name','last_name','twitter','email']

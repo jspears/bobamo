@@ -11,17 +11,32 @@ var ImageUploadPlugin = module.exports = function () {
     Plugin.apply(this, arguments);
 }
 util.inherits(ImageUploadPlugin, Plugin);
-ImageUploadPlugin.prototype.editorFor = function(path, property, Model){
+ImageUploadPlugin.prototype.editorFor = function (p, property, Model) {
+
     var isArray = property instanceof Array;
-    if (isArray && property.length && property[0].ref == 'ImageInfo' || property.ref == ImageInfo){
-        return {
-            type:'ImageUpload',
-            multiple:isArray
+    var ret = {
+        type:'ImageUpload',
+        multiple:isArray
+    }
+    if (isArray) {
+        if (property.length) {
+            if (property[0].ref == 'ImageInfo') {
+                ret.path = p;
+                return ret;
+            } else if (property[0] === ImageInfo)
+                return ret;
+        }
+    } else {
+        if (property.ref == 'ImageInfo') {
+            ret.path = p;
+            return ret;
         }
     }
 }
+
+
 ImageUploadPlugin.prototype.editors = function () {
-    return ['Image']
+    return ['ImageUpload']
 }
 var options = {
     safeFileTypes:/\.(gif|jpe?g|png)$/i,
@@ -42,20 +57,17 @@ ImageUploadPlugin.prototype.routes = function () {
         fs.mkdirSync(fullDir)
     }
 
- //   this.app.get(this.baseUrl+'js/libs/editors/image-uploader.js', static(dir+'/public'));
+    //   this.app.get(this.baseUrl+'js/libs/editors/image-uploader.js', static(dir+'/public'));
     this.app.del(this.pluginUrl + '/:id', function (req, res, next) {
         var id = req.params.id;
         if (id) {
-            ImageInfo.find({fileId:id}).remove(function (err, doc) {
-                if (err) return next(err);
-                ['full'].concat(Object.keys(options.imageVersions)).forEach(function (k) {
-                    var img = dir + '/public/images/' + k + '/' + id;
-                    if (fs.existsSync(img)) {
-                        fs.unlinkSync(img);
-                    }
-                })
-                res.send('');
-            });
+            ['full'].concat(Object.keys(options.imageVersions)).forEach(function (k) {
+                var img = dir + '/public/images/' + k + '/' + id;
+                if (fs.existsSync(img)) {
+                    fs.unlinkSync(img);
+                }
+            })
+            res.send('');
         }
     });
 
@@ -122,25 +134,18 @@ ImageUploadPlugin.prototype.routes = function () {
                 name:f.name,
                 size:f.size,
                 type:f.type,
+                fileId:name,
                 url:pluginUrl + '/images/full/' + name + '.' + type,
                 delete_url:pluginUrl + '/' + name,
                 delete_type:'DELETE'
             };
 
-            new ImageInfo({
-                name:f.name,
-                fileId:name,
-                size:f.size,
-                type:f.type
-            }).save(function (err, r) {
-                    obj.id = r._id;
-                    _u.each(Object.keys(options.imageVersions), function (k) {
-                        obj[k + '_url'] = pluginUrl + '/images/' + k + '/' + name + '.' + type;
-                    })
+            _u.each(Object.keys(options.imageVersions), function (k) {
+                obj[k + '_url'] = pluginUrl + '/images/' + k + '/' + name + '.' + type;
+            })
 
-                    infos.push(obj);
-                    fs.copy(f.path, dir + '/public/images/full/' + name, doStuff)
-                });
+            infos.push(obj);
+            fs.copy(f.path, dir + '/public/images/full/' + name, doStuff)
 
         };
         doStuff();

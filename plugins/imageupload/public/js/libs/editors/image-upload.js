@@ -25,6 +25,7 @@ define(['jquery', 'underscore',
 
         initialize:function (options) {
             editors.Base.prototype.initialize.call(this, options);
+
         },
 
         render:function () {
@@ -39,8 +40,11 @@ define(['jquery', 'underscore',
             $dialog.append($tmpl);
             this.$el.append($dialog);
             var self = this;
-            $tmpl.fileupload().fileupload('add', {files:this.options.value})
+            if (!this.value)
+                this.value = [];
+            $tmpl.fileupload({autoUpload:true}).fileupload('add', {files:this.value})
                 .bind('fileuploaddone', function (e, obj) {
+
                     self.value = self.value.concat(obj.result);
                 })
                 .bind('fileuploaddestroy', function (e, obj) {
@@ -56,7 +60,7 @@ define(['jquery', 'underscore',
             return this;
         },
         getValue:function () {
-            return _.map(this.value, function(v){ return v.id});
+            return this.value;
         }
     });
     return ImageUpload;
