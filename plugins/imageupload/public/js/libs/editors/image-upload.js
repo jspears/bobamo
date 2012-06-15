@@ -25,9 +25,12 @@ define(['jquery', 'underscore',
 
         initialize:function (options) {
             editors.Base.prototype.initialize.call(this, options);
-
+            this.deleted = [];
+            this.model.on('sync', this.doDeletes, this);
         },
-
+        doDeletes:function () {
+            _.each(this.deleted, $.ajax, $);
+        },
         render:function () {
             if (!$('#template-upload').length) {
                 $('body').append(uploadTmpl);
@@ -40,15 +43,34 @@ define(['jquery', 'underscore',
             $dialog.append($tmpl);
             this.$el.append($dialog);
             var self = this;
+
             if (!this.value)
                 this.value = [];
-            $tmpl.fileupload({autoUpload:true}).fileupload('add', {files:this.value})
+            _.each(this.value, function (v) {
+                delete v.delete_url;
+                delete v.delete_type;
+            });
+            $tmpl.fileupload({autoUpload:true, destroy:function (e, data) {
+                var that = $(this).data('fileupload');
+//                if (data.url) {
+//                    $.ajax(data);
+//                    that._adjustMaxNumberOfFiles(1);
+//                }
+                self.deleted.push(data)
+                that._transition(data.context).done(
+                    function () {
+                        $(this).remove();
+                        that._trigger('destroyed', e, data);
+                    }
+                );
+            }}).fileupload('add', {files:this.value})
                 .bind('fileuploaddone', function (e, obj) {
 
                     self.value = self.value.concat(obj.result);
                 })
                 .bind('fileuploaddestroy', function (e, obj) {
-                   self.value = _.filter(self.value, function (v) {
+                    self.deleted.push(obj);
+                    self.value = _.filter(self.value, function (v) {
                         var ret = v.delete_url != obj.url
                         return ret;
                     });
@@ -56,6 +78,7 @@ define(['jquery', 'underscore',
             return this;
         },
         setValue:function (value, lng) {
+            this.value = value;
             this.$fileupload.fileupload('add', {files:value});
             return this;
         },

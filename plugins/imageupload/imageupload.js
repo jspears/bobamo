@@ -21,14 +21,14 @@ ImageUploadPlugin.prototype.editorFor = function (p, property, Model) {
     if (isArray) {
         if (property.length) {
             if (property[0].ref == 'ImageInfo') {
-                ret.path = p;
+                ret.ref = true;
                 return ret;
             } else if (property[0] === ImageInfo)
                 return ret;
         }
     } else {
         if (property.ref == 'ImageInfo') {
-            ret.path = p;
+            ret.ref = true;
             return ret;
         }
     }

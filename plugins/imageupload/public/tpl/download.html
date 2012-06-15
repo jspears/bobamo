@@ -2,11 +2,8 @@
     {% for (var i=0, file; file=o.files[i]; i++) { %}
     <li class="span2 template-download fade">
         <span class="delete">
-                <button class="close" data-type="{%=file.delete_type%}" data-url="{%=file.delete_url%}">
-                    <!--<i class="icon-trash icon-white"></i>-->
-                    <!--{%=locale.fileupload.destroy%}-->   ×
-                </button>
-                </span>
+            <button class="close" data-type="{%=file.delete_type%}" data-url="{%=file.delete_url%}">×</button>
+        </span>
 
         <div class="thumbnail">
             {% if (file.thumbnail_url) { %}

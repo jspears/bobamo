@@ -115,7 +115,7 @@ define([
 
             });
             if (!errors) {
-                this.form.model.save(save, {success:this.onSuccess, error:this.onError});
+                this.form.model.save(save, {error:this.onError});
             } else {
                 this.onError(this.form.model, errors);
             }
@@ -152,6 +152,7 @@ define([
             var $el = this.$el.empty().append(this.template());
             var id = opts && (opts.id || opts._id);
             var model = this.createModel(opts);
+            model.on('sync', this.onSuccess, this);
             var title = id ? '<i class="icon-edit"></i> Edit {title} [{id}]' : '<i class="icon-plus"></i>Create New {title}';
             var config = _.extend({id:id}, this.config);
             var form = this.form = new Form({
