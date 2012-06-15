@@ -27,10 +27,14 @@ var UserSchema = new Schema({
     modified_at:{type:Date}
     ,
     images:[ImageInfo]
+//    ,profile:{type:Schema.ObjectId, ref:'ProfileImage' }
+//    ,pictures:{type:Schema.ObjectId, ref:'PictureImage'}
 }, {safe:true, strict:true, display:{
     fields:['username','first_name','last_name','password','twitter','email','groups', 'meta.favorite', 'images'],
     list_fields:['username','first_name','last_name','twitter','email']
 }});
+//mongoose.model('ProfileImage', ImageInfo);
+//mongoose.model('PictureImage', ImageInfo);
 
 UserSchema.statics.findA_thru_H = function onFindAH(){
     return this.find().regex('username', /^[a-h]/i);
@@ -70,4 +74,5 @@ UserSchema.statics.findByUsernamePassword = function (username, password) {
 }
 
 var User = mongoose.model("user", UserSchema);
+
 module.exports = User;

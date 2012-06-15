@@ -31,6 +31,7 @@ define(['jquery', 'underscore',
         doDeletes:function () {
             _.each(this.deleted, $.ajax, $);
         },
+
         render:function () {
             if (!$('#template-upload').length) {
                 $('body').append(uploadTmpl);
@@ -50,12 +51,9 @@ define(['jquery', 'underscore',
                 delete v.delete_url;
                 delete v.delete_type;
             });
+            var opts =
             $tmpl.fileupload({autoUpload:true, destroy:function (e, data) {
                 var that = $(this).data('fileupload');
-//                if (data.url) {
-//                    $.ajax(data);
-//                    that._adjustMaxNumberOfFiles(1);
-//                }
                 self.deleted.push(data)
                 that._transition(data.context).done(
                     function () {

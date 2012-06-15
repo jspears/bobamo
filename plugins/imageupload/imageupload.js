@@ -5,7 +5,8 @@ var Plugin = require('../../lib/plugin-api'),
     path = require('path'),
     util = require('util'),
     _u = require('underscore'),
-    imageMagick = require('imagemagick')
+    imageMagick = require('imagemagick'),
+    mongoose = require('mongoose')
     ;
 var ImageUploadPlugin = module.exports = function () {
     Plugin.apply(this, arguments);
@@ -18,20 +19,16 @@ ImageUploadPlugin.prototype.editorFor = function (p, property, Model) {
         type:'ImageUpload',
         multiple:isArray
     }
-    if (isArray) {
-        if (property.length) {
-            if (property[0].ref == 'ImageInfo') {
-                ret.ref = true;
-                return ret;
-            } else if (property[0] === ImageInfo)
-                return ret;
-        }
-    } else {
-        if (property.ref == 'ImageInfo') {
-            ret.ref = true;
-            return ret;
-        }
+
+    var ref = isArray ? property.length ? property[0] : null : property;
+    if (ref.ref && mongoose.modelSchemas[ref.ref] == ImageInfo){
+        ret.url = ref.ref;
+        return ret;
     }
+    if (ref == ImageInfo){
+        return ret;
+    }
+
 }
 
 
