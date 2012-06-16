@@ -14,15 +14,14 @@ Just add bobamo to your package.json, npm install then configure app.js to use b
 
 ```javascript
 
- app.use(bobamo.express({uri:'mongodb://localhost/bobamo_development'}, express))
+ app.use(bobamo.express({uri:'mongodb://localhost/bobamo_development'}))
 
 ```
-Note passing express in, please bear with me as I figure out how to get rid of that, but to make it work its needed.
 You can also specify a context to host both the rest and javascript from
 
 ```javascript
 
- app.use('your-api', bobamo.express({uri:'mongodb://localhost/bobamo_development'}, express))
+ app.use('/context', bobamo.express({uri:'mongodb://localhost/bobamo_development'}))
 
 ```
 
@@ -82,6 +81,7 @@ state is dramatically easier.  All data access is done through JSON/REST calls. 
 * Wizard Support - If the fields are grouped as described below you get a wizard interface.   Nice if you like wizards.
 * Finders - Just add a static function with no arguments, or one with a display property
     to your  mongoose class and a new finder is created.
+* Image Upload/Download - Added the ability to add an image uploader downloader in 2 lines of code.
 
 
 
