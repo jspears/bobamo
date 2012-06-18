@@ -1,11 +1,11 @@
 {
     "name": "bobamo-login-example"
   , "description":"An example bobamo project with Login and modification"
-  , "version": "0.2.0"
+  , "version": "0.6.0"
   , "private": true
   , "dependencies": {
       "bobamo": "latest"
-    , "express":"2.5.8"
+    , "express":">=2.5.8"
     , "jqtpl":"latest"
   }
   

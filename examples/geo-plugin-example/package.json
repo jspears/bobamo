@@ -1,9 +1,9 @@
 {
     "name": "geo-plugin-example"
-  , "version": "0.0.1"
+  , "version": "0.6.0"
   , "private": false
   , "dependencies": {
-      "express": "2.5.8"
+      "express": ">=2.5.8"
     , "jade": ">= 0.0.1"
     , "bobamo":"latest"
     , "jqtpl":"latest"
