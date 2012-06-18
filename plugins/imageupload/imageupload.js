@@ -13,7 +13,7 @@ var ImageUploadPlugin = module.exports = function () {
 }
 util.inherits(ImageUploadPlugin, Plugin);
 ImageUploadPlugin.prototype.editorFor = function (p, property, Model) {
-
+    var apiPath = this.options.apiUri || this.baseUrl + 'rest/';
     var isArray = property instanceof Array;
     var ret = {
         type:'ImageUpload',
@@ -22,7 +22,7 @@ ImageUploadPlugin.prototype.editorFor = function (p, property, Model) {
 
     var ref = isArray ? property.length ? property[0] : null : property;
     if (ref.ref && mongoose.modelSchemas[ref.ref] == ImageInfo){
-        ret.url = ref.ref;
+        ret.url = apiPath+ref.ref;
         return ret;
     }
     if (ref == ImageInfo){

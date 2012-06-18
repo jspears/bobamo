@@ -114,9 +114,9 @@ define([
                 }
 
             });
-            if (!errors) {
+            if (!(errors)) {
                 this.form.model.save(save, {error:this.onError});
-            } else {
+            } else if (errors) {
                 this.onError(this.form.model, errors);
             }
 

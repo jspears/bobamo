@@ -19,17 +19,52 @@ define(['jquery', 'underscore',
 
 ], function ($, _, Form, tmpl, formTmpl, uploadTmpl, downloadTmpl) {
     "use strict;"
-
+    var filterNull = function (v) {
+        return !!v;
+    }
     var editors = Form.editors;
     var ImageUpload = editors.ImageUpload = editors.Base.extend({
 
         initialize:function (options) {
             editors.Base.prototype.initialize.call(this, options);
             this.deleted = [];
+            this.multiple = this.schema.multiple == true;
+            console.log('urlRoot', this.model.urlRoot)
             this.model.on('sync', this.doDeletes, this);
         },
+        onSaveImage:function (evt, result) {
+            var obj = result.result.concat();
+            console.log('onSaveImage', obj);
+            var self = this;
+            if (this.schema.url) {
+                while (obj.length) {
+                    var data = obj.shift();
+                    if (!data.id) {
+                        $.ajax({
+                            type:'POST',
+                            data:data,
+                            url:this.schema.url,
+                            dataType:'json',
+                            success:function (resp) {
+
+                                if (resp.status != 0)
+                                    return;
+                                data.id = resp.payload._id;
+                                self.value.push(data);
+
+                            }
+                        })
+                    }
+                }
+            }
+            else {
+                this.value = this.value.concat(obj);
+            }
+        },
         doDeletes:function () {
-            _.each(this.deleted, $.ajax, $);
+            if (!this.schema.url) {
+                _.each(this.deleted, $.ajax, $);
+            }
         },
 
         render:function () {
@@ -47,12 +82,12 @@ define(['jquery', 'underscore',
 
             if (!this.value)
                 this.value = [];
-            _.each(this.value, function (v) {
-                delete v.delete_url;
-                delete v.delete_type;
-            });
-            var opts =
-            $tmpl.fileupload({autoUpload:true, destroy:function (e, data) {
+            else if (!_.isArray(this.value)) {
+                this.value = [this.value];
+            }
+
+
+            var opts = {autoUpload:true, destroy:function (e, data) {
                 var that = $(this).data('fileupload');
                 self.deleted.push(data)
                 that._transition(data.context).done(
@@ -61,11 +96,12 @@ define(['jquery', 'underscore',
                         that._trigger('destroyed', e, data);
                     }
                 );
-            }}).fileupload('add', {files:this.value})
-                .bind('fileuploaddone', function (e, obj) {
-
-                    self.value = self.value.concat(obj.result);
-                })
+            }};
+            if (!this.multiple) {
+                opts.maxNumberOfFiles = 1;
+            }
+            $tmpl.fileupload(opts)
+                .bind('fileuploaddone', _.bind(this.onSaveImage, this))
                 .bind('fileuploaddestroy', function (e, obj) {
                     self.deleted.push(obj);
                     self.value = _.filter(self.value, function (v) {
@@ -73,7 +109,19 @@ define(['jquery', 'underscore',
                         return ret;
                     });
                 });
+            this.addFiles();
             return this;
+        },
+        addFiles:function (values) {
+            if (!this.schema.url)
+                this.$fileupload.fileupload('add', {files:this.value});
+            else {
+                var self = this;
+                $.get([this.model.urlRoot, this.model.id, this.key].join('/'), function (result) {
+                    self.value = result.payload;
+                    self.$fileupload.fileupload('add', {files:result.payload});
+                })
+            }
         },
         setValue:function (value, lng) {
             this.value = value;
@@ -81,7 +129,10 @@ define(['jquery', 'underscore',
             return this;
         },
         getValue:function () {
-            return this.value;
+            var values = this.schema.url ? _.filter(_.map(this.value, function (v) {
+                if (v) return v.id
+            }), filterNull) : this.value;
+            return this.multiple ? values : values.length ? values[0] : null;
         }
     });
     return ImageUpload;
