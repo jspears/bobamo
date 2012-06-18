@@ -3,13 +3,19 @@ define([
     'Backbone'
 ], function(_, Backbone) {
     "use strict";
+
     //we define these together because they often link together and if they are in seperate callbacks bad things happen.
-  //  var defaults = {{html _defaults()}};
+
     var schema = {{html JSON.stringify(model.schemaFor(model.fieldsets || model.edit_fields))}};
+    var defaults = {{html JSON.stringify(model.defaults)}};
+
     var Model = Backbone.Model.extend({
         urlRoot:'${api}/${model.modelName}',
         schema:schema,
+        defaults:defaults,
+        initialize: function() {},
         parse:function(resp) {
+
             console.log('/${api}/${model.modelName}model#parse', resp);
 
             return resp.payload ? resp.payload : resp;
