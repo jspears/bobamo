@@ -7,7 +7,7 @@ define([
     'text!templates/${model.modelName}/table-item.html'
 ], function (_,View, collection, tableTemplate, tableItemTemplate) {
     "use strict";
-
+    console.log('list->', collection);
     return View.extend({
         template:_.template(tableTemplate),
         collection:collection,

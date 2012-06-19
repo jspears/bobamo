@@ -33,7 +33,7 @@ var UserSchema = new Schema({
     fields:['username','first_name','last_name','password','twitter','email','groups', 'meta.favorite', 'images'
     ,'profile','pictures'
     ],
-    list_fields:['username','first_name','last_name','twitter','email']
+    list_fields:['username','first_name','last_name','twitter','email', 'meta.favorite']
 }});
 mongoose.model('ProfileImage', ImageInfo);
 mongoose.model('PictureImage', ImageInfo);

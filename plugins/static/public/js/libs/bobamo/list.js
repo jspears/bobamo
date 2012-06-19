@@ -18,6 +18,50 @@ define([
 
         return null;
     };
+    var ListItemView = Backbone.View.extend({
+        tagName:"tr",
+        initialize:function (options) {
+            this.model.bind("change", this.render, this);
+            this.model.bind("destroy", this.close, this);
+
+      //      _.bind(this.format, this);
+            return this;
+        },
+        format:function(field, model, schema){
+            return schema.format ? schema.format(field, model, schema) : model.get(field);
+        },
+        _fields:{},
+        _format:function(field){
+            var schema = field in this._fields ? this._fields[field] : (this._fields[field] = this.schema(field, this.model));
+            return this.format(field, this.model, schema)
+        },
+        schema:function(field, model){
+            if (!(model || field))
+                return null;
+            var fields = field.split('.');
+
+            var schema = model.schema;
+            if (!schema) return null;
+            var val = schema[fields.shift()];
+            while(fields.length){
+                var key = fields.shift();
+                if (val && val.subSchema)
+                    val = val.subSchema[key];
+                else{
+                    console.log('no schema for ', fields, field, key);
+                    return null;
+                }
+            }
+            return val;
+        },
+        render:function (eventName) {
+            var tmpl = (this.template || this.options.template)({item:this.model, format:_.bind(this._format, this)});
+            var $el = $(this.el);
+            $el.html(tmpl);
+            return this;
+        }
+
+    });
     var ListView = Backbone.View.extend({
         tagName:'div',
         classNames:['span7'],
@@ -36,6 +80,7 @@ define([
             this.collection.on('fetch', this.renderList, this);
             return this;
         },
+        itemView:ListItemView,
         renderItem:function (item) {
             var template = this.listItemTemplate;
             if (this.$ul) {
@@ -97,21 +142,6 @@ define([
             return this;
         }
     });
-    var ListItemView = Backbone.View.extend({
-        tagName:"tr",
-        initialize:function () {
-            this.model.bind("change", this.render, this);
-            this.model.bind("destroy", this.close, this);
-            return this;
-        },
 
-        render:function (eventName) {
-            var tmpl = (this.template || this.options.template)({item:this.model});
-            var $el = $(this.el);
-            $el.html(tmpl);
-            return this;
-        }
-
-    });
     return ListView;
 });

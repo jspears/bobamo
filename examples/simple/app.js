@@ -27,7 +27,7 @@ app.configure(function () {
 });
 
 app.configure('development', function () {
-    app.use('/bobamo', bobamo.express({plugin:['session','imageupload'], uri:'mongodb://localhost/bobamo_development'}));
+    app.use('/bobamo', bobamo.express({plugin:['session','imageupload','visualize'], uri:'mongodb://localhost/bobamo_development'}));
 
     app.use(express.errorHandler({ dumpExceptions:true, showStack:true }));
 });
