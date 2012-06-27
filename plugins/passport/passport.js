@@ -17,7 +17,10 @@ var PassportPlugin = function () {
             var obj = {};
             obj[this.usernameField] = username;
             obj[this.passwordField] = password;
-            this.options.authModel.findOne(obj, done)
+            this.options.authModel.findOne(obj, function(err, u){
+                console.log('err',err, 'found', obj,  u != null);
+                done(err, u);
+            });
         }.bind(this)
     ));
     passport.serializeUser(function (user, done) {
