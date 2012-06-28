@@ -20,9 +20,15 @@ define(['Backbone', 'jquery', 'underscore', 'text!passport/tpl/login.html'], fun
 
         login:    function (event) {
             event.preventDefault();
-            $.post('passport', $(this.el).find('form').serialize(), this.onLogin);
+            $.ajax({
+                url:'passport',
+                type:'POST',
+                data:$(this.el).find('form').serialize(),
+                success:_.bind(this.onLogin, this)
+            });
         },
         onLogin:  function (res) {
+            console.log('onLogin', arguments);
             if (res.status === 0) {
                 this.onSuccess(res);
             } else {
