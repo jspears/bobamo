@@ -38,6 +38,9 @@ util.inherits(PassportPlugin, PluginApi);
 module.exports = PassportPlugin;
 
 PassportPlugin.prototype.ensureAuthenticated = function (req, res, next) {
+//    next();
+//    passport.authorize('local', { failureRedirect: '/check' })(req,res,next)
+//    next();
     if (req.isAuthenticated && req.isAuthenticated())
         return  next();
     res.send({status:1, message:'Not Authenticated'})
@@ -72,7 +75,7 @@ PassportPlugin.prototype.filters = function () {
         res.redirect(this.baseUrl);
     }.bind(this));
 
-    app.all(this.baseUrl + '*', function (req, res, next) {
+    app.post(this.baseUrl + '*', function (req, res, next) {
         if (req.authrequired) {
             if (req.body[passfield])
                 this.encryptCredentials(req, res, function (err) {
@@ -89,9 +92,9 @@ PassportPlugin.prototype.filters = function () {
         return next();
     }.bind(this));
 
-    [this.baseUrl + '/rest/*'].concat(this.options.restrict).forEach(function (v) {
-        if (v)
-            this.app.all(v, this.ensureAuthenticated.bind(this));
-    }, this);
+//    [this.baseUrl + '/rest/*'].concat(this.options.restrict).forEach(function (v) {
+//        if (v)
+//            this.app.all(v, this.ensureAuthenticated.bind(this));
+//    }, this);
     PluginApi.prototype.filters.apply(this, arguments);
 }
