@@ -12,8 +12,7 @@
     , "connect":"latest"
   }
   ,"devDependencies":{
-    "mocha":"latest"
-    ,"should":"latest"
+    "should":"latest"
     ,"csv":"latest"
   }
   ,"scripts":{
