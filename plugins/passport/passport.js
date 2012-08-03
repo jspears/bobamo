@@ -35,7 +35,6 @@ var PassportPlugin = function () {
 }
 util.inherits(PassportPlugin, PluginApi);
 
-module.exports = PassportPlugin;
 
 PassportPlugin.prototype.ensureAuthenticated = function (req, res, next) {
 //    next();
@@ -63,10 +62,8 @@ PassportPlugin.prototype.onAuth = function (req, res) {
     });
 }
 PassportPlugin.prototype.filters = function () {
-    var passfield = this.options.passwordField || 'password';
-    var authenticate = passport.authenticate('local', { failureRedirect:this.pluginUrl + '/check' });
     var app = this.app;
-    app.post(this.pluginUrl, this.encryptCredentials.bind(this), authenticate,   this.onAuth.bind(this));
+    app.post(this.pluginUrl, this.authenticate.bind(this),   this.onAuth.bind(this));
 
     app.get(this.pluginUrl + '/check', this.ensureAuthenticated.bind(this), this.onAuth.bind(this));
 
@@ -77,15 +74,9 @@ PassportPlugin.prototype.filters = function () {
 
     app.post(this.baseUrl + '*', function (req, res, next) {
         if (req.authrequired) {
-            if (req.body[passfield])
-                this.encryptCredentials(req, res, function (err) {
-                    if (err) return next(err);
-                    return authenticate(req, res, next);
-                })
+            return this.authenticate(req,res,next);
         }
         next();
-
-
     }.bind(this), function (req, res, next) {
         if (req.authrequired)
             return  this.ensureAuthenticated(req, res, next)
@@ -98,3 +89,16 @@ PassportPlugin.prototype.filters = function () {
 //    }, this);
     PluginApi.prototype.filters.apply(this, arguments);
 }
+PassportPlugin.prototype.authenticate = function(req,res,next){
+    var passfield = this.options.passwordField || 'password';
+    var authenticate = passport.authenticate('local', { failureRedirect:this.pluginUrl + '/check' });
+    if (req.body[passfield]) {
+        this.encryptCredentials(req, res, function (err) {
+            if (err) return next(err);
+            return authenticate(req, res, next);
+        })
+    } else {
+        next();
+    }
+}
+module.exports = PassportPlugin;
