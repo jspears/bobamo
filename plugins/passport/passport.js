@@ -61,16 +61,18 @@ PassportPlugin.prototype.onAuth = function (req, res) {
         payload:req.user
     });
 }
+PassportPlugin.prototype.logOut = function(req,res,next){
+    req.logOut();
+    res.redirect(this.baseUrl);
+}
+
 PassportPlugin.prototype.filters = function () {
     var app = this.app;
     app.post(this.pluginUrl, this.authenticate.bind(this),   this.onAuth.bind(this));
 
     app.get(this.pluginUrl + '/check', this.ensureAuthenticated.bind(this), this.onAuth.bind(this));
 
-    app.get(this.pluginUrl + '/logout', function (req, res) {
-        req.logOut();
-        res.redirect(this.baseUrl);
-    }.bind(this));
+    app.get(this.pluginUrl + '/logout', this.logOut.bind(this));
 
     app.post(this.baseUrl + '*', function (req, res, next) {
         if (req.authrequired) {
