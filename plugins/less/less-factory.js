@@ -3,6 +3,7 @@ var fs = require('fs'), path = require('path'), _u = require('underscore'), infl
  * CssFactory for Less
  */
 function CssFactory(options) {
+
     this.options = _u.extend({}, options);
     this.__defineGetter__('variables', function () {
         var readp = this.options.paths;
@@ -13,12 +14,27 @@ function CssFactory(options) {
 
         return vars;
     });
+    var _default_imports = [];
+    this.__defineGetter__('default_imports', function(){
+        if (_default_imports.length)
+            return _default_imports;
+        options.paths.forEach(function(dir){
+        fs.readdirSync(dir).forEach(function(f){
+            console.log('readdir', dir, f);
+           if (/\.less$/.test(f)){
+               _default_imports.push(f);
+           }
+        });
+        })
+        return _default_imports;
+    });
+
     this.__defineGetter__('paths', function () {
         var pt = {};
         var m = module;
         var vis = {};
         while (typeof vis[m.id] === 'undefined') {
-            var p = path.join(path.dirname(m.filename), '/../public/js/libs/bootstrap/less');
+            var p = path.join(path.dirname(m.filename), 'less');
             if (path.existsSync(p)) {
                 pt[p] = true;
             }
@@ -41,39 +57,6 @@ var varRe = /^\@([^\:]*):\s*(.*);/;
 var skip = /^\s*$/;
 var unitRe = /(.*)(px|%|em|in|cm|mm|ex|pt|pc|px)$/;
 var color = /^(#|darken\(|lighten\(|rgb\(|rgba\(|hsl\(|hsla\()([^)]*)/;
-CssFactory.prototype.default_imports = ["reset.less",
-    "variables.less",
-    "mixins.less",
-    "scaffolding.less",
-    "grid.less",
-    "layouts.less",
-    "type.less",
-    "code.less",
-    "forms.less",
-    "tables.less",
-    "sprites.less",
-    "dropdowns.less",
-    "wells.less",
-    "component-animations.less",
-    "close.less",
-    "buttons.less",
-    "button-groups.less",
-    "alerts.less",
-    "navs.less",
-    "navbar.less",
-    "breadcrumbs.less",
-    "pagination.less",
-    "pager.less",
-    "modals.less",
-    "tooltip.less",
-    "popovers.less",
-    "thumbnails.less",
-    "labels.less",
-    "progress-bars.less",
-    "accordion.less",
-    "carousel.less",
-    "hero-unit.less",
-    "utilities.less"];
 
 /**
  * Generates the css schema for
