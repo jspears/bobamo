@@ -26,7 +26,11 @@ LessPlugin.prototype.editors = function () {
 
 LessPlugin.prototype.filters = function () {
     this.app.get(this.baseUrl + '*', function (req, res, next) {
-        res.local('lessFactory', this.lessFactory);
+        if (_u.isFunction(res.local)) {
+            res.local('lessFactory', this.lessFactory);
+        } else {
+            res.locals['lessFactory'] = this.lessFactory;
+        }
         next();
     }.bind(this));
     Plugin.prototype.filters.apply(this, arguments);

@@ -1,12 +1,13 @@
 {
     "name": "bobamo-example-simple"
-  , "version": "0.6.0"
+  , "version": "0.7.0"
   , "private": false
   , "dependencies": {
       "express": ">=2.5.8"
     , "jade": ">= 0.0.1"
-    , "bobamo":"latest"
+    , "bobamo":"0.7.0"
     , "jqtpl":"latest"
+    , "consolidate":"latest"
    , "mongoose":"latest"
   }
 }

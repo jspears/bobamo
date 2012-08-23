@@ -1,4 +1,4 @@
-var Plugin = require('../../lib/plugin-api'), util = require('util');
+var Plugin = require('../../lib/plugin-api'), util = require('util'), _u = require('underscore');
 
 var GeneratorPlugin = function (options) {
     Plugin.apply(this, arguments);
@@ -13,15 +13,24 @@ GeneratorPlugin.prototype.filters = function (options) {
     var apiPath = this.options.apiUri || this.baseUrl + 'rest';
     this.app.get(this.baseUrl + '*', function (req, res, next) {
         var useAuth = req.isAuthenticated ? true : false;
-        res.local('useAuthentication', useAuth)
-        res.local('isAuthenticated', useAuth ? req.isAuthenticated() : false);
-        res.local('api', apiPath);
-        res.local('baseUrl', this.baseUrl);
-        res.local('params', req.params);
-        res.local('query', req.query);
-        res.local('appModel', this.pluginManager.appModel);
-        res.local('pluginManager', this.pluginManager);
-        res.local('options', options);
+        var locals = {
+            'useAuthentication':useAuth,
+            'isAuthenticated':useAuth ? req.isAuthenticated() : false,
+            'api':apiPath,
+            'baseUrl':this.baseUrl,
+            'params':req.params,
+            'query':req.query,
+            'appModel':this.pluginManager.appModel,
+            'pluginManager':this.pluginManager,
+            'options':options
+        };
+        if (_u.isFunction(res.local)) {
+            _u.each(locals, function (v,k) {
+                res.local(k, v);
+            })
+        } else {
+            _u.extend(res.locals, locals);
+        }
         next();
     }.bind(this));
 
@@ -56,7 +65,7 @@ GeneratorPlugin.prototype.routes = function (options) {
     }.bind(this));
 
     app.get(base + 'js/:super?/views/:type/finder/:view.:format', function (req, res, next) {
-        this.generate(res, 'views/finder.'+req.params.format, makeOptions(req), next);
+        this.generate(res, 'views/finder.' + req.params.format, makeOptions(req), next);
     }.bind(this));
 
     app.get(base + ':view', function (req, res, next) {

@@ -3,7 +3,7 @@
   , "version": "0.6.0"
   , "private": false
   , "dependencies": {
-      "express": ">=2.5.8"
+      "express": "latest"
     , "jade": ">= 0.0.1"
     , "bobamo":"latest"
     , "jqtpl":"latest"

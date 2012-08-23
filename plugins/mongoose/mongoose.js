@@ -31,14 +31,16 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
     var defaults = {};
     var opts = p.options || {};
     var apiPath = this.options.apiUri || this.baseUrl + 'rest/';
+  //  var pathShema = schema.path(path);
     if (opts.display && opts.display.display == 'none' || ( path[0] == '_' && path != '_id')) {
         return null;
     }
 
+
     if (!tmpP && Model) {
         var obj = { subSchema:{}, type:'Object'}
         _u(p).each(function (v, k) {
-            var ref = schema && schema[path + '.' + k];
+            var ref = schema.path(path + '.' + k);
             var editor = this.pluginManager.pluginFor(path + '.' + k, ref || v, Model);
             if (editor)
                 obj.subSchema[k] = editor;

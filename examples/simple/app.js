@@ -8,10 +8,10 @@ var express = require('express')
     , Group = require('bobamo/examples/model/group')
     , Employee = require('bobamo/examples/model/employee')
     , bobamo = require('bobamo')
-    , jqtpl = require('jqtpl')
+    , http = require('http')
     ;
 
-var app = module.exports = express.createServer();
+var app = module.exports = express();
 
 // Configuration
 
@@ -43,4 +43,6 @@ app.configure('production', function () {
 app.get('/', function(req,res){ res.render('redir_index.html', {layout:false})});
 
 app.listen(3001);
-console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+http.createServer(app).listen(app.get('port'), function(){
+    console.log("Express server listening on port " + app.get('port'), app.settings.env);
+});
