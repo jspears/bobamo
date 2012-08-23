@@ -28,7 +28,7 @@ define([
             return this;
         },
         format:function(field, model, schema){
-            return schema.format ? schema.format(field, model, schema) : model.get(field);
+            return schema && schema.format ? schema.format(field, model, schema) : model.get(field);
         },
         _fields:{},
         _format:function(field){
