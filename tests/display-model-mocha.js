@@ -2,7 +2,6 @@ var should = require('should'),
     App = require('../lib/display-model'),
     util = require('../lib/util'),
     mongoose = require('mongoose'),
-    factory = require('../lib/display-factory')(mongoose),
     User = require('../examples/model/user'),
     Group = require('../examples/model/group'),
     Empl  = require('../examples/model/employee')
@@ -45,14 +44,6 @@ describe('Should Be Deep', function () {
         app.modelPaths.m2.should.have.property('modelName','m2');
         util.depth(app, 'modelPaths.m1.paths.test.title', null, false).should.eql('hello')
         done();
-    });
-    it('should work with factory', function(done){
-        var fap = factory.app();
-        console.log('fap',fap)
-        var app = new App(fap);
-          console.log('app',app);
-        done();
-
     });
     it('should support nested models', function(done){
         var obj1 = {title:'hello', modelPaths:{'m1':{modelName:'m1', title:'M1',paths:{'m1.m2.m3':{title:'Stuff'}}}}};

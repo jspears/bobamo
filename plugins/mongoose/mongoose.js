@@ -88,11 +88,16 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                 if (type.length) {
                     var o = type[0];
                     defaults.listType = 'Object';
-                    var s = defaults.subSchema = {};
-                    if (o && o.paths)
+                    if (o && o.paths){
+                        var s = defaults.subSchema = {};
                         _u.each(o.paths, function onListType(v, k) {
                             s[k] = this.pluginManager.pluginFor(k, v, o);
                         }, this);
+                    } else{
+
+                        defaults.listType = 'Text';
+
+                    }
 
                 }
                 console.log('defaults', defaults);
