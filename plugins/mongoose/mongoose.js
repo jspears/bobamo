@@ -25,7 +25,7 @@ MongoosePlugin.prototype.appModel = function (options) {
 
 MongoosePlugin.prototype.editorFor = function (path, p, Model) {
     var schema = Model.schema || Model;
-    var tmpP = schema && (schema.paths[path] || schema.virtuals[path] );
+    var tmpP = schema && schema.path && (schema.path(path) || schema.virtuals[path] );
     if (tmpP)
         p = tmpP
     var defaults = {};
@@ -94,13 +94,26 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                             s[k] = this.pluginManager.pluginFor(k, v, o);
                         }, this);
                     } else{
+                        if (p.caster && p.caster.instance == 'String')
+                            defaults.listType = 'Text';
+                        else{
+                            if (p.schema.paths){
 
-                        defaults.listType = 'Text';
+                                var s = (defaults.subSchema || (defaults.subSchema = {}));
+                            //     var s = (ds.subSchema || (ds.subSchema = {}));
+                                _u.each(p.schema.paths, function onTypeOptions(v,k){
+                                      s[k] = this.pluginManager.pluginFor(k, v ,p);
+                                }, this);
+                                defaults.type = 'List';
+                                defaults.listType = 'Object';
+                                defaults.label= p.path;
+
+                            }
+                        }
 
                     }
 
                 }
-                console.log('defaults', defaults);
             } else if (type) {
 
                 switch (type) {

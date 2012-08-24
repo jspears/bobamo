@@ -6,6 +6,7 @@ var express = require('express')
     , bobamo = require('bobamo')
     , mongoose =require('mongoose')
     , geomodel =require('./lib/geomodel')
+    //, favorite = require('./lib/favorite')
     , path = require('path')
     ;
 

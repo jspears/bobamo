@@ -1,5 +1,6 @@
 var geocoder = require('geocoder');
 var mongoose = require('mongoose');
+
 var AddressSchema = new mongoose.Schema({
     name        : {type: String, default : ''},
     street1     : {type: String, default : ''},
