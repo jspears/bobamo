@@ -17,8 +17,8 @@ define([
         parse:function(resp) {
 
             console.log('/${api}/${model.modelName}model#parse', resp);
-
-            return resp.payload ? resp.payload : resp;
+            var fix  = resp.payload ? resp.payload : resp
+            return _.isArray(fix) ? fix[0] : fix;
         },
         get:function(key){
             if (key && key.indexOf('.') > -1){
