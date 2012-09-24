@@ -105,7 +105,7 @@ define([
                     var last = split.pop();
                     var obj = save;
                     _(split).each(function (kk, vv) {
-                        obj = (obj[kk] = obj[kk] || {});
+                        obj = _.isUndefined(obj[kk])? (obj[kk]={}) : obj[kk];
                     });
                     obj[last] = v;
                     delete save[k];
