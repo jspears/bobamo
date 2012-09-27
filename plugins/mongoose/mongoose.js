@@ -97,7 +97,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                         if (p.caster && p.caster.instance == 'String')
                             defaults.listType = 'Text';
                         else{
-                            if (p.schema.paths){
+                            if (p.schema && p.schema.paths){
 
                                 var s = (defaults.subSchema || (defaults.subSchema = {}));
                             //     var s = (ds.subSchema || (ds.subSchema = {}));
