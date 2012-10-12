@@ -29,6 +29,9 @@ define(['jquery', 'Backbone', 'confirm_change', 'replacer'], function ($, Backbo
                             window.location.hash = replacer(redir, config);
                         }
                     }
+                    ,error: function(req,status,error){
+                        alert(error);  // should never happen, but it's nice to know when it does..
+                    }
                 });
             });
         }
