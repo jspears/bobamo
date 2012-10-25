@@ -20,7 +20,7 @@ AppEditorPlugin.prototype.configure = function(options){
 }
 AppEditorPlugin.prototype.filters = function(){
     this.app.get(this.pluginUrl+'*', function(req,res,next){
-        res.local('pluginManager', this.pluginManager);
+        res.locals('pluginManager', this.pluginManager);
         next();
     }.bind(this));
     Plugin.prototype.filters.apply(this, arguments);

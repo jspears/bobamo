@@ -51,7 +51,7 @@ ImageUploadPlugin.prototype.routes = function () {
 
     var fullDir = dir + '/public/images/full/';
     if (!fs.existsSync(fullDir)) {
-        fs.mkdirSync(fullDir)
+        fs.mkdirsSync(fullDir)
     }
 
     //   this.app.get(this.baseUrl+'js/libs/editors/image-uploader.js', static(dir+'/public'));
