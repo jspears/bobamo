@@ -1,4 +1,3 @@
-node_modules
-examples/*/node_modules
 .idea
 plugins/imageupload/public/images/*
+plugins/visualize/npm-debug.log
