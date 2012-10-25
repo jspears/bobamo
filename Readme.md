@@ -1,5 +1,4 @@
 #Bobamo
-### changed the name to avoid stepping on someones toes.
 Its basically a crud infrastructure for [mongoose](http://mongoosejs.com), [backbone](http://documentcloud.github.com/backbone/), [mers](https://github.com/jspears/mers),
 [backbone forms](https://github.com/powmedia/backbone-forms) and [twitter bootstrap](http://twitter.github.com/bootstrap/). The idea
 is you define your model and a little extra and it generates the crud on demand.    It doesn't leave you in the
@@ -125,7 +124,7 @@ display:{
 ```
 
 Soon you should be able to edit these via an admin UI.
-Many-To-One support is coming.
+Many-To-One support exists.
 One-To-Many support exists.
 
 
@@ -156,7 +155,7 @@ Finders allow for custom queries to be created and listed in the menu.   To add 
        return this.find().regex('username', /^[a-h]/i);
    }
 
-```
+```https://github.com/jspears/bobamo/blob/master/Readme.md
 
 Finders add a new item to the dropdown from the header.
 
