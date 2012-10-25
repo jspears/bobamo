@@ -6,7 +6,7 @@
   , "dependencies": {
      "jqtpl": ">= 0.0.1"
     , "mongoose":"latest"
-    , "mers":">= 0.4.0"
+    , "mers":">= 0.4.1"
     , "underscore":"latest"
     , "less":"latest"
     , "connect":"latest"
