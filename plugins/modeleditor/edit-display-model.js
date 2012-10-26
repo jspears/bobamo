@@ -90,7 +90,7 @@ EditModel.prototype.schema = {
     },
     labelAttr:{
         title:'Label Attribute',
-        help:'This is a label that gives a sussinct description of object'
+        help:'This is a label that gives a succinct description of object'
     }
 };
 
