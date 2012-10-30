@@ -264,20 +264,22 @@ plugin/&lt;yourplugin&gt;/views
 If you want to get it running in "The Cloud" quickly check out [AppFog](https://www.appfog.com/) I got this running there
 in less than 20 minutes, so many kudos to them.  Start [here](https://console.appfog.com/apps/new) choose the create app
 -> node express -> infrastructure and subdomain.   go to the services tab and add mongodb, and you should be golden.
+
+Once your through that install their little tool.
 ```bash
 gem install af
 af login
 af pull <project>
 cd <project>
 ```
-and create 2 files
+and create 
 package.json 
 
 ```javascript 
 
 {
-    "name": "bobamo-example-simple"
-  , "version": "0.8.1"
+    "name": "<your project>"
+  , "version": "0.1"
   , "private": false
   , "dependencies": {
       "express": ">=3"
@@ -363,4 +365,4 @@ af update <project>
 
 ```
 With any luck it'll be runing.
-
+Check out their (docs)[http://docs.appfog.com/frameworks/node] or ask me about something I may have broke.
