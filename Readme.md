@@ -26,7 +26,7 @@ You can also specify a context to host both the rest and javascript from
 
 You can find examples of this under examples/simple and examples/login-example.
 
-A running example of the simple app is [here](http://bobamo-speajus.rhcloud.com/bobamo/index.html)
+A running example of the simple app is [http://bobamo.aws.af.cm/index.html](http://bobamo.aws.af.cm/index.html)
 
 
 ## Subclass
