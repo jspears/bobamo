@@ -260,10 +260,107 @@ and serve jqtpl templates from
 
 plugin/&lt;yourplugin&gt;/views
 
+#The Cloud 
+If you want to get it running in "The Cloud" quickly check out [AppFog](https://www.appfog.com/) I got this running there
+in less than 20 minutes, so many kudos to them.  Start [here](https://console.appfog.com/apps/new) choose the create app
+-> node express -> infrastructure and subdomain.   go to the services tab and add mongodb, and you should be golden.
+```bash
+gem install af
+af login
+af pull <project>
+cd <project>
+```
+and create 2 files
+package.json 
+
+```javascript 
+
+{
+    "name": "bobamo-example-simple"
+  , "version": "0.8.1"
+  , "private": false
+  , "dependencies": {
+      "express": ">=3"
+    , "jade": ">= 0.0.1"
+    , "bobamo":"latest"
+    , "jqtpl":"latest"
+    , "consolidate":"latest"
+   , "mongoose":"latest"
+  }
+}
+```
+and app.js
+```javascript
+var express = require('express')
+    , User = require('bobamo/examples/model/user')
+    , Group = require('bobamo/examples/model/group')
+    , Employee = require('bobamo/examples/model/employee')
+    , bobamo = require('bobamo')
+    ;
+
+var app = module.exports = express();
+var mongo = {
+        "hostname":"localhost",
+        "port":27017,
+        "username":"",
+        "password":"",
+        "name":"",
+        "db":"db"
+    };
+
+// Configuration
+if(process.env.VCAP_SERVICES){
+    var env = JSON.parse(process.env.VCAP_SERVICES);
+    var mongo = env['mongodb-1.8'][0]['credentials'];
+}
+var generate_mongo_url = function(obj){
+    obj.hostname = (obj.hostname || 'localhost');
+    obj.port = (obj.port || 27017);
+    obj.db = (obj.db || 'test');
+    if(obj.username && obj.password){
+        return "mongodb://" + obj.username + ":" + obj.password + "@" + obj.hostname + ":" + obj.port + "/" + obj.db;
+    }
+    else{
+        return "mongodb://" + obj.hostname + ":" + obj.port + "/" + obj.db;
+    }
+
+}
+var mongo_url = generate_mongo_url(mongo);
+app.configure(function () {
+//    app.set('views', __dirname + '/views');
+//    app.set('view engine', 'jade');
+    app.use(express.bodyParser());
+    app.use(express.methodOverride());
+    app.use(express.cookieParser());
+    app.use(express.session({secret:'super duper secret'}))
+    app.use(app.router);
+    app.use(express.static(__dirname + '/public'));
+});
+
+app.configure('development', function () {
+    app.use( bobamo.express({uri:mongo_url}));
+    
+    app.use(express.errorHandler({ dumpExceptions:true, showStack:true }));
+});
+
+app.configure('production', function () {
+    app.use( bobamo.express({uri:mongo_url}));
+    app.use(express.errorHandler());
+});
+
+// Routes
+
+app.get('/', function(req,res){ res.render('redir_index.html', {layout:false})});
+app.listen(process.env.VCAP_APP_PORT || 3000);
 
 
+```
 
 
+Then push it back up
+```bash
+af update <project> 
 
-
+```
+With any luck it'll be runing.
 
