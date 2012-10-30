@@ -365,4 +365,4 @@ af update <project>
 
 ```
 With any luck it'll be runing.
-Check out their (docs)[http://docs.appfog.com/frameworks/node] or ask me about something I may have broke.
+Check out their [docs](http://docs.appfog.com/frameworks/node) or ask me about something I may have broke.
