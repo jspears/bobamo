@@ -24,7 +24,7 @@ define([
     }
     var Model = Backbone.Model.extend({
         schema:schema,
-        url:'${pluginUrl}/admin/model/${model.modelName}', //load the model information through the modeleditor controller REST endpoint
+        url:'${pluginUrl}/admin/model/create', //create a new model through the modeleditor controller REST endpoint
         parse:function (resp) {
             console.log('response', resp);
             return resp.payload;

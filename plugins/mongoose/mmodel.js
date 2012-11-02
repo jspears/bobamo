@@ -15,6 +15,9 @@ module.exports = function MModel(m, manager) {
         return m.description;
     });
 
+    // m = mongoose.model, mongoose model has a schema property and is created by passing the schema with an options object that
+    // contains a display object the display object contains a fields object, list_fields object, and other
+    // backbone forms metadata etc...
     var display = util.depth(m, ['schema', 'options', 'display'], {});
     this.fields = display.fields;
     this.list_fields = display.list_fields;
