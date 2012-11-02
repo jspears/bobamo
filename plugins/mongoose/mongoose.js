@@ -9,6 +9,8 @@ module.exports = MongoosePlugin;
 
 MongoosePlugin.prototype.routes = MongoosePlugin.prototype.filters = function () {
 };
+// the Mongoose plugin is responsible for first adding the modelpaths object to the global AppModel during plugin-manager
+// initialization
 MongoosePlugin.prototype.appModel = function (options) {
     var self = this;
     var mongoose = this.options.mongoose;

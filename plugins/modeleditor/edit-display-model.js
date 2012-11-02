@@ -1,4 +1,6 @@
-var _u = require('underscore'), util = require('../../lib/util');
+// Model and Model Schema Editor and Definition
+var _u = require('underscore'), util = require('../../lib/util'), MModel = require('../mongoose/mmodel');
+// EditApp is instantiated as editModel when you use the modeleditor plugin from the * route
 var EditApp = function (App, options) {
     this.app = App;
     this.options = _u.extend({}, options);
@@ -8,7 +10,7 @@ var EditApp = function (App, options) {
             return k
         });
     });
-
+    // EditApp adds in the editors to the modelPaths object that the display model does not have
     this.__defineGetter__('modelPaths', function () {
         var ret = {};
         _u.each(this.app.modelPaths, function onModelPaths(v, k) {
@@ -33,8 +35,14 @@ EditApp.prototype.modelFor = function (model) {
 }
 
 EditApp.prototype.schemaFor = function (model, fields) {
-    return this.schema;
+    return this.schema;  // used to return the schema for Backbone model
 }
+
+// new function to create a blank model
+EditApp.prototype.createModel = function() {
+
+}
+
 var EditModel = function (k, Model, options) {
     this.model = Model;
     this.modelName = k;
@@ -72,6 +80,8 @@ var EditModel = function (k, Model, options) {
     })
 
 }
+
+// this is the base schema
 EditModel.prototype.schema = {
     plural:{
         title:"Plural",
