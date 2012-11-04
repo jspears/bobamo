@@ -6,10 +6,10 @@ define([
     'text!templates/${model.modelName}/edit.html',
     'libs/backbone-forms/src/templates/bootstrap',
     'jquery-ui',
-    'libs/backbone-forms/src/jquery-ui-editors'
+    'libs/backbone-forms/src/jquery-ui-editors',
+    'libs/editors/multi-editor' //need this for adding in fields for field subschema
 ].concat({{html JSON.stringify(model.editorsFor())}}), function (_,EditView, collection, Model, template) {
     "use strict";
-
     var fieldsets = eval('({{html JSON.stringify(model.fieldsets) }})');
     return EditView.extend({
         fieldsets:fieldsets,
