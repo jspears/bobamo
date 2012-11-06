@@ -68,7 +68,7 @@ PassportPlugin.prototype.logOut = function(req,res,next){
 
 PassportPlugin.prototype.filters = function () {
     var app = this.app;
-    app.post(this.pluginUrl, this.authenticate.bind(this),   this.onAuth.bind(this));
+    app.post(this.pluginUrl, this.authenticate.bind(this), this.ensureAuthenticated.bind(this), this.onAuth.bind(this));
 
     app.get(this.pluginUrl + '/check', this.ensureAuthenticated.bind(this), this.onAuth.bind(this));
 
