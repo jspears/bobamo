@@ -91,7 +91,8 @@ define([
         },
         renderList:function () {
             console.log('renderList',arguments)
-            this.$ul = this.$el.find('tbody').empty();
+            this.$ul = this.$el.find('tbody');
+            this.$ul.children().remove();
             _.each(this.collection.models, this.renderItem, this);
             this.$paginate.paginate('update', {sort:this.sort_str ? ' sorting by: ' + this.sort_str : '', total:this.collection.total});
             $('.sortable', this.$table).sorter();
@@ -138,7 +139,7 @@ define([
             this.$paginate = $('.pager_table', this.$table).paginate();
             this.$el.append(this.$table);
             this.update('Loading {items}');
-            this.$container.empty().append(this.$el);
+            this.$container.html(this.$el);
             return this;
         }
     });

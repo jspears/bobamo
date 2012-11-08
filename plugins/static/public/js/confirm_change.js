@@ -28,8 +28,11 @@ define(['Backbone', 'underscore', 'jquery', 'text!tpl/confirm_change.html', 'lib
         },
         onCancel:function(){
             console.log('onCancel');
+            this.$modal.modal('hide');
             if (this.cancelCallback)
                 this.cancelCallback();
+            else
+                window.history.back();
         },
         render:function(modal, callback, cancel, data){
             this.callback = callback;
