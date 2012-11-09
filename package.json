@@ -11,6 +11,7 @@
     , "less":"latest"
     , "connect":"latest"
     , "consolidate":"latest"
+    , "express":">=3"
   }
   ,"devDependencies":{
     "should":"latest"

@@ -1,5 +1,5 @@
 var geocoder = require('geocoder');
-var mongoose = require('mongoose');
+var mongoose = require('bobamo').mongoose;
 
 var AddressSchema = new mongoose.Schema({
     name        : {type: String, default : ''},
