@@ -72,7 +72,7 @@ PassportPlugin.prototype.filters = function () {
 
     app.get(this.pluginUrl + '/check', this.ensureAuthenticated.bind(this), this.onAuth.bind(this));
 
-    app.get(this.pluginUrl + '/logout', this.logOut.bind(this));
+    app.get(this.baseUrl + 'logout', this.logOut.bind(this));
 
     app.post(this.baseUrl + '*', function (req, res, next) {
         if (req.authrequired) {
