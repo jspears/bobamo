@@ -57,7 +57,7 @@ Address.prototype.geocode = function(next){
         if (err) next();
         console.log('data',data);
         if (data){
-        v   ar rloc = data.results[0].geometry.location;
+        var rloc = data.results[0].geometry.location;
             self.location = {lng: rloc.lng, lat: rloc.lat};
             next(null, data);
         }
