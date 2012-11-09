@@ -1,7 +1,6 @@
 define(['Backbone', 'underscore', 'jquery', 'text!tpl/confirm_change.html', 'libs/bootstrap/js/bootstrap-modal'], function(Backbone, _, $, template){
     var ConfirmView = Backbone.View.extend({
-        el:'body',
-        defaults:{
+         defaults:{
             body:'You made changes do you want to save them?',
             button:'Save Change',
             title:'Unsaved Changes'
@@ -35,6 +34,8 @@ define(['Backbone', 'underscore', 'jquery', 'text!tpl/confirm_change.html', 'lib
                 window.history.back();
         },
         render:function(modal, callback, cancel, data){
+            if (!$.contains(document.body, this.$el[0]))
+            $('body').append(this.$el);
             this.callback = callback;
             this.cancelCallback = cancel;
             var fill = _.extend({}, data, this.defaults, this.options.defaults );
@@ -42,6 +43,7 @@ define(['Backbone', 'underscore', 'jquery', 'text!tpl/confirm_change.html', 'lib
             $(this.el).append(this.$modal)
             this.$modal.modal(modal);
             this.$modal.on('hidden', function(){  $(this).remove(); })
+            return this;
         }
     })
     return ConfirmView;
