@@ -56,14 +56,10 @@ Address.prototype.geocode = function(next){
     geocoder.geocode(addr, function(err, data){
         if (err) next();
         console.log('data',data);
-        var rloc = data.results[0].geometry.location;
-        self.location = {lng: rloc.lng, lat: rloc.lat};
-        next(null, data);
-    }, {}, {
-        host:'proxy.ext.ray.com',
-        port:80,
-        headers: {
-            Host:'maps.googleapis.com'
+        if (data){
+        v   ar rloc = data.results[0].geometry.location;
+            self.location = {lng: rloc.lng, lat: rloc.lat};
+            next(null, data);
         }
     })
 
