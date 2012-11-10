@@ -6,7 +6,7 @@
  * Released under the MIT License.
  */
 
-define(['jQuery', 'lib/editors/google-maps'], function($, google){
+define(['jquery', 'libs/editors/google-maps'], function($, google){
   var GMaps = (function(global) {
     "use strict";
 

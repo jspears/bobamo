@@ -11,7 +11,7 @@ define(['jquery', 'Backbone.Form', 'libs/editors/gmaps'], function ($, Form, GMa
             this.$el.append($map);
             var self = this;
             var location = this.model && this.model.get(this.key);
-            this.gmaps = new GMaps(_.extend({el:$map[0],height:'200px', width:'300px',lng: 38.893738, lat: -77.0239019},location));
+            this.gmaps = new GMaps(_.extend({el:$map[0],height:'200px', width:'300px',lng:-77.0239019 , lat: 38.893738},location));
 
             return this;
         },

@@ -8,6 +8,7 @@ require.config({
   paths: {
     loader: 'libs/backbone/loader',
     async:'libs/require/async',
+    json:'libs/require/json',
     underscore: 'libs/underscore/underscore-1.3.1-amd',
     Backbone: 'libs/backbone/backbone-0.9.1-amd',
    'jquery-ui':'libs/backbone-forms/test/lib/jquery-ui/jquery-ui-1.8.14.custom.min',
