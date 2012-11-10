@@ -26,6 +26,7 @@ You can also specify a context to host both the rest and javascript from
 
 You can find examples of this under examples/simple and examples/login-example.
 
+##Demo
 A running example of the simple app is [http://bobamo.aws.af.cm/index.html](http://bobamo.aws.af.cm/index.html)
 
 
@@ -155,7 +156,7 @@ Finders allow for custom queries to be created and listed in the menu.   To add 
        return this.find().regex('username', /^[a-h]/i);
    }
 
-```https://github.com/jspears/bobamo/blob/master/Readme.md
+```
 
 Finders add a new item to the dropdown from the header.
 
