@@ -1,0 +1,75 @@
+<div class="edit-form">
+    <ul style="display:none" class="unstyled error-list alert-error"></ul>
+    <ul style="display:none" class="unstyled success-list"></ul>
+    <div class="form-wrap ">
+        <div class="form-container">
+        <form></form>
+            <script type="text/javascript">
+              $('form').jsonForm(
+                      {
+                          "schema":{
+                              "fields":{
+                                  "type":"array",
+                                  "items":{
+                                      "type":"object",
+                                      "title":"Properties",
+                                      "properties":{
+                                          "name":{
+                                              "type":"string",
+                                              "title":"Name"
+                                          },
+                                          "dataType":{
+                                              "type":"string",
+                                              "title":"Data Type",
+                                              "enum":[
+                                                  "string",
+                                                  "number",
+                                                  "boolean",
+                                                  "array",
+                                                  "object",
+                                                  "nested",
+                                                  "reference"
+                                              ]
+                                          },
+                                          "option":{
+                                              "type":"string",
+                                              "title":"Option"
+                                          },
+                                          "required":{
+                                              "type":"boolean",
+                                              "title":"Required"
+                                          }
+                                      }
+                                  }
+                              }
+                          },
+                          "form":[
+                              {
+                                  "type":"tabarray",
+                                  "items":{
+                                      "type":"section",
+                                      "legend":"Field {{idx}}",
+                                      "items":[
+                                          {
+                                              "key":"fields[]",
+                                              "title":"Properties of Field {{idx}}"
+                                          }
+                                      ]
+                                  }
+                              }
+                          ]
+                      });
+            </script>
+        </div> <!--form container-->
+    </div> <!--form wrap-->
+    <div class="form-actions">
+        <div class="btn-group pull-left">
+            <a class="btn cancel" href="#/modeleditor/admin/list"><b class="icon-list"/>List</a>
+            <button class="btn cancel">Cancel</button>
+        </div>
+        <button class="btn pull-right btn-primary save finish">Save</button>
+
+        <div style="clear:right"></div>
+    </div>
+
+</div>

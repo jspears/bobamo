@@ -44,20 +44,17 @@ EditPlugin.prototype.routes = function () {
 
     // this route handles creating a new model, type -> model name (e.g. user), view = backbone view for editing (e.g. edit)
     // this.baseURL = /
-    /* this.app.get(this.baseUrl + 'js/views/modeleditor/admin/model/:view', function (req, res, next) {
-        var view = 'admin/' + req.params.view;
+    this.app.get(this.baseUrl + 'js/views/modeleditor/admin/model/create', function (req, res, next) {
+        var view = 'admin/create';
         var editModel = new EditModel(this.pluginManager.appModel, {
             editors:this.pluginManager.editors
         });
-        // to create a new model first we need to add a new entry into editModel instance
-        editModel.modelPaths
         // app.local variables that are passed to the template
         this.local(res, 'editModel', editModel);
-        this.local(res, 'model', editModel.schemaFor());
+        this.local(res, 'model', editModel.createModel());
         this.local(res, 'pluginUrl', this.pluginUrl);
         this.generate(res, view);
     }.bind(this));
-    */
 
     // this route handles editing existing model, type -> model name (e.g. user), view = backbone view for editing (e.g. edit)
     // this.baseURL = /
