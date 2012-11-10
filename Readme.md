@@ -283,13 +283,8 @@ package.json
   , "version": "0.1"
   , "private": false
   , "dependencies": {
-      "express": ">=3"
-    , "jade": ">= 0.0.1"
-    , "bobamo":"latest"
-    , "jqtpl":"latest"
-    , "consolidate":"latest"
-   , "mongoose":"latest"
-  }
+     "bobamo":"latest"
+     }
 }
 ```
 and app.js
