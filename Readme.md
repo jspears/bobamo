@@ -26,6 +26,7 @@ You can also specify a context to host both the rest and javascript from
 
 You can find examples of this under examples/simple and examples/login-example.
 
+##Demo
 A running example of the simple app is [http://bobamo.aws.af.cm/index.html](http://bobamo.aws.af.cm/index.html)
 
 
@@ -155,7 +156,7 @@ Finders allow for custom queries to be created and listed in the menu.   To add 
        return this.find().regex('username', /^[a-h]/i);
    }
 
-```https://github.com/jspears/bobamo/blob/master/Readme.md
+```
 
 Finders add a new item to the dropdown from the header.
 
@@ -282,25 +283,18 @@ package.json
   , "version": "0.1"
   , "private": false
   , "dependencies": {
-      "express": ">=3"
-    , "jade": ">= 0.0.1"
-    , "bobamo":"latest"
-    , "jqtpl":"latest"
-    , "consolidate":"latest"
-   , "mongoose":"latest"
-  }
+     "bobamo":"latest"
+     }
 }
 ```
 and app.js
 ```javascript
-var express = require('express')
-    , User = require('bobamo/examples/model/user')
-    , Group = require('bobamo/examples/model/group')
-    , Employee = require('bobamo/examples/model/employee')
-    , bobamo = require('bobamo')
-    ;
 
-var app = module.exports = express();
+require('bobamo/examples/model/user')
+require('bobamo/examples/model/group')
+require('bobamo/examples/model/employee')
+var bobamo = require('bobamo');
+
 var mongo = {
         "hostname":"localhost",
         "port":27017,
@@ -328,32 +322,8 @@ var generate_mongo_url = function(obj){
 
 }
 var mongo_url = generate_mongo_url(mongo);
-app.configure(function () {
-//    app.set('views', __dirname + '/views');
-//    app.set('view engine', 'jade');
-    app.use(express.bodyParser());
-    app.use(express.methodOverride());
-    app.use(express.cookieParser());
-    app.use(express.session({secret:'super duper secret'}))
-    app.use(app.router);
-    app.use(express.static(__dirname + '/public'));
-});
 
-app.configure('development', function () {
-    app.use( bobamo.express({uri:mongo_url}));
-    
-    app.use(express.errorHandler({ dumpExceptions:true, showStack:true }));
-});
-
-app.configure('production', function () {
-    app.use( bobamo.express({uri:mongo_url}));
-    app.use(express.errorHandler());
-});
-
-// Routes
-
-app.get('/', function(req,res){ res.render('redir_index.html', {layout:false})});
-app.listen(process.env.VCAP_APP_PORT || 3000);
+bobamo.app({uri:mongo_url}).listen(process.env.VCAP_APP_PORT || 3000);
 
 
 ```

@@ -1,4 +1,4 @@
-define(['jquery', 'Backbone.Form', 'libs/editors/map'], function ($, Form, GoogleMaps) {
+define(['jquery', 'Backbone.Form', 'libs/editors/gmaps'], function ($, Form, GMaps) {
     var editors = Form.editors;
     var MapEditor = editors.MapEditor = editors.Base.extend({
         initialize:function (options) {
@@ -7,12 +7,12 @@ define(['jquery', 'Backbone.Form', 'libs/editors/map'], function ($, Form, Googl
             this.$el.append(this.$lat, this.$lng);
         },
         render:function () {
-            var $map = $('<div class="map" style="height:200px;width:300px"></div>');
+            var $map = $('<div class="map"></div>');
             this.$el.append($map);
-            this.gmaps = new GoogleMaps;
-            var latlng = this.model && this.model.get(this.key);
-            this.gmaps.createMap($map[0], latlng);
-            this.setValue(latlng);
+            var self = this;
+            var location = this.model && this.model.get(this.key);
+            this.gmaps = new GMaps(_.extend({el:$map[0],height:'200px', width:'300px',lng:-77.0239019 , lat: 38.893738},location));
+
             return this;
         },
         setValue:function (value, lng) {
@@ -20,15 +20,15 @@ define(['jquery', 'Backbone.Form', 'libs/editors/map'], function ($, Form, Googl
             var latlng = {lat:lat, lng:lng}
             if (lat && lng) {
                 this.gmaps.setCenter(latlng);
-                this.gmaps.placeMarker({draggable:true, position:latlng})
+                this.gmaps.addMarker(_.extend({draggable:true}, latlng));
             }
             return this;
         },
         getValue:function () {
-            var pos = this.gmaps.getPosition()
+            var pos = this.gmaps.getCenter()
             return {
-                lat:pos.Xa,
-                lng:pos.Ya
+                lat:pos.lat(),
+                lng:pos.lng()
             }
         }
     });

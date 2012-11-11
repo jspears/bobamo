@@ -1,25 +1,28 @@
 {
-    "name": "bobamo"
-  , "description":"A scaffoldless crud thing using bootstrap, passport, mongoose, backbone and jquery"
-  , "version": "0.7.0"
-  , "private": false
-  , "dependencies": {
-     "jqtpl": ">= 0.0.1"
-    , "mongoose":"latest"
-    , "mers":">= 0.4.1"
-    , "underscore":"latest"
-    , "less":"latest"
-    , "connect":"latest"
-    , "consolidate":"latest"
+  "name": "bobamo",
+  "description": "A scaffoldless crud thing using bootstrap, passport, mongoose, backbone and jquery",
+  "version": "0.8.0",
+  "private": false,
+  "dependencies": {
+    "jqtpl": ">= 0.0.1",
+    "mongoose": "latest",
+    "mers": ">= 0.4.1",
+    "underscore": "latest",
+    "less": "latest",
+    "connect": "latest",
+    "consolidate": "latest",
+    "express": ">=3"
+  },
+  "devDependencies": {
+    "should": "latest",
+    "csv": "latest"
+  },
+  "scripts": {
+    "test": "mocha tests/*-mocha.js",
+    "example": "node example/app.js"
+  },
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
   }
-  ,"devDependencies":{
-    "should":"latest"
-    ,"csv":"latest"
-  }
-  ,"scripts":{
-    "test":"mocha tests/*-mocha.js",
-    "example":"node example/app.js"
-  }
-
-  
 }
