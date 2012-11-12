@@ -34,7 +34,7 @@ define([
         template:_.template(tableTemplate),
         render:function(){
             View.prototype.render.apply(this, arguments);
-            if (qform){
+            if (qform && qform.schema){
                 var form = this.form = new Form(qform).render();
                 form.$el.append('<div class="form-actions"><input type="reset" class="btn" value="Clear"><button type="submit" class="btn pull-right btn-primary save finish">Submit</button></div>')
                 this.$el.find('.table').before(form.el);
