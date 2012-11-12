@@ -4,9 +4,9 @@ define([
     'collections/${model.modelName}',
     'models/${model.modelName}',
     'text!templates/${model.modelName}/edit.html',
-    'libs/backbone-forms/src/templates/bootstrap',
+    'libs/backbone-forms/templates/bootstrap',
     'jquery-ui',
-    'libs/backbone-forms/src/jquery-ui-editors'
+    'libs/backbone-forms/editors/list'
 ].concat({{html JSON.stringify(model.editorsFor())}}), function (_,EditView, collection, Model, template) {
     "use strict";
 

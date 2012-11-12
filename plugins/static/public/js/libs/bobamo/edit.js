@@ -4,11 +4,12 @@ define([
     'Backbone',
     'Backbone.Form',
     'replacer',
-    'libs/backbone-forms/src/templates/bootstrap',
-    'jquery-ui',
+    'libs/backbone-forms/templates/bootstrap',
+    'backbone-modal',
     'libs/table/jquery.wiz'
 ], function ($, _, Backbone, Form, replacer) {
     "use strict";
+
     function nullEmptyStr(obj){
         _(obj).each(function(v,k){
            if (k == '_id' && _.isEmpty(v) ){
@@ -148,14 +149,17 @@ define([
         createModel:function(opts){
           return new this.model(opts);
         },
+        createForm:function(options){
+             return new Form(options);
+        },
         render:function (opts) {
-            var $el = this.$el.empty().append(this.template());
+            var $el = this.$el.html(this.template());
             var id = opts && (opts.id || opts._id);
             var model = this.createModel(opts);
             model.on('sync', this.onSuccess, this);
             var title = id ? '<i class="icon-edit"></i> Edit {title} [{id}]' : '<i class="icon-plus"></i>Create New {title}';
             var config = _.extend({id:id}, this.config);
-            var form = this.form = new Form({
+            var form = this.form = this.createForm({
                 model:model,
                 fieldsets:this.fieldsets || [
                     {legend:replacer(title, config), fields:this.fields}
@@ -171,11 +175,13 @@ define([
                         $('.form-wrap', $del).wiz({replace:$('.save', $del)});
                 }});
             } else {
-                $fm.append(form.render().el);
-                if (isWiz)
+                var html = form.render().el;
+                console.log('appending', html);
+                $fm.append(html);
+                 if (isWiz)
                     $('.form-wrap',$del).wiz({replace:$('.save', $del)});
             }
-            $(this.options.container).empty().append($el);
+            $(this.options.container).html($el);
             return this;
         }
     });

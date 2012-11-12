@@ -5,21 +5,24 @@
 // Their usage will become more apparent futher along in the tutorial.
 require.config({
   baseUrl:'${baseUrl}js',
+
   paths: {
     loader: 'libs/backbone/loader',
     async:'libs/require/async',
     json:'libs/require/json',
     underscore: 'libs/underscore/underscore-1.3.1-amd',
     Backbone: 'libs/backbone/backbone-0.9.1-amd',
-   'jquery-ui':'libs/backbone-forms/test/lib/jquery-ui/jquery-ui-1.8.14.custom.min',
-   'Backbone.Form':'libs/backbone-forms/src/backbone-forms',
-   'jquery-editors':'libs/backbone-forms/src/jquery-ui-editors',
+   'jquery-ui':'libs/backbone-forms/editors/jquery-ui',
+   'Backbone.Form':'libs/backbone-forms/backbone-forms',
+   'jquery-editors':'libs/backbone-forms/editors/list',
    'bootstrap':'libs/bootstrap/js',
     templates: '../templates',
+   'backbone-modal':'libs/backbone-forms/editors/backbone.bootstrap-modal',
+
 {{each(k,j) pluginManager.pluginNames()}}
     ${j}:'${baseUrl}${j}',
 {{/each}}
-    tpl: '../tpl',
+    tpl: '../tpl'
   }
 
 });
