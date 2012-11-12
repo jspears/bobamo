@@ -12,6 +12,49 @@ define([
     "use strict";
     var typeOptions =   ["Text", "Checkbox", "Checkboxes", "Date", "DateTime", "Hidden", "List", "NestedModel", "Number", "Object", "Password", "Radio", "Select", "TextArea", "MultiEditor", "ColorEditor", "UnitEditor", "PlaceholderEditor"];
     var dataTypes =    ["text", "tel", "time", "url", "range", "number", "week", "month", "year", "date", "datetime", "datetime-local", "email", "color"];
+
+   var fieldsets = ['modelName','plural','title','hidden', 'labelAttr','properties'];
+
+//    schema.fieldsets.itemToString = function (obj) {
+//        if (obj.fields && _.isString(obj.fields)) {
+//            obj.fields = obj.fields.split(',');
+//        }
+//        var fields = '[' + obj.fields.join(',') + ']';
+//        if (fields.length > 30)
+//            fields = fields.substring(0, 27) + '...';
+//
+//        return obj.legend + ' ' + fields;
+//    }
+    var Property = Backbone.Model.extend({
+          schema:{
+              name:{type:'Text', required:true},
+              title:{type:'Text'},
+              description:{type:'Text'},
+              required:{type:'Checkbox'},
+              editor:{ title:'Editor Type', type:'Select', options:typeOptions},
+              max:{type:'Number'},
+              min:{type:'Number'},
+              schemaType:{
+                  type:'Select',
+                  options:['String','Number','Date','Buffer','Boolean','Mixed','ObjectId','Array', 'InlineObject']
+              },
+              properties:{
+                  type:'List',
+                  itemType:'NestedModel'
+              }
+          },
+          fieldset:['name','title','description','required','editor','schemaType', 'properties'],
+          toString:function(){
+              return this.get('name')+' - '+this.get('description');
+          },
+          initialize:function(){
+
+              this.on('name:blur', function(cont, evt){
+                 console.log('property blur:name', cont, evt);
+              });
+          }
+    }) ;
+    Property.prototype.schema.properties.model = Property;
     var schema = {
         "modelName":{
             "title":"Model Name",
@@ -31,32 +74,12 @@ define([
         "labelAttr":{"title":"Label Attribute", "help":"This is a label that gives a succinct description of object", "path":"labelAttr"},
         "properties":{
             type:'List',
-            itemType:'Object',
-            subSchema:{
-                name:{type:'Text', required:true},
-                title:{type:'Text'},
-                description:{type:'Text'},
-                required:{type:'Checkbox'},
-                editor:{ title:'Editor Type', type:'Select', options:typeOptions},
-                schemaType:{
-                    type:'Select',
-                    options:['String','Number','Date','Buffer','Boolean','Mixed','ObjectId','Array']
-                }
-            }
+            itemType:'NestedModel',
+            model:Property,
+            title:'Properties',
+            help:'Properties'
         }
-    } ;
-   var fieldsets = ['modelName','plural','title','hidden', 'labelAttr','properties'];
-
-//    schema.fieldsets.itemToString = function (obj) {
-//        if (obj.fields && _.isString(obj.fields)) {
-//            obj.fields = obj.fields.split(',');
-//        }
-//        var fields = '[' + obj.fields.join(',') + ']';
-//        if (fields.length > 30)
-//            fields = fields.substring(0, 27) + '...';
-//
-//        return obj.legend + ' ' + fields;
-//    }
+    };
     var Model = Backbone.Model.extend({
         schema:schema,
 //        url:'/modeleditor/admin/model/ProfileImage',
@@ -107,8 +130,12 @@ define([
         template:_.template(template),
 //        collection:collection,
         model:Model,
-        createForm:function(){
-
+        createForm:function(opts){
+            var form= new Backbone.Form(opts);
+            form.on('properties:change', function(ob,dob){
+                console.log('change', dob.getValue());
+            })
+            return form;
         },
         isWizard:false,
         config:{
