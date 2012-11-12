@@ -5,7 +5,7 @@
   , "private": false
   , "dependencies": {
      "jqtpl": ">= 0.0.1"
-    , "mongoose":"latest"
+    , "mongoose":"~3.3.1"
     , "mers":">= 0.4.1"
     , "underscore":"latest"
     , "less":"latest"
