@@ -5,21 +5,27 @@ is you define your model and a little extra and it generates the crud on demand.
 box though, you can easily change any part of the generated stuff by making it static and putting in the public
 directory.   This allows for easy customization.   You can at your own risk modify the scaffolding generated in views/generator
 
-##Express
-Recently Bobamo has been refactored as a express plugin.  This gives an easy installation method, (npm) and
-relatively easy configuration.
+##Getting Started.
+Recently Bobamo has been refactored is a express plugin, err middleware.  This gives an easy installation method, (npm) and
+relatively easy configuration. 
 
 Just add bobamo to your package.json, npm install then configure app.js to use bobamo
+This is the easy way...
 
+Full Example:
 ```javascript
-
- app.use(bobamo.express({uri:'mongodb://localhost/bobamo_development'}))
+ var bobamo = require('bobamo');
+ require('<path>/<model>');
+ var app = bobamo.app({uri:'mongodb://localhost/bobamo_development'}, '/');
+ app.listen(3000);
 
 ```
-You can also specify a context to host both the rest and javascript from
+You can also use it as middleware, this way takes more code, but is more configurable.
 
 ```javascript
-
+ var bobamo = require('bobamo');
+ require('<path>/<model>');
+ //...somewhere in your app.js
  app.use('/context', bobamo.express({uri:'mongodb://localhost/bobamo_development'}))
 
 ```
