@@ -3,63 +3,7 @@
     <ul style="display:none" class="unstyled success-list"></ul>
     <div class="form-wrap ">
         <div class="form-container">
-        <form></form>
-            <script type="text/javascript">
-              $('form').jsonForm(
-                      {
-                          "schema":{
-                              "fields":{
-                                  "type":"array",
-                                  "items":{
-                                      "type":"object",
-                                      "title":"Properties",
-                                      "properties":{
-                                          "name":{
-                                              "type":"string",
-                                              "title":"Name"
-                                          },
-                                          "dataType":{
-                                              "type":"string",
-                                              "title":"Data Type",
-                                              "enum":[
-                                                  "string",
-                                                  "number",
-                                                  "boolean",
-                                                  "array",
-                                                  "object",
-                                                  "nested",
-                                                  "reference"
-                                              ]
-                                          },
-                                          "option":{
-                                              "type":"string",
-                                              "title":"Option"
-                                          },
-                                          "required":{
-                                              "type":"boolean",
-                                              "title":"Required"
-                                          }
-                                      }
-                                  }
-                              }
-                          },
-                          "form":[
-                              {
-                                  "type":"tabarray",
-                                  "items":{
-                                      "type":"section",
-                                      "legend":"Field {{idx}}",
-                                      "items":[
-                                          {
-                                              "key":"fields[]",
-                                              "title":"Properties of Field {{idx}}"
-                                          }
-                                      ]
-                                  }
-                              }
-                          ]
-                      });
-            </script>
+            <form></form>
         </div> <!--form container-->
     </div> <!--form wrap-->
     <div class="form-actions">
