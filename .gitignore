@@ -83,7 +83,3 @@ pickle-email-*.html
 
 # NodeJS artificats
 node_modules
-
-# project artifacts
-plugins/imageupload/public/images/*
-plugins/visualize/npm-debug.log

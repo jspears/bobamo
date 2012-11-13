@@ -1,4 +1,4 @@
-var mongoose = require('mongoose');
+var mongoose = require('../../../bobamo').mongoose;
 var Schema = mongoose.Schema;
 
 var GroupSchema = new Schema({

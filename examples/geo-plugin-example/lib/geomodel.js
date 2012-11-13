@@ -1,5 +1,5 @@
 var geocoder = require('geocoder');
-var mongoose = require('mongoose');
+var mongoose = require('bobamo').mongoose;
 
 var AddressSchema = new mongoose.Schema({
     name        : {type: String, default : ''},
@@ -56,14 +56,10 @@ Address.prototype.geocode = function(next){
     geocoder.geocode(addr, function(err, data){
         if (err) next();
         console.log('data',data);
+        if (data){
         var rloc = data.results[0].geometry.location;
-        self.location = {lng: rloc.lng, lat: rloc.lat};
-        next(null, data);
-    }, {}, {
-        host:'proxy.ext.ray.com',
-        port:80,
-        headers: {
-            Host:'maps.googleapis.com'
+            self.location = {lng: rloc.lng, lat: rloc.lat};
+            next(null, data);
         }
     })
 

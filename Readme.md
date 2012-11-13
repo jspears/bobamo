@@ -1,5 +1,4 @@
 #Bobamo
-### changed the name to avoid stepping on someones toes.
 Its basically a crud infrastructure for [mongoose](http://mongoosejs.com), [backbone](http://documentcloud.github.com/backbone/), [mers](https://github.com/jspears/mers),
 [backbone forms](https://github.com/powmedia/backbone-forms) and [twitter bootstrap](http://twitter.github.com/bootstrap/). The idea
 is you define your model and a little extra and it generates the crud on demand.    It doesn't leave you in the
@@ -27,7 +26,8 @@ You can also specify a context to host both the rest and javascript from
 
 You can find examples of this under examples/simple and examples/login-example.
 
-A running example of the simple app is [here](http://bobamo-speajus.rhcloud.com/bobamo/index.html)
+##Demo
+A running example of the simple app is [http://bobamo.aws.af.cm/index.html](http://bobamo.aws.af.cm/index.html)
 
 
 ## Subclass
@@ -125,7 +125,7 @@ display:{
 ```
 
 Soon you should be able to edit these via an admin UI.
-Many-To-One support is coming.
+Many-To-One support exists.
 One-To-Many support exists.
 
 
@@ -261,10 +261,78 @@ and serve jqtpl templates from
 
 plugin/&lt;yourplugin&gt;/views
 
+#The Cloud 
+If you want to get it running in "The Cloud" quickly check out [AppFog](https://www.appfog.com/) I got this running there
+in less than 20 minutes, so many kudos to them.  Start [here](https://console.appfog.com/apps/new) choose the create app
+-> node express -> infrastructure and subdomain.   go to the services tab and add mongodb, and you should be golden.
+
+Once your through that install their little tool.
+```bash
+gem install af
+af login
+af pull <project>
+cd <project>
+```
+and create 
+package.json 
+
+```javascript 
+
+{
+    "name": "<your project>"
+  , "version": "0.1"
+  , "private": false
+  , "dependencies": {
+     "bobamo":"latest"
+     }
+}
+```
+and app.js
+```javascript
+
+require('bobamo/examples/model/user')
+require('bobamo/examples/model/group')
+require('bobamo/examples/model/employee')
+var bobamo = require('bobamo');
+
+var mongo = {
+        "hostname":"localhost",
+        "port":27017,
+        "username":"",
+        "password":"",
+        "name":"",
+        "db":"db"
+    };
+
+// Configuration
+if(process.env.VCAP_SERVICES){
+    var env = JSON.parse(process.env.VCAP_SERVICES);
+    var mongo = env['mongodb-1.8'][0]['credentials'];
+}
+var generate_mongo_url = function(obj){
+    obj.hostname = (obj.hostname || 'localhost');
+    obj.port = (obj.port || 27017);
+    obj.db = (obj.db || 'test');
+    if(obj.username && obj.password){
+        return "mongodb://" + obj.username + ":" + obj.password + "@" + obj.hostname + ":" + obj.port + "/" + obj.db;
+    }
+    else{
+        return "mongodb://" + obj.hostname + ":" + obj.port + "/" + obj.db;
+    }
+
+}
+var mongo_url = generate_mongo_url(mongo);
+
+bobamo.app({uri:mongo_url}).listen(process.env.VCAP_APP_PORT || 3000);
 
 
+```
 
 
+Then push it back up
+```bash
+af update <project> 
 
-
-
+```
+With any luck it'll be runing.
+Check out their [docs](http://docs.appfog.com/frameworks/node) or ask me about something I may have broke.

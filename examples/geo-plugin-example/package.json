@@ -3,11 +3,7 @@
   , "version": "0.6.0"
   , "private": false
   , "dependencies": {
-      "express": "latest"
-    , "jade": ">= 0.0.1"
-    , "bobamo":"latest"
-    , "jqtpl":"latest"
-   , "mongoose":"latest"
-    ,"geocoder":"latest"
+     "bobamo" : "latest"
+    , "geocoder":"latest"
   }
 }

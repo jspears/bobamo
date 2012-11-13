@@ -17,6 +17,9 @@ GeoPlugin.prototype.editorFor = function(path, property, Model){
             }
     }
 }
-GeoPlugin.prototype.routes = function(){
-
+GeoPlugin.prototype.clientConfig = {
+    apiKey:'AIzaSyBXNh3-mlasFlUAjiLKqIG6bCvW_7E8aMc',
+    default:{
+        lng:-77.0239019 , lat: 38.893738
+    }
 }

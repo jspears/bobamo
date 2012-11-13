@@ -1,4 +1,4 @@
-var crypto = require('crypto'), mongoose = require('mongoose'), Schema = mongoose.Schema, ImageInfo = require('../../plugins/imageupload/ImageInfo');
+var crypto = require('crypto'), mongoose = require('../../../bobamo').mongoose, Schema = mongoose.Schema, ImageInfo = require('../../plugins/imageupload/ImageInfo');
 var RoleSchema = new Schema({
     name:{type:String},
         read:{type:Boolean},
@@ -48,6 +48,9 @@ UserSchema.statics.findI_thru_P = function onFindIP(){
 UserSchema.statics.findQ_thru_Z = function onFindQZ(){
     return this.find().regex('username', /^[q-z]/i);
 }
+UserSchema.statics.findI_thru_P.display = {
+    title:'Find I thru P'
+}
 
 function sha1b64(password) {
     return crypto.createHash('sha1').update(password).digest('base64');
@@ -75,6 +78,7 @@ UserSchema.statics.findByUsernamePassword = function (username, password) {
     return  this.where({username:username, _password:sha1b64(password)});
 }
 
+UserSchema.statics.findByUsernamePassword.display = { hidden:true }
 var User = mongoose.model("user", UserSchema);
 
 module.exports = User;
