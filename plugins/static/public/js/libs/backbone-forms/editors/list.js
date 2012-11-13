@@ -402,7 +402,7 @@ define(['jquery', 'underscore', 'Backbone', 'Backbone.Form', 'backbone-modal'], 
       //Get nested schema if NestedModel
       if (schema.itemType === 'NestedModel') {
         if (!schema.model) throw 'Missing required option "schema.model"';
-
+        this.model = new schema.model;
         this.nestedSchema = schema.model.prototype.schema;
         if (_.isFunction(this.nestedSchema)) this.nestedSchema = this.nestedSchema();
       }
@@ -491,11 +491,11 @@ define(['jquery', 'underscore', 'Backbone', 'Backbone.Form', 'backbone-modal'], 
 
     openEditor: function() {
       var self = this;
-
-      var form = new Form({
-        schema: this.nestedSchema,
-        data: this.value
-      });
+      var opts = {schema:this.nestedSchema};
+      opts.data = this.value;
+      opts._parent = this;
+      var create =                this.model && this.model.createForm;
+      var form =  create && create.call(this.model, opts) || new Form(opts);
 
       var modal = this.modal = new Backbone.BootstrapModal({
         content: form,

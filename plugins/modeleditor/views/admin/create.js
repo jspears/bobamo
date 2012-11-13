@@ -10,7 +10,8 @@ define([
     'libs/editors/multi-editor'
 ], function (_, Backbone, EditView, template) {
     "use strict";
-    var typeOptions =   ["Text", "Checkbox", "Checkboxes", "Date", "DateTime", "Hidden", "List", "NestedModel", "Number", "Object", "Password", "Radio", "Select", "TextArea", "MultiEditor", "ColorEditor", "UnitEditor", "PlaceholderEditor"];
+    var typeOptions =   ["Text", "Checkbox", "Checkboxes", "Date", "DateTime", "Hidden", "List", "NestedModel", "Number", "Object",
+                         "Password", "Radio", "Select", "TextArea", "MultiEditor", "ColorEditor", "UnitEditor", "PlaceholderEditor"];
     var dataTypes =    ["text", "tel", "time", "url", "range", "number", "week", "month", "year", "date", "datetime", "datetime-local", "email", "color"];
 
    var fieldsets = ['modelName','plural','title','hidden', 'labelAttr','properties'];
@@ -25,6 +26,8 @@ define([
 //
 //        return obj.legend + ' ' + fields;
 //    }
+
+
     var Property = Backbone.Model.extend({
           schema:{
               name:{type:'Text', required:true},
@@ -34,24 +37,143 @@ define([
               editor:{ title:'Editor Type', type:'Select', options:typeOptions},
               max:{type:'Number'},
               min:{type:'Number'},
+              many:{type:'Checkbox', help:'Is this an array?', title:'Many'},
+              placeholder:{type:'Text', help:'Default Placeholder text'},
               schemaType:{
                   type:'Select',
-                  options:['String','Number','Date','Buffer','Boolean','Mixed','ObjectId','Array', 'InlineObject']
+                  help:'Type of schema',
+                  required:true,
+                  options:['String','Number','Date','Buffer','Boolean',
+                      //'Mixed',
+
+                      'ObjectId','Array', 'InlineObject']
+              },
+              ref:{
+                  type:'Select',
+                  options:[{val:'',label:'None'},'User','Group','Employee']
               },
               properties:{
                   type:'List',
                   itemType:'NestedModel'
               }
           },
-          fieldset:['name','title','description','required','editor','schemaType', 'properties'],
+          fieldsets:[{ legend:'Property', fields:['name','title','description','many','required','placeholder','schemaType', 'min','max','editor', 'ref', 'properties']}],
           toString:function(){
               return this.get('name')+' - '+this.get('description');
           },
-          initialize:function(){
+          constructor:function(){
+              _.bind(this.createForm, this);
 
-              this.on('name:blur', function(cont, evt){
-                 console.log('property blur:name', cont, evt);
+          },
+          enabled:function(form, enable){
+              if(enable){
+                  form.fields.properties.$el.find('button').removeAttr('disabled');
+              }else{
+                  form.fields.properties.$el.find('button').attr('disabled', 'true');
+              }
+          },
+          createForm:function(opts){
+            console.log('createForm', opts);
+            var schemaEvents =this.eventMap['schemaType'];
+              opts.fieldsets = this.fieldsets;
+
+            var f = opts.fieldsets[0];
+            if (opts._parent && opts._parent.options && opts._parent.options.list && opts._parent.options.list.form)   {
+                var pform =                     opts._parent.options.list.form;
+                var val =   pform.fields.modelName || pform.fields.name;
+                var label = val.editor.getValue();
+                f.legend = 'Property on "'+label+'"';
+            }
+            var form = new Backbone.Form(opts);
+//              opts.fieldsets = this.fieldsets;
+//              form.on('all', function(){
+//                  console.log('all', arguments);
+//              })
+              var self = this;
+              form.on('schemaType:change', function(cont, evt){
+                  var type = evt.getValue();
+                  console.log('schemaType:change', type);
+                  schemaEvents[type].call(this,form, cont,evt);
               });
+              form.on('name:change', function(cont,evt){
+                     self.enabled(form, evt.getValue());
+              });
+
+            var r = form.render;
+              form.render = function(){
+                  var ret = r.apply(this, Array.prototype.slice.call(arguments,0));
+                  schemaEvents['String'].call(this, form);
+                  self.enabled(form, false);
+                  return ret;
+              }
+            return form;
+          },
+          eventMap:{
+              schemaType:{
+                  'String':function(form){
+                      form.fields.min.$el.show();
+                      form.fields.max.$el.show();
+                      form.fields.ref.$el.hide();
+                      form.fields.editor.$el.show();
+                      form.fields.editor.editor.setOptions(['Text', 'Hidden','Password','TextArea', 'ColorEditor', 'UnitEditor'])
+                      form.fields.placeholder.$el.show();
+                      form.fields.properties.$el.hide();
+                  },
+                  'Number':function(form){
+                      form.fields.min.$el.show();
+                      form.fields.max.$el.show();
+                      form.fields.ref.$el.hide();
+                      form.fields.editor.$el.show();
+                      form.fields.editor.editor.setOptions(['NumberEditor', 'Text', 'Hidden','TextArea', 'ColorEditor', 'UnitEditor'])
+                      form.fields.placeholder.$el.show();
+                      form.fields.properties.$el.hide();
+                  },
+                  'Date':function(form){
+                      form.fields.min.$el.hide();
+                      form.fields.max.$el.hide();
+                      form.fields.ref.$el.hide();
+                      form.fields.editor.$el.show();
+                      form.fields.editor.editor.setOptions(['DateEditor', 'DateTimeEditor', 'Text', 'Hidden','TextArea'])
+                      form.fields.placeholder.$el.show();
+                      form.fields.properties.$el.hide();
+                  },
+                  'Buffer':function(form){
+                      form.fields.min.$el.hide();
+                      form.fields.max.$el.hide();
+                      form.fields.ref.$el.hide();
+                      form.fields.editor.$el.show();
+                      form.fields.editor.editor.setOptions(['ImageUploadEditor', 'FileUploadEditor'])
+                      form.fields.properties.$el.hide();
+                  },
+                  'Boolean':function(form){
+                      form.fields.min.$el.hide();
+                      form.fields.max.$el.hide();
+                      form.fields.ref.$el.hide();
+                      form.fields.editor.$el.show();
+                      form.fields.editor.editor.setOptions(['Checkbox','Text', 'Hidden','Password','TextArea'])
+                      form.fields.placeholder.$el.show();
+                      form.fields.properties.$el.hide();
+                  },
+               //   'Mixed':function(){},
+                  'ObjectId':function(form){
+                      form.fields.min.$el.hide();
+                      form.fields.max.$el.hide();
+                      form.fields.ref.$el.show();
+                      form.fields.editor.editor.setOptions(['Search', 'List', 'Link', 'None'])
+                      form.fields.placeholder.$el.hide();
+                      form.fields.editor.$el.show();
+                      form.fields.properties.$el.hide();
+                  },
+                  'InlineObject':function(form){
+                      form.fields.min.$el.hide();
+                      form.fields.max.$el.hide();
+                      form.fields.ref.$el.hide();
+                      form.fields.editor.$el.hide();
+                      form.fields.placeholder.$el.hide();
+                      form.fields.properties.$el.show();
+                  }
+              }
+
           }
     }) ;
     Property.prototype.schema.properties.model = Property;
@@ -132,9 +254,7 @@ define([
         model:Model,
         createForm:function(opts){
             var form= new Backbone.Form(opts);
-            form.on('properties:change', function(ob,dob){
-                console.log('change', dob.getValue());
-            })
+
             return form;
         },
         isWizard:false,
