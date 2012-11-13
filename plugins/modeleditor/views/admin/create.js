@@ -107,9 +107,9 @@ define([
         template:_.template(template),
 //        collection:collection,
         model:Model,
-        createForm:function(){
+/*      createForm:function(){
 
-        },
+        }, */
         isWizard:false,
         config:{
             title:'Model',
