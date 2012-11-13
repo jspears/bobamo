@@ -27,14 +27,6 @@ module.exports = function MModel(m, manager) {
             return display.list_fields;
 
     });
-    var defaults = {};
-    Object.keys(m.schema.tree).forEach(function(k) {
-        var d = m.schema.tree[k].default;
-        if (typeof d === 'undefined') return;
-        defaults[k] = d;
-    });
-    this.defaults = defaults;
-
     this.__defineGetter__('paths', function () {
         var ret = {};
         _u.each(m.schema.tree, function (v,k) {
@@ -47,9 +39,4 @@ module.exports = function MModel(m, manager) {
 
         return ret;
     });
-    this.__defineGetter__('finders', function(){
-        return m.schema.statics;
-
-    });
-
 }
