@@ -15,7 +15,7 @@ define([
         "Password", "Radio", "Select", "TextArea", "MultiEditor", "ColorEditor", "UnitEditor", "PlaceholderEditor"];
     var dataTypes = ["text", "tel", "time", "url", "range", "number", "week", "month", "year", "date", "datetime", "datetime-local", "email", "color"];
 
-    var fieldsets = ['modelName', 'plural', 'title', 'hidden', 'labelAttr', 'properties'];
+    var fieldsets = ['modelName', 'plural', 'title', 'hidden'];
 
     var EventMap = {
         'String':function (form) {
@@ -25,7 +25,7 @@ define([
             form.fields.editor.$el.show();
 
             form.fields.placeholder.$el.show();
-            form.fields.properties.$el.hide();
+            form.fields.paths.$el.hide();
             form.fields.title.$el.show();
             form.fields.description.$el.show();
         },
@@ -35,7 +35,7 @@ define([
             form.fields.ref.$el.hide();
             form.fields.editor.$el.show();
             form.fields.placeholder.$el.show();
-            form.fields.properties.$el.hide();
+            form.fields.paths.$el.hide();
         },
         'Date':function (form) {
             form.fields.min.$el.hide();
@@ -43,7 +43,7 @@ define([
             form.fields.ref.$el.hide();
             form.fields.editor.$el.show();
             form.fields.placeholder.$el.show();
-            form.fields.properties.$el.hide();
+            form.fields.paths.$el.hide();
             form.fields.title.$el.show();
             form.fields.description.$el.show();
         },
@@ -52,7 +52,7 @@ define([
             form.fields.max.$el.hide();
             form.fields.ref.$el.hide();
             form.fields.editor.$el.show();
-            form.fields.properties.$el.hide();
+            form.fields.paths.$el.hide();
             form.fields.title.$el.show();
             form.fields.description.$el.show();
         },
@@ -62,7 +62,7 @@ define([
             form.fields.ref.$el.hide();
             form.fields.editor.$el.show();
             form.fields.placeholder.$el.show();
-            form.fields.properties.$el.hide();
+            form.fields.paths.$el.hide();
             form.fields.title.$el.show();
             form.fields.description.$el.show();
         },
@@ -73,7 +73,7 @@ define([
             form.fields.ref.$el.show();
             form.fields.placeholder.$el.hide();
             form.fields.editor.$el.show();
-            form.fields.properties.$el.hide();
+            form.fields.paths.$el.hide();
 
             form.fields.title.$el.show();
             form.fields.description.$el.show();
@@ -84,7 +84,7 @@ define([
             form.fields.ref.$el.hide();
             form.fields.editor.$el.hide();
             form.fields.placeholder.$el.hide();
-            form.fields.properties.$el.show();
+            form.fields.paths.$el.show();
             form.fields.title.$el.hide();
             form.fields.description.$el.hide();
 
@@ -126,15 +126,26 @@ define([
                     'Employee'
                 ]
             },
-            properties:{
+            paths:{
                 type:'List',
                 itemType:'NestedModel',
                 required:true,
+                title:'Properties',
                 help:'This is where you add properties to this object.'
+            },
+            fields:{
+                type:'List',
+                help:'Fields to allow editing',
+                title:'Edit Fields'
+            },
+            list_fields:{
+                type:'List',
+                help:'Fields to show in list views',
+                title:'List Fields'
             }
         },
         fieldsets:[
-            { legend:'Property', fields:['name', 'title', 'description', 'many', 'required', 'schemaType', 'placeholder', 'min', 'max', 'editor', 'ref', 'properties']}
+            { legend:'Property', fields:['name', 'title', 'description', 'many', 'required', 'schemaType', 'placeholder', 'min', 'max', 'editor', 'ref', 'paths']}
         ],
         toString:function () {
             var self = this.toJSON();
@@ -143,14 +154,14 @@ define([
         },
         constructor:function () {
             _.bind(this.createForm, this);
-            return Backbone.Model.prototype.constructor.apply(this, Array.prototype.slice.call(arguments, 0));
-
+            Backbone.Model.prototype.constructor.apply(this, Array.prototype.slice.call(arguments, 0));
+            return this;
         },
         enabled:function (form, enable) {
             if (enable) {
-                form.fields.properties.$el.find('button').removeAttr('disabled');
+                form.fields.paths.$el.find('button').removeAttr('disabled');
             } else {
-                form.fields.properties.$el.find('button').attr('disabled', 'true');
+                form.fields.paths.$el.find('button').attr('disabled', 'true');
             }
         },
         createForm:function (opts) {
@@ -194,7 +205,7 @@ define([
         },
         eventMap:EventMap
     });
-    Property.prototype.schema.properties.model = Property;
+    Property.prototype.schema.paths.model = Property;
     var schema = {
         "modelName":{
             "title":"Model Name",
@@ -212,12 +223,20 @@ define([
         "title":{"title":"Title", "help":"The title of the object singular", "type":"Text", "path":"title"},
         "hidden":{"title":"Hidden", "help":"Is this object hidden?", "type":"Checkbox", "path":"hidden"},
         "labelAttr":{"title":"Label Attribute", "help":"This is a label that gives a succinct description of object, dot notation can be used", "path":"labelAttr"},
-        "properties":{
+        "paths":{
             type:'List',
             itemType:'NestedModel',
             model:Property,
             title:'Properties',
             help:'This is where you add properties to this object.'
+        },
+        fields:{
+            type:'List',
+            help:'Fields to allow editing'
+        },
+        list_fields:{
+            type:'List',
+            help:'Fields to show in list views'
         }
     };
     var Model = Backbone.Model.extend({
@@ -227,14 +246,28 @@ define([
 //            console.log('response', resp);
 //            return resp.payload;
 //        },
-        url:"${pluginUrl}/admin/model",
+        urlRoot:"${pluginUrl}/admin/model",
+        parse:function(resp){
+          var model = resp.payload;
+          var paths = model.paths;
+              delete model.paths;
+           var npaths = ( model.paths = []);
+            _.map(paths, function(v,k){
+                v.name = k
+                if ( k != '_id')
+                npaths.push(v);
+            })
+
+          return model;
+        },
+
         defaults:{
             modelName:null,
             plural:null,
             title:null,
             hidden:null,
             labelAttr:null,
-            properties:null
+            paths:null
         },
         idAttribute:'modelName',
         set:function (a, b, c, d) {
@@ -267,11 +300,22 @@ define([
         }
     });
     return EditView.extend({
-        fieldsets:{legend:'Create a new model', fields:fieldsets},
+        fieldsets:[{legend:'Model Info', fields:fieldsets}, {legend:'Properties', fields:['paths','labelAttr']}, {legend:'Views', fields:['fields','list_fields']}],
         template:_.template(template),
 //        collection:collection,
         model:Model,
+        constructor:function(){
+            EditView.prototype.constructor.apply(this, Array.prototype.slice.call(arguments,0));
 
+
+            return this;
+        },
+        render:function(opts){
+            opts = opts || {};
+            opts.id = opts.modelName;
+            EditView.prototype.render.apply(this, Array.prototype.slice.call(arguments,0));
+            return this;
+        },
         createForm:function (opts) {
             var form = new Backbone.Form(opts);
 
@@ -279,11 +323,11 @@ define([
                 console.log('enabled', e);
                 var modelName = form.fields.modelName.getValue()
                 if (modelName) {
-                    form.fields.properties.$el.find('button').removeAttr('disabled');
+                    form.fields.paths.$el.find('button').removeAttr('disabled');
                     form.fields.title.editor.$el.attr('placeholder', inflection.titleize(inflection.humanize(modelName)));
                     form.fields.plural.editor.$el.attr('placeholder', inflection.titleize(inflection.pluralize(inflection.humanize(modelName))));
                 } else {
-                    form.fields.properties.$el.find('button').attr('disabled', 'true');
+                    form.fields.paths.$el.find('button').attr('disabled', 'true');
                     form.fields.title.editor.$el.removeAttr('placeholder');
                 }
 
@@ -298,9 +342,9 @@ define([
             var labelF = function (v) {
                 return v.name && v.name.toLowerCase() == 'label';
             }
-            form.on('properties:change', function () {
+            form.on('paths:change', function () {
                 //update
-                var value = this.fields.properties.getValue();
+                var value = this.fields.paths.getValue();
                 var $el = form.fields.labelAttr.editor.$el;
                 if (!( value || value.length)) {
                     $el.removeAttr('placeholder');
@@ -308,6 +352,7 @@ define([
                     var v = _.find(value, nameF) || _.find(value, labelF);
                     $el.attr('placeholder', v && v.name || value[0]['name']);
                 }
+                form.fields.list_fields.editor.setOptions(_.map(form.fields.paths.getValue(), function(v){ return v.name }))
             });
             form.render = function () {
 
@@ -319,7 +364,7 @@ define([
             // enabled();
             return form;
         },
-        isWizard:false,
+//        isWizard:true,
         config:{
             title:'Model',
             plural:'Models'

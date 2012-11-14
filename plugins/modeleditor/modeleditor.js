@@ -137,7 +137,7 @@ EditPlugin.prototype.routes = function () {
                 model[p.name] = p.many ? [s] : s;
 
 
-                if (p.schemaType == 'InlineObject' && p.properties && p.properties.length) {
+                if (p.schemaType == 'Object' && p.properties && p.properties.length) {
                     _u.each(p.properties, makeProperty(s))
                 } else {
                     if (p.required)
