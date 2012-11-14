@@ -65,6 +65,37 @@ EditPlugin.prototype.routes = function () {
             payload:models
         })
     }.bind(this));
+    this.app.get(base + '/admin/types', function (req, res) {
+        var types = _u.keys(this.pluginManager.appModel.modelPaths);
+        res.send({
+            status:0,
+            payload:types
+        })
+
+    }.bind(this));
+    this.app.get(base + '/admin/editor/:type', function (req, res) {
+        var editors = [];
+        var type = req.params.type;
+        _u.each(this.pluginManager.plugins, function (plugin) {
+            _u.each(plugin.editors(), function (edit, k) {
+                if (edit.types) {
+                    var pos = edit.types.indexOf(type);
+                    if (pos == 0) {
+                        editors.unshift(k)
+                    } else if (pos > 0) {
+                        editors.push(k);
+                    }
+                } else if (_u.isString(edit)) {
+                    editors.push(edit);
+                }
+            });
+        });
+        res.send({
+            status:0,
+            payload:editors
+        })
+
+    }.bind(this));
 
     this.app.get(base + '/admin/model/:modelName', function (req, res) {
         var editModel = this.local(res, 'editModel');
@@ -83,7 +114,47 @@ EditPlugin.prototype.routes = function () {
             payload:editModel.modelPaths[req.params.modelName].schemaFor()
         })
     }.bind(this));
+    var create =                               function (req, res, next) {
+        var body = req.body;
+        var model = {};
 
+        var properties = req.body.properties;
+        delete req.body.properties;
+        var display = req.body;
+
+        function makeProperty(model) {
+            return function (p) {
+                var s = {};
+                model[p.name] = p.many ? [s] : s;
+                if (p.required)
+                    s.required = true;
+                if (p.ref)
+                    s.ref = p.ref;
+
+                if (p.properties && p.properties.length) {
+                    _u.each(p.properties, makeProperty(s))
+                } else {
+                    s.type = p.schemaType;
+                    var d = (s.display = {});
+                    if (p.description)
+                        d.description = p.description;
+                    if (p.title)
+                        d.title = p.title;
+
+                }
+            }
+        }
+
+        _u.each(properties, makeProperty(model));
+        console.log('model', model, 'display', display);
+        res.send({
+            status:0,
+            payload:{_id:'testid'}
+        });
+
+    }
+    this.app.post(base + '/admin/model', create);
+    this.app.put(base + '/admin/model', create);
     this.app.put(base + '/admin/model/:id', function (req, res, next) {
 
         var obj = _u.extend({}, req.body);
