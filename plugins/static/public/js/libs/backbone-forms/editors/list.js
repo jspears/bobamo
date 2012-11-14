@@ -403,6 +403,7 @@ define(['jquery', 'underscore', 'Backbone', 'Backbone.Form', 'backbone-modal'], 
       if (schema.itemType === 'NestedModel') {
         if (!schema.model) throw 'Missing required option "schema.model"';
        this.nestedSchema = schema.model.prototype.schema;
+          this.model = new schema.model
         if (_.isFunction(this.nestedSchema)) this.nestedSchema = this.nestedSchema();
       }
     },
@@ -481,7 +482,7 @@ define(['jquery', 'underscore', 'Backbone', 'Backbone.Form', 'backbone-modal'], 
       
       //Otherwise check if it's NestedModel with it's own toString() method
       if (schema.itemType === 'NestedModel') {
-        return new (schema.model)(value).toString();
+        return this.model.clear({silent:true}).set(value).toString();
       }
       
       //Otherwise use the generic method or custom overridden method
@@ -493,7 +494,7 @@ define(['jquery', 'underscore', 'Backbone', 'Backbone.Form', 'backbone-modal'], 
       var opts = {schema:this.nestedSchema};
         opts.data = this.value;
         opts._parent = this;
-      var model = this.schema.model;
+      var model = this.model;
       var create =               model && model.createForm;
       var form =  create && create.call(model, opts) || new Form(opts);
 

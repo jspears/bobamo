@@ -17,18 +17,79 @@ define([
 
     var fieldsets = ['modelName', 'plural', 'title', 'hidden', 'labelAttr', 'properties'];
 
-//    schema.fieldsets.itemToString = function (obj) {
-//        if (obj.fields && _.isString(obj.fields)) {
-//            obj.fields = obj.fields.split(',');
-//        }
-//        var fields = '[' + obj.fields.join(',') + ']';
-//        if (fields.length > 30)
-//            fields = fields.substring(0, 27) + '...';
-//
-//        return obj.legend + ' ' + fields;
-//    }
+    var EventMap = {
+        'String':function (form) {
+            form.fields.min.$el.show();
+            form.fields.max.$el.show();
+            form.fields.ref.$el.hide();
+            form.fields.editor.$el.show();
 
+            form.fields.placeholder.$el.show();
+            form.fields.properties.$el.hide();
+            form.fields.title.$el.show();
+            form.fields.description.$el.show();
+        },
+        'Number':function (form) {
+            form.fields.min.$el.show();
+            form.fields.max.$el.show();
+            form.fields.ref.$el.hide();
+            form.fields.editor.$el.show();
+            form.fields.placeholder.$el.show();
+            form.fields.properties.$el.hide();
+        },
+        'Date':function (form) {
+            form.fields.min.$el.hide();
+            form.fields.max.$el.hide();
+            form.fields.ref.$el.hide();
+            form.fields.editor.$el.show();
+            form.fields.placeholder.$el.show();
+            form.fields.properties.$el.hide();
+            form.fields.title.$el.show();
+            form.fields.description.$el.show();
+        },
+        'Buffer':function (form) {
+            form.fields.min.$el.hide();
+            form.fields.max.$el.hide();
+            form.fields.ref.$el.hide();
+            form.fields.editor.$el.show();
+            form.fields.properties.$el.hide();
+            form.fields.title.$el.show();
+            form.fields.description.$el.show();
+        },
+        'Boolean':function (form) {
+            form.fields.min.$el.hide();
+            form.fields.max.$el.hide();
+            form.fields.ref.$el.hide();
+            form.fields.editor.$el.show();
+            form.fields.placeholder.$el.show();
+            form.fields.properties.$el.hide();
+            form.fields.title.$el.show();
+            form.fields.description.$el.show();
+        },
+        //   'Mixed':function(){},
+        'ObjectId':function (form) {
+            form.fields.min.$el.hide();
+            form.fields.max.$el.hide();
+            form.fields.ref.$el.show();
+            form.fields.placeholder.$el.hide();
+            form.fields.editor.$el.show();
+            form.fields.properties.$el.hide();
 
+            form.fields.title.$el.show();
+            form.fields.description.$el.show();
+        },
+        'Object':function (form) {
+            form.fields.min.$el.hide();
+            form.fields.max.$el.hide();
+            form.fields.ref.$el.hide();
+            form.fields.editor.$el.hide();
+            form.fields.placeholder.$el.hide();
+            form.fields.properties.$el.show();
+            form.fields.title.$el.hide();
+            form.fields.description.$el.hide();
+
+        }
+    };
     var Property = Backbone.Model.extend({
 
         defaults:{
@@ -54,9 +115,7 @@ define([
                 type:'Select',
                 help:'Type of schema',
                 required:true,
-                options:['String', 'Number', 'Date', 'Buffer', 'Boolean',
-                    //'Mixed',  'Array',
-                    'ObjectId',  'InlineObject']
+                options:_.keys(EventMap)
             },
             ref:{
                 type:'Select',
@@ -80,7 +139,7 @@ define([
         toString:function () {
             var self = this.toJSON();
             var description = this.get('description');
-            return this.get('name') + (description ? ' - ' +  description : '');
+            return this.get('name') + (description ? ' - ' + description : '');
         },
         constructor:function () {
             _.bind(this.createForm, this);
@@ -96,7 +155,7 @@ define([
         },
         createForm:function (opts) {
             console.log('createForm', opts);
-            var schemaEvents = this.eventMap['schemaType'];
+
             opts.fieldsets = this.fieldsets;
 
             var f = opts.fieldsets[0];
@@ -112,10 +171,10 @@ define([
             form.on('schemaType:change', function (cont, evt) {
                 var type = evt.getValue();
                 console.log('schemaType:change', type);
-                $.getJSON("${pluginUrl}/admin/editor/"+type, function(resp){
+                $.getJSON("${pluginUrl}/admin/editor/" + type, function (resp) {
                     form.fields.editor.editor.setOptions(resp.payload);
                 });
-                schemaEvents[type].call(this, form, cont, evt);
+                EventMap[type].call(this, form, cont, evt);
             });
             form.on('name:change', function (cont, evt) {
                 self.enabled(form, evt.getValue());
@@ -124,76 +183,16 @@ define([
             var r = form.render;
             form.render = function () {
                 var ret = r.apply(this, Array.prototype.slice.call(arguments, 0));
-                schemaEvents['String'].call(this, form);
+                EventMap['String'].call(this, form);
                 self.enabled(form, false);
-                $.getJSON("${pluginUrl}/admin/types", function(resp){
+                $.getJSON("${pluginUrl}/admin/types", function (resp) {
                     form.fields.ref.editor.setOptions(['None'].concat(resp.payload));
                 });
                 return ret;
             }
             return form;
         },
-        eventMap:{
-            schemaType:{
-                'String':function (form) {
-                    form.fields.min.$el.show();
-                    form.fields.max.$el.show();
-                    form.fields.ref.$el.hide();
-                    form.fields.editor.$el.show();
-
-                    form.fields.placeholder.$el.show();
-                    form.fields.properties.$el.hide();
-                },
-                'Number':function (form) {
-                    form.fields.min.$el.show();
-                    form.fields.max.$el.show();
-                    form.fields.ref.$el.hide();
-                    form.fields.editor.$el.show();
-                    form.fields.placeholder.$el.show();
-                    form.fields.properties.$el.hide();
-                },
-                'Date':function (form) {
-                    form.fields.min.$el.hide();
-                    form.fields.max.$el.hide();
-                    form.fields.ref.$el.hide();
-                    form.fields.editor.$el.show();
-                    form.fields.placeholder.$el.show();
-                    form.fields.properties.$el.hide();
-                },
-                'Buffer':function (form) {
-                    form.fields.min.$el.hide();
-                    form.fields.max.$el.hide();
-                    form.fields.ref.$el.hide();
-                    form.fields.editor.$el.show();
-                    form.fields.properties.$el.hide();
-                },
-                'Boolean':function (form) {
-                    form.fields.min.$el.hide();
-                    form.fields.max.$el.hide();
-                    form.fields.ref.$el.hide();
-                    form.fields.editor.$el.show();
-                    form.fields.placeholder.$el.show();
-                    form.fields.properties.$el.hide();
-                },
-                //   'Mixed':function(){},
-                'ObjectId':function (form) {
-                    form.fields.min.$el.hide();
-                    form.fields.max.$el.hide();
-                    form.fields.ref.$el.show();
-                    form.fields.placeholder.$el.hide();
-                    form.fields.editor.$el.show();
-                    form.fields.properties.$el.hide();
-                },
-                'InlineObject':function (form) {
-                    form.fields.min.$el.hide();
-                    form.fields.max.$el.hide();
-                    form.fields.ref.$el.hide();
-                    form.fields.editor.$el.hide();
-                    form.fields.placeholder.$el.hide();
-                    form.fields.properties.$el.show();
-                }
-            }
-        }
+        eventMap:EventMap
     });
     Property.prototype.schema.properties.model = Property;
     var schema = {
@@ -278,7 +277,7 @@ define([
 
             function enabled(e) {
                 console.log('enabled', e);
-                var modelName =               form.fields.modelName.getValue()
+                var modelName = form.fields.modelName.getValue()
                 if (modelName) {
                     form.fields.properties.$el.find('button').removeAttr('disabled');
                     form.fields.title.editor.$el.attr('placeholder', inflection.titleize(inflection.humanize(modelName)));
@@ -293,19 +292,19 @@ define([
             var r = form.render;
 
             form.on('modelName:change', enabled);
-            var nameF = function(v){
+            var nameF = function (v) {
                 return v.name && v.name.toLowerCase() == 'name'
             }
-            var labelF = function(v){
+            var labelF = function (v) {
                 return v.name && v.name.toLowerCase() == 'label';
             }
-            form.on('properties:change', function(){
-               //update
+            form.on('properties:change', function () {
+                //update
                 var value = this.fields.properties.getValue();
                 var $el = form.fields.labelAttr.editor.$el;
-                if (!( value || value.length)){
-                     $el.removeAttr('placeholder');
-                }else {
+                if (!( value || value.length)) {
+                    $el.removeAttr('placeholder');
+                } else {
                     var v = _.find(value, nameF) || _.find(value, labelF);
                     $el.attr('placeholder', v && v.name || value[0]['name']);
                 }

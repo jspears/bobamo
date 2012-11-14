@@ -1,4 +1,4 @@
-var Plugin = require('../../lib/plugin-api'), util = require('util'), EditModel = require('./edit-display-model'), _u = require('underscore');
+var Plugin = require('../../lib/plugin-api'), util = require('util'), EditModel = require('./edit-display-model'), _u = require('underscore'), mongoose = require('../../index').mongoose;
 
 var EditPlugin = function () {
     Plugin.apply(this, arguments);
@@ -114,7 +114,16 @@ EditPlugin.prototype.routes = function () {
             payload:editModel.modelPaths[req.params.modelName].schemaFor()
         })
     }.bind(this));
+    function native(type){
+        if (type == 'Number') return Number;
+        if (type == 'String') return String;
+        if (type == 'Date' || type == 'DateTime') return Date;
+
+        return mongoose.Schema.Types[type];
+    }
     var create =                               function (req, res, next) {
+
+        console.log('body', JSON.stringify(req.body,  null, "\t"))
         var body = req.body;
         var model = {};
 
@@ -126,27 +135,32 @@ EditPlugin.prototype.routes = function () {
             return function (p) {
                 var s = {};
                 model[p.name] = p.many ? [s] : s;
-                if (p.required)
-                    s.required = true;
-                if (p.ref)
-                    s.ref = p.ref;
 
-                if (p.properties && p.properties.length) {
+
+                if (p.schemaType == 'InlineObject' && p.properties && p.properties.length) {
                     _u.each(p.properties, makeProperty(s))
                 } else {
-                    s.type = p.schemaType;
+                    if (p.required)
+                        s.required = true;
+                    if (p.ref && p.ref != 'None')
+                        s.ref = p.ref;
+                    s.type = native(p.schemaType);
                     var d = (s.display = {});
                     if (p.description)
                         d.description = p.description;
                     if (p.title)
                         d.title = p.title;
+                    if (p.editor)
+                        d.editor = p.editor;
 
                 }
             }
         }
 
         _u.each(properties, makeProperty(model));
-        console.log('model', model, 'display', display);
+        var schema = new mongoose.Schema(model, display);
+        mongoose.model(display.modelName, schema);
+        console.log('model', JSON.stringify(model, null, '\t'), 'display', JSON.stringify(display, null, '\t'));
         res.send({
             status:0,
             payload:{_id:'testid'}
