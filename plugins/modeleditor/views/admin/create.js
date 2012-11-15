@@ -5,11 +5,10 @@ define([
     'libs/bobamo/edit',
     'modeleditor/js/inflection',
     'text!${pluginUrl}/templates/admin/edit.html',
-    'text!${pluginUrl}/tpl/backbone.bootstrap-modal.tpl',
     'libs/backbone-forms/editors/list',
     'libs/editors/multi-editor'
 
-], function (_, Backbone, EditView, inflection, template, modalTpl) {
+], function (_, Backbone, EditView, inflection, template) {
     "use strict";
     var typeOptions = ["Text", "Checkbox", "Checkboxes", "Date", "DateTime", "Hidden", "List", "NestedModel", "Number", "Object",
         "Password", "Radio", "Select", "TextArea", "MultiEditor", "ColorEditor", "UnitEditor", "PlaceholderEditor"];
@@ -22,6 +21,7 @@ define([
             orender.apply(this, Array.prototype.slice.call(arguments, 0));
             var $wiz = this.$el.find('.modal-body');
             if ($wiz.wiz) $wiz.wiz({stepKey:'_propStep', clsNames:'', replace:$('a.ok', this.$el)});
+            this.$el.find('.cancel').addClass('pull-left');
             return this;
         }
     });
@@ -194,7 +194,7 @@ define([
         schema:{
             name:{type:'Text', required:true},
             title:{type:'Text'},
-            description:{type:'Text'},
+            description:{type:'TextArea'},
             required:{type:'Checkbox'},
             unique:{type:'Checkbox', help:'Is this unique to the collection?'},
             editor:{ title:'Editor Type', type:'Select', options:typeOptions, help:'The Editor type helps choose the correct way to change a value for the form.'},
@@ -241,9 +241,9 @@ define([
             }
         },
         fieldsets:[
-            { legend:'Property', fields:['name', 'description', 'many', 'type', 'ref', 'paths']},
+            { legend:'Property', fields:['name',  'many', 'type', 'ref', 'paths']},
             { legend:'Validation', fields:['required', 'validators', 'match', 'enumValues', 'min', 'max']},
-            { legend:'Editor', fields:['title', 'placeholder', 'editor', 'fieldsets']}
+            { legend:'Editor', fields:['title', 'description', 'placeholder', 'editor', 'fieldsets']}
         ],
         toString:function () {
             var self = this.toJSON();
