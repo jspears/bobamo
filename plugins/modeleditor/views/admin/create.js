@@ -59,11 +59,11 @@ define([
 //    }
     var Model = Backbone.Model.extend({
         schema:schema,
-//        url:'/modeleditor/admin/model/ProfileImage',
-//        parse:function (resp) {
-//            console.log('response', resp);
-//            return resp.payload;
-//        },
+        url:'http://localhost:3001/rest/Model',
+        parse:function (resp) {
+            console.log('response', resp);
+            return resp.payload;
+        },
         defaults:{
           modelName:null,
           plural:null,
