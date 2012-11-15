@@ -64,7 +64,7 @@ define([
 
     return {
         initialize:function initialize() {
-            var skip = /^_.*/g;
+
             var routeStripper = /^[#\/]/;
             Backbone.History.prototype.getFragment = function (fragment, forcePushState) {
                 if (fragment == null) {
@@ -81,11 +81,13 @@ define([
                 if (idx > -1){
                     var path = fragment.substring(0, idx);
                     var obj = query.parse(fragment.substring(idx+1));
-                    _.each(_.keys(obj), function(k){
-                        if (skip.test(k))
-                            delete obj[k];
+                    var nobj = {};
+                   _.each(obj, function(v,k){
+                        if (k[0] != '_')
+                            nobj[k] = v;
+
                     });
-                    fragment = path+'?'+query.stringify(obj);
+                    fragment = path+'?'+query.stringify(nobj);
                 }
                 return fragment.replace(routeStripper, '');
             };

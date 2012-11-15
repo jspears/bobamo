@@ -10,9 +10,12 @@
         var Wizard = function (element, options) {
             var _options = this.options = $.extend({}, $.fn.wiz.defaults, options)
             this.$fieldsets = $('fieldset', element);
+            if (this.$fieldsets.length < 2){
+                return
+            }
             this.$el = $(element);
             this.$el.last().addClass('tab-content')
-            this.$el.prepend('<ul class="nav nav-pills nav-stacked span3 steps" style="margin-right:1em;margin-top:1em"></ul>');
+            this.$el.prepend('<ul class="nav nav-pills '+this.options.clsNames+' steps" style="margin-right:1em;margin-top:1em"></ul>');
             this.$el.addClass('tab-content tabbable');
 
             var $ul = this.$ul = $('.steps', this.$el);
@@ -127,7 +130,8 @@
             next:'Next &raquo;',
             prev:'&laquo; Previous',
             done:'Finish',
-            steps:'Step {current} of {steps}'
+            steps:'Step {current} of {steps}',
+            clsNames:'nav-stacked span3'
         }
 
     }

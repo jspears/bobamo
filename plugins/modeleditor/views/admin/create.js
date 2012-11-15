@@ -5,18 +5,43 @@ define([
     'libs/bobamo/edit',
     'modeleditor/js/inflection',
     'text!${pluginUrl}/templates/admin/edit.html',
-    'jquery-ui',
+    'text!${pluginUrl}/tpl/backbone.bootstrap-modal.tpl',
     'libs/backbone-forms/editors/list',
-
     'libs/editors/multi-editor'
-], function (_, Backbone, EditView, inflection, template) {
+
+], function (_, Backbone, EditView, inflection, template, modalTpl) {
     "use strict";
     var typeOptions = ["Text", "Checkbox", "Checkboxes", "Date", "DateTime", "Hidden", "List", "NestedModel", "Number", "Object",
         "Password", "Radio", "Select", "TextArea", "MultiEditor", "ColorEditor", "UnitEditor", "PlaceholderEditor"];
     var dataTypes = ["text", "tel", "time", "url", "range", "number", "week", "month", "year", "date", "datetime", "datetime-local", "email", "color"];
+    //Wizard Support here
+    var orender = Backbone.BootstrapModal.prototype.render;
+
+    _.extend(Backbone.BootstrapModal.prototype, {
+        render:function (o) {
+            orender.apply(this, Array.prototype.slice.call(arguments, 0));
+            var $wiz = this.$el.find('.modal-body');
+            if ($wiz.wiz) $wiz.wiz({stepKey:'_propStep', clsNames:'', replace:$('a.ok', this.$el)});
+            return this;
+        }
+    });
+    //end of wizard support;
 
     var fieldsets = ['modelName', 'plural', 'title', 'hidden'];
-
+    var ValidateMap = {
+        'None':function (form) {
+            form.fields.enumValues.$el.hide();
+            form.fields.match.$el.hide();
+        },
+        'enumValues':function (form) {
+            form.fields.enumValues.$el.show();
+            form.fields.match.$el.hide();
+        },
+        'match':function (form) {
+            form.fields.match.$el.show();
+            form.fields.enumValues.$el.hide();
+        }
+    }
     var EventMap = {
         'String':function (form) {
             form.fields.min.$el.show();
@@ -28,6 +53,7 @@ define([
             form.fields.paths.$el.hide();
             form.fields.title.$el.show();
             form.fields.description.$el.show();
+            form.fields.validators.$el.show();
         },
         'Number':function (form) {
             form.fields.min.$el.show();
@@ -36,6 +62,8 @@ define([
             form.fields.editor.$el.show();
             form.fields.placeholder.$el.show();
             form.fields.paths.$el.hide();
+
+            form.fields.validators.$el.hide();
         },
         'Date':function (form) {
             form.fields.min.$el.hide();
@@ -46,6 +74,8 @@ define([
             form.fields.paths.$el.hide();
             form.fields.title.$el.show();
             form.fields.description.$el.show();
+
+            form.fields.validators.$el.hide();
         },
         'Buffer':function (form) {
             form.fields.min.$el.hide();
@@ -55,6 +85,8 @@ define([
             form.fields.paths.$el.hide();
             form.fields.title.$el.show();
             form.fields.description.$el.show();
+
+            form.fields.validators.$el.hide();
         },
         'Boolean':function (form) {
             form.fields.min.$el.hide();
@@ -65,6 +97,8 @@ define([
             form.fields.paths.$el.hide();
             form.fields.title.$el.show();
             form.fields.description.$el.show();
+
+            form.fields.validators.$el.hide();
         },
         //   'Mixed':function(){},
         'ObjectId':function (form) {
@@ -77,6 +111,8 @@ define([
 
             form.fields.title.$el.show();
             form.fields.description.$el.show();
+
+            form.fields.validators.$el.hide();
         },
         'Object':function (form) {
             form.fields.min.$el.hide();
@@ -88,8 +124,60 @@ define([
             form.fields.title.$el.hide();
             form.fields.description.$el.hide();
 
+            form.fields.validators.$el.hide();
+
         }
     };
+
+    var forender = Backbone.Form.prototype.render;
+    Backbone.Form.prototype.render = function () {
+        forender.apply(this, Array.prototype.slice.call(arguments, 0));
+        this.trigger('render', arguments);
+        return this;
+    }
+    var Fieldset = Backbone.Model.extend({
+        defaults:{
+            legend:null,
+            fields:[],
+            description:null,
+            wizard:true
+        },
+        schema:{
+            legend:{type:'Text', required:true},
+            fields:{type:'List', itemType:'Select', options:[]},
+            description:{type:'TextArea'}
+        },
+        toString:function () {
+            return this.get('legend') || 'unnamed';
+
+        },
+        createForm:function (opts) {
+            var form = new Backbone.Form(opts);
+
+            function fieldOptions() {
+                var pfields = form.options._parent.form.fields;
+                var paths = _.map(pfields.paths.getValue(), function (v) {
+                    return v.name
+                });
+                var f = [];
+                _.each(pfields.fieldsets.getValue(), function (v, k) {
+                    f = f.concat(v.fields);
+                });
+                var diff = _.difference(paths, f);
+                _.each(form.fields.fields.editor.items, function(itm){
+                    var val = itm.value;
+                    var o = val ? [val].concat(diff) : diff;
+                    itm.editor.setOptions(o);
+                    if (val)
+                        itm.setValue(val);
+                });
+
+            }
+            form.on('render', fieldOptions);
+            form.on('fields:change', fieldOptions);
+            return form;
+        }
+    })
     var Property = Backbone.Model.extend({
 
         defaults:{
@@ -98,7 +186,6 @@ define([
             description:null,
             type:'String',
             ref:null
-
         },
         schema:{
             name:{type:'Text', required:true},
@@ -111,6 +198,9 @@ define([
             min:{type:'Number'},
             many:{type:'Checkbox', help:'Is this an array?', title:'Many'},
             placeholder:{type:'Text', help:'Default Placeholder text'},
+            validators:{type:'Select', options:['None', {label:'enum', val:'enumValues'}, 'match']},
+            enumValues:{type:'List', help:'Enumerated Values'},
+            match:{type:'Text', help:'Regular Expression Match'},
             type:{
                 type:'Select',
                 help:'Type of schema',
@@ -133,8 +223,10 @@ define([
                 title:'Properties',
                 help:'This is where you add properties to this object.'
             },
-            fields:{
+            fieldsets:{
                 type:'List',
+                itemType:'NestedModel',
+                model:Fieldset,
                 help:'Fields to allow editing',
                 title:'Edit Fields'
             },
@@ -145,7 +237,9 @@ define([
             }
         },
         fieldsets:[
-            { legend:'Property', fields:['name', 'title', 'description', 'many', 'required', 'type', 'placeholder', 'min', 'max', 'editor', 'ref', 'paths']}
+            { legend:'Property', fields:['name', 'description', 'many', 'type', 'ref', 'paths']},
+            { legend:'Validation', fields:['required', 'validators', 'match', 'enumValues', 'min', 'max']},
+            { legend:'Editor', fields:['title', 'placeholder', 'editor', 'fieldsets']}
         ],
         toString:function () {
             var self = this.toJSON();
@@ -178,6 +272,7 @@ define([
                 f.legend = 'Property on "' + label + '"';
             }
             opts._parent = this;
+
             var form = new Backbone.Form(opts);
 
             var self = this;
@@ -194,24 +289,35 @@ define([
 
             });
 
+            var validators = function () {
+                var val = form.fields.validators.getValue();
+                ValidateMap[val].call(this, form);
+            };
+            form.on('validators:change', validators);
+            $('.form-horizontal', form.$el).wiz({stepKey:'_propStep'});
+
             var r = form.render;
-            form.render = function () {
+
+            form.on('render', function () {
                 var ret = r.apply(this, Array.prototype.slice.call(arguments, 0));
-               // EventMap[self.get('name') || 'String'].call(this, form);
                 var json = self.toJSON();
                 var type = json.type;
-                if (_.isFunction(EventMap[type])  )
-                        EventMap[type].call(this, form);
-                 self.enabled(form, false);
+                if (_.isFunction(EventMap[type]))
+                    EventMap[type].call(this, form);
+                self.enabled(form, false);
+                validators();
                 $.getJSON("${pluginUrl}/admin/types", function (resp) {
                     form.fields.ref.editor.setOptions(['None'].concat(resp.payload));
                 });
+
                 return ret;
-            }
+            });
             return form;
         },
         eventMap:EventMap
     });
+    var MatchRe = /^\/.*/gi;
+
     Property.prototype.schema.paths.model = Property;
     var schema = {
         "modelName":{
@@ -237,10 +343,12 @@ define([
             title:'Properties',
             help:'This is where you add properties to this object.'
         },
-        fields:{
+        fieldsets:{
             type:'List',
             title:'Edit View',
-            help:'Fields to allow editing'
+            help:'Fields to allow editing',
+            itemType:'NestedModel',
+            model:Fieldset
         },
         list_fields:{
             type:'List',
@@ -261,14 +369,33 @@ define([
             var paths = model.paths;
             delete model.paths;
             var npaths = (model.paths = []);
-            var fixPaths = function(p){
-                return function(v,k){
+            var fixPaths = function (p) {
+                return function (v, k) {
                     v.name = k;
                     p.push(v);
+                    if (v.type == 'List') {
+                        v.many = true;
+                        v.type = v.listType;
+                        delete v.listType;
+                    } else if (!v.editor) {
+                        v.editor = v.dataType;
+                    }
+                    if (v.validator && v.validator.length) {
+                        var idx = v.validator.indexOf('required')
+                        v.required = idx >= 0;
+                        if (v.required) {
+                            v.validator.splice(idx, 1);
+                        }
 
-                    if (v.subSchema){
+                        v.match = _.find(v.validator, function (t, k) {
+                            v.validator.splice(k, 1, 'match');
+                            return MatchRe.test(t);
+                        });
+                        v.validators = v.validator;
+                    }
+                    if (v.subSchema) {
                         var sub = v.subSchema;
-                         delete v.subSchema;
+                        delete v.subSchema;
                         var np = (v.paths = []);
                         _.each(sub, fixPaths(np));
                     }
@@ -321,17 +448,10 @@ define([
         fieldsets:[
             {legend:'Model Info', fields:fieldsets},
             {legend:'Properties', fields:['paths', 'labelAttr']},
-            {legend:'Views', fields:['fields', 'list_fields']}
+            {legend:'Views', fields:['fieldsets', 'list_fields']}
         ],
         template:_.template(template),
-//        collection:collection,
         model:Model,
-        constructor:function () {
-            EditView.prototype.constructor.apply(this, Array.prototype.slice.call(arguments, 0));
-
-
-            return this;
-        },
         render:function (opts) {
             opts = opts || {};
             opts.modelName = opts.id;
@@ -376,8 +496,8 @@ define([
                     $el.attr('placeholder', v && v.name || value[0]['name']);
                 }
                 var values = _.map(form.fields.paths.getValue(), function (v) {
-                                    return v.name
-                                })
+                    return v.name
+                })
                 form.fields.list_fields.setValue(values);
             });
             form.render = function () {
@@ -387,6 +507,7 @@ define([
 
                 return ret;
             }
+
             // enabled();
             return form;
         },
