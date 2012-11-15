@@ -72,7 +72,7 @@ define([
             labelAttr:null,
             properties:null
         },
-        idAttribute:'modelName',
+        idAttribute:'_id',  // changed to _id for MongoDB
         set:function (a, b, c, d) {
             return Backbone.Model.prototype.set.call(this, a, b, c, d)
         },
