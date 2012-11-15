@@ -54,6 +54,7 @@ define([
             form.fields.title.$el.show();
             form.fields.description.$el.show();
             form.fields.validators.$el.show();
+            form.fields.fieldsets.$el.hide();
         },
         'Number':function (form) {
             form.fields.min.$el.show();
@@ -62,8 +63,9 @@ define([
             form.fields.editor.$el.show();
             form.fields.placeholder.$el.show();
             form.fields.paths.$el.hide();
-
             form.fields.validators.$el.hide();
+            form.fields.fieldsets.$el.hide();
+
         },
         'Date':function (form) {
             form.fields.min.$el.hide();
@@ -74,8 +76,9 @@ define([
             form.fields.paths.$el.hide();
             form.fields.title.$el.show();
             form.fields.description.$el.show();
-
             form.fields.validators.$el.hide();
+            form.fields.fieldsets.$el.hide();
+
         },
         'Buffer':function (form) {
             form.fields.min.$el.hide();
@@ -87,6 +90,7 @@ define([
             form.fields.description.$el.show();
 
             form.fields.validators.$el.hide();
+            form.fields.fieldsets.$el.hide();
         },
         'Boolean':function (form) {
             form.fields.min.$el.hide();
@@ -97,8 +101,8 @@ define([
             form.fields.paths.$el.hide();
             form.fields.title.$el.show();
             form.fields.description.$el.show();
-
             form.fields.validators.$el.hide();
+            form.fields.fieldsets.$el.hide();
         },
         //   'Mixed':function(){},
         'ObjectId':function (form) {
@@ -108,11 +112,10 @@ define([
             form.fields.placeholder.$el.hide();
             form.fields.editor.$el.show();
             form.fields.paths.$el.hide();
-
             form.fields.title.$el.show();
             form.fields.description.$el.show();
-
             form.fields.validators.$el.hide();
+            form.fields.fieldsets.$el.hide();
         },
         'Object':function (form) {
             form.fields.min.$el.hide();
@@ -125,6 +128,7 @@ define([
             form.fields.description.$el.hide();
 
             form.fields.validators.$el.hide();
+            form.fields.fieldsets.$el.show();
 
         }
     };
@@ -259,7 +263,6 @@ define([
             }
         },
         createForm:function (opts) {
-            console.log('createForm', opts);
 
             opts.fieldsets = this.fieldsets;
 
@@ -276,6 +279,7 @@ define([
             var form = new Backbone.Form(opts);
 
             var self = this;
+
             form.on('type:change', function (cont, evt) {
                 var type = evt.getValue();
                 console.log('type:change', type);
@@ -296,10 +300,7 @@ define([
             form.on('validators:change', validators);
             $('.form-horizontal', form.$el).wiz({stepKey:'_propStep'});
 
-            var r = form.render;
-
             form.on('render', function () {
-                var ret = r.apply(this, Array.prototype.slice.call(arguments, 0));
                 var json = self.toJSON();
                 var type = json.type;
                 if (_.isFunction(EventMap[type]))
@@ -309,8 +310,6 @@ define([
                 $.getJSON("${pluginUrl}/admin/types", function (resp) {
                     form.fields.ref.editor.setOptions(['None'].concat(resp.payload));
                 });
-
-                return ret;
             });
             return form;
         },
@@ -358,11 +357,6 @@ define([
     };
     var Model = Backbone.Model.extend({
         schema:schema,
-//        url:'/modeleditor/admin/model/ProfileImage',
-//        parse:function (resp) {
-//            console.log('response', resp);
-//            return resp.payload;
-//        },
         urlRoot:"${pluginUrl}/admin/model",
         parse:function (resp) {
             var model = resp.payload;
@@ -375,10 +369,15 @@ define([
                     p.push(v);
                     if (v.type == 'List') {
                         v.many = true;
-                        v.type = v.listType;
+                        v.editor = v.listType;
                         delete v.listType;
                     } else if (!v.editor) {
                         v.editor = v.dataType;
+                    }
+                    if (v.dataType){
+                        var type = v.type;
+                        v.type = v.dataType;
+                        v.editor = type;
                     }
                     if (v.validator && v.validator.length) {
                         var idx = v.validator.indexOf('required')
