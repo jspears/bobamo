@@ -20,49 +20,51 @@
             var listItemTemplate = this.options.listItemTemplate;
             this.$steps = $('<li class="nav-header"></li>');
             $ul.append(this.$steps);
-            function current(){
+            function current() {
                 var h = window.location.hash;
-                var obj = q.parse(h.substring(h.indexOf('?')+1));
-                return  _options.current || obj[_options.stepKey] && parseInt(obj[_options.stepKey])-1 || 0;
+                var obj = q.parse(h.substring(h.indexOf('?') + 1));
+                return  _options.current || obj[_options.stepKey] && parseInt(obj[_options.stepKey]) - 1 || 0;
             }
+
             this.current = current();
-            function hash(s){
+            function hash(s) {
                 var h = window.location.hash;
                 var idx = h.indexOf('?');
-                var path = (0 > idx) ? h : h.substring(0, idx+1);
+                var path = (0 > idx) ? h : h.substring(0, idx + 1);
                 var obj = q.parse(h.substring(path.length));
                 obj[_options.stepKey] = s;
-                return path+q.stringify(obj)
+                return path + q.stringify(obj)
             }
+
             this.steps = this.$fieldsets.hide().each(
                 function (i, e) {
                     var l = i;
                     $(this).addClass('tab-pane').data('step', l);
                     var $legend = $('legend', this);
-                    var s = i+1;
-                    var html = replacer(titleTemplate, {step:s,title:$legend.html()});
+                    var s = i + 1;
+                    var html = replacer(titleTemplate, {step:s, title:$legend.html()});
                     var title = $legend.parent().attr('title');
-                    if (title){
+                    if (title) {
                         $legend.html(title);
                     }
                     var $li = $(replacer(listItemTemplate, {step:s, content:html, stepKey:_options.stepKey, hash:hash(s)})).data('step', l);
                     $ul.append($li)
                 }).length;
             var $btns = $('<div class="btn-group pull-right"></div>').append(
-                            (this.$prev = $('<button class="btn prev">'+this.options.prev+'</button>')),
-                            (this.$next = $('<button class="btn next btn-primary">'+this.options.next+'</button>')))
+                (this.$prev = $('<button class="btn prev">' + this.options.prev + '</button>')),
+                (this.$next = $('<button class="btn next btn-primary">' + this.options.next + '</button>')))
             if (this.options.replace)
                 $(this.options.replace).replaceWith($btns);
             else
                 this.$el.append($btns);
 
             var self = this;
-            this.$prev.on('click',  function (e) {
+            this.$prev.on('click', function (e) {
                 if (self.current > 0)
-                self.step(self.current - 1);
+                    self.step(self.current - 1);
             });
-            this.$next.on('click',  function (e) {
-                if (self.current + 1 < self.steps ){
+            this.$next.on('click', function (e) {
+                if (self.current + 1 < self.steps) {
                     self.step(self.current + 1);
 //                    e.preventDefault();
 //                    e.stopPropagation();
@@ -78,18 +80,20 @@
         Wizard.prototype.step = function (pos) {
             pos = pos || 0;
             this.current = pos;
-            this.$steps.html(replacer(this.options.steps, {current:this.current+1, steps:this.steps}));
+            this.$steps.html(replacer(this.options.steps, {current:this.current + 1, steps:this.steps}));
             var isFin = pos == (this.steps - 1);
-            this.$next.toggleClass('save', isFin).html( isFin ? this.options.done : this.options.next);
+            this.$next.toggleClass('save', isFin).html(isFin ? this.options.done : this.options.next);
 
             this.$prev[pos == 0 ? 'addClass' : 'removeClass']('disabled')
-
-            this.$fieldsets.hide().each(function () {
-                if ($(this).data('step') == pos) {
-                    $(this).show('slide');
+            this.$fieldsets.each(function () {
+                var $this = $(this);
+                if ($this.data('step') == pos) {
+                    $this.show('slide');
+                }
+                else {
+                    $this.hide('slide')
                 }
             });
-
 
             $('li', this.$ul).removeClass('active').each(function () {
                 if ($(this).data('step') == pos)
@@ -104,20 +108,20 @@
                 var $this = $(this)
                     , data = $this.data('wiz')
                     , options = typeof option == 'object' && option || {
-                    next:$this.attr('data-next'),
-                    prev:$this.attr('data-prev'),
-                    done:$this.attr('data-done'),
-                    titleTemplate:$this.attr('data-title-template'),
-                    listItemTemplate:$this.attr('data-list-item-template')
-                };
+                        next:$this.attr('data-next'),
+                        prev:$this.attr('data-prev'),
+                        done:$this.attr('data-done'),
+                        titleTemplate:$this.attr('data-title-template'),
+                        listItemTemplate:$this.attr('data-list-item-template')
+                    };
                 if (!data) $this.data('wiz', (data = new Wizard(this, options)))
                 if (typeof option == 'string')
-                    data[option].apply(data,args);
+                    data[option].apply(data, args);
             })
         }
 
         $.fn.wiz.defaults = {
-            stepKey:'step',
+            stepKey:'_step',
             titleTemplate:'<b>Step {step}</b>: {title}',
             listItemTemplate:'<li><a  class="step" href="{hash}">{content}</a></li>',
             next:'Next &raquo;',

@@ -239,10 +239,12 @@ define([
         },
         fields:{
             type:'List',
+            title:'Edit View',
             help:'Fields to allow editing'
         },
         list_fields:{
             type:'List',
+            title:'List View',
             help:'Fields to show in list views'
         }
     };
@@ -373,9 +375,10 @@ define([
                     var v = _.find(value, nameF) || _.find(value, labelF);
                     $el.attr('placeholder', v && v.name || value[0]['name']);
                 }
-                form.fields.list_fields.editor.setOptions(_.map(form.fields.paths.getValue(), function (v) {
-                    return v.name
-                }))
+                var values = _.map(form.fields.paths.getValue(), function (v) {
+                                    return v.name
+                                })
+                form.fields.list_fields.setValue(values);
             });
             form.render = function () {
 

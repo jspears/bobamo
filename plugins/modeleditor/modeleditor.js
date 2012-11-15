@@ -119,7 +119,7 @@ EditPlugin.prototype.routes = function () {
         if (type == 'String') return String;
         if (type == 'Date' || type == 'DateTime') return Date;
 
-        return mongoose.Schema.Types[type];
+        return mongoose.Schema.Types[type] || type;
     }
     var create =                               function (req, res, next) {
 
