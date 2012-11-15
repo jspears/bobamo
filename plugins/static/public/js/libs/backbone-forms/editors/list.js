@@ -491,9 +491,8 @@ define(['jquery', 'underscore', 'Backbone', 'Backbone.Form', 'backbone-modal'], 
 
     openEditor: function() {
       var self = this;
-      var opts = {schema:this.nestedSchema};
-        opts.data = this.value;
-        opts._parent = this;
+      var opts = {schema:this.nestedSchema, _parent:this.options.list, data:this.value};
+
       var model = this.model;
       var create =               model && model.createForm;
       var form =  create && create.call(model, opts) || new Form(opts);

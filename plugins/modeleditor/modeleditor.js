@@ -129,7 +129,7 @@ EditPlugin.prototype.routes = function () {
 
         var properties = req.body.properties;
         delete req.body.properties;
-        var display = req.body;
+        var display = _u.extend({strict:true}, req.body);
 
         function makeProperty(model) {
             return function (p) {
@@ -137,28 +137,33 @@ EditPlugin.prototype.routes = function () {
                 model[p.name] = p.many ? [s] : s;
 
 
-                if (p.schemaType == 'InlineObject' && p.properties && p.properties.length) {
+                if (p.type == 'Object' && p.properties && p.properties.length) {
                     _u.each(p.properties, makeProperty(s))
                 } else {
                     if (p.required)
                         s.required = true;
                     if (p.ref && p.ref != 'None')
                         s.ref = p.ref;
-                    s.type = native(p.schemaType);
+                    if (p.type)
+                        s.type = native(p.type);
+
+                    if (_u.isNumber(p.max))
+                        s.max = p.max;
+
+                    if (_u.isNumber(p.min))
+                        s.min = p.min;
                     var d = (s.display = {});
-                    if (p.description)
-                        d.description = p.description;
-                    if (p.title)
-                        d.title = p.title;
-                    if (p.editor)
-                        d.editor = p.editor;
+                    _.each(['description', 'title','editor','placeholder'], function(v,k){
+                       if (! _.isUndefined(p[k]))
+                        d[k] = p[k]
+                    });
 
                 }
             }
         }
 
         _u.each(properties, makeProperty(model));
-        var schema = new mongoose.Schema(model, display);
+        var schema = new mongoose.Schema(model,  {safe:true, strict:true, display:display});
         mongoose.model(display.modelName, schema);
         console.log('model', JSON.stringify(model, null, '\t'), 'display', JSON.stringify(display, null, '\t'));
         res.send({

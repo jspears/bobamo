@@ -96,7 +96,7 @@ define([
             name:null,
             title:null,
             description:null,
-            schemaType:'String',
+            type:'String',
             ref:null
 
         },
@@ -111,7 +111,7 @@ define([
             min:{type:'Number'},
             many:{type:'Checkbox', help:'Is this an array?', title:'Many'},
             placeholder:{type:'Text', help:'Default Placeholder text'},
-            schemaType:{
+            type:{
                 type:'Select',
                 help:'Type of schema',
                 required:true,
@@ -145,7 +145,7 @@ define([
             }
         },
         fieldsets:[
-            { legend:'Property', fields:['name', 'title', 'description', 'many', 'required', 'schemaType', 'placeholder', 'min', 'max', 'editor', 'ref', 'paths']}
+            { legend:'Property', fields:['name', 'title', 'description', 'many', 'required', 'type', 'placeholder', 'min', 'max', 'editor', 'ref', 'paths']}
         ],
         toString:function () {
             var self = this.toJSON();
@@ -170,18 +170,20 @@ define([
             opts.fieldsets = this.fieldsets;
 
             var f = opts.fieldsets[0];
+
             if (opts._parent && opts._parent.options && opts._parent.options.list && opts._parent.options.list.form) {
                 var pform = opts._parent.options.list.form;
                 var val = pform.fields.modelName || pform.fields.name;
                 var label = val.editor.getValue();
                 f.legend = 'Property on "' + label + '"';
             }
+            opts._parent = this;
             var form = new Backbone.Form(opts);
 
             var self = this;
-            form.on('schemaType:change', function (cont, evt) {
+            form.on('type:change', function (cont, evt) {
                 var type = evt.getValue();
-                console.log('schemaType:change', type);
+                console.log('type:change', type);
                 $.getJSON("${pluginUrl}/admin/editor/" + type, function (resp) {
                     form.fields.editor.editor.setOptions(resp.payload);
                 });
@@ -189,13 +191,18 @@ define([
             });
             form.on('name:change', function (cont, evt) {
                 self.enabled(form, evt.getValue());
+
             });
 
             var r = form.render;
             form.render = function () {
                 var ret = r.apply(this, Array.prototype.slice.call(arguments, 0));
-                EventMap['String'].call(this, form);
-                self.enabled(form, false);
+               // EventMap[self.get('name') || 'String'].call(this, form);
+                var json = self.toJSON();
+                var type = json.type;
+                if (_.isFunction(EventMap[type])  )
+                        EventMap[type].call(this, form);
+                 self.enabled(form, false);
                 $.getJSON("${pluginUrl}/admin/types", function (resp) {
                     form.fields.ref.editor.setOptions(['None'].concat(resp.payload));
                 });
@@ -256,6 +263,7 @@ define([
                 return function(v,k){
                     v.name = k;
                     p.push(v);
+
                     if (v.subSchema){
                         var sub = v.subSchema;
                          delete v.subSchema;
@@ -329,6 +337,7 @@ define([
             return this;
         },
         createForm:function (opts) {
+
             var form = new Backbone.Form(opts);
 
             function enabled(e) {
