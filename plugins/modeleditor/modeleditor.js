@@ -81,9 +81,38 @@ EditPlugin.prototype.routes = function () {
             payload:models
         })
     }.bind(this));
+    this.app.get(base + '/admin/types', function (req, res) {
+        var types = _u.keys(this.pluginManager.appModel.modelPaths);
+        res.send({
+            status:0,
+            payload:types
+        })
 
-    // this route gets a model without its path metadata for backbone UI, the backbone model parses the
-    // payload object in the response
+    }.bind(this));
+    this.app.get(base + '/admin/editor/:type', function (req, res) {
+        var editors = [];
+        var type = req.params.type;
+        _u.each(this.pluginManager.plugins, function (plugin) {
+            _u.each(plugin.editors(), function (edit, k) {
+                if (edit.types) {
+                    var pos = edit.types.indexOf(type);
+                    if (pos == 0) {
+                        editors.unshift(k)
+                    } else if (pos > 0) {
+                        editors.push(k);
+                    }
+                } else if (_u.isString(edit)) {
+                    editors.push(edit);
+                }
+            });
+        });
+        res.send({
+            status:0,
+            payload:editors
+        })
+
+    }.bind(this));
+
     this.app.get(base + '/admin/model/:modelName', function (req, res) {
         var editModel = this.local(res, 'editModel');
         var model = _u.extend({}, editModel.modelPaths[req.params.modelName].model);
@@ -103,8 +132,66 @@ EditPlugin.prototype.routes = function () {
             payload:editModel.modelPaths[req.params.modelName].schemaFor()
         })
     }.bind(this));
+    function native(type){
+        if (type == 'Number') return Number;
+        if (type == 'String') return String;
+        if (type == 'Date' || type == 'DateTime') return Date;
 
-    // this route is called to update a model through backbone UI
+        return mongoose.Schema.Types[type] || type;
+    }
+    var create =                               function (req, res, next) {
+
+        console.log('body', JSON.stringify(req.body,  null, "\t"))
+        var body = req.body;
+        var model = {};
+
+        var properties = req.body.properties;
+        delete req.body.properties;
+        var display = _u.extend({strict:true}, req.body);
+
+        function makeProperty(model) {
+            return function (p) {
+                var s = {};
+                model[p.name] = p.many ? [s] : s;
+
+
+                if (p.type == 'Object' && p.properties && p.properties.length) {
+                    _u.each(p.properties, makeProperty(s))
+                } else {
+                    if (p.required)
+                        s.required = true;
+                    if (p.ref && p.ref != 'None')
+                        s.ref = p.ref;
+                    if (p.type)
+                        s.type = native(p.type);
+
+                    if (_u.isNumber(p.max))
+                        s.max = p.max;
+
+                    if (_u.isNumber(p.min))
+                        s.min = p.min;
+                    var d = (s.display = {});
+                    _.each(['description', 'title','editor','placeholder'], function(v,k){
+                       if (! _.isUndefined(p[k]))
+                        d[k] = p[k]
+                    });
+
+                }
+            }
+        }
+
+        _u.each(properties, makeProperty(model));
+        var schema = new mongoose.Schema(model,  {safe:true, strict:true, display:display});
+        mongoose.model(display.modelName, schema);
+        console.log('model', JSON.stringify(model, null, '\t'), 'display', JSON.stringify(display, null, '\t'));
+        res.send({
+            status:0,
+            payload:{_id:'testid'}
+        });
+
+    }
+    this.app.post(base + '/admin/model', create);
+    this.app.put(base + '/admin/model', create);
     this.app.put(base + '/admin/model/:id', function (req, res, next) {
 
         var obj = _u.extend({}, req.body);

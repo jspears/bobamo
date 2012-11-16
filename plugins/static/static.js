@@ -3,20 +3,45 @@ var StaticPlugin = function () {
     Plugin.apply(this, arguments);
 }
 util.inherits(StaticPlugin, Plugin);
+var editors = {
+    Text:{
+        types:['String', 'Boolean', 'Number', 'Date']
+    },
+    TextArea:{
+        types:['String', 'Boolean', 'Number', 'Date']
+    },
+    Hidden:{
+        types:['String', 'Boolean', 'Number', 'Date']
+    },
+    Checkbox:{
+        types:['Boolean', 'String', 'Number']
+    },
+    Date:{
+        types:['Date', 'Number', 'String']
+    },
+    DateTime:{
+        types:['Date', 'Number', 'String']
+    },
+    Password:{
+        types:['String']
+    },
+    Radio:{
+        types:['Boolean', 'String']
+    },
+    Select:{
+        types:['Array', 'Object']
+    },
+    MultiEditor:{
+        types:['Array', 'Object']
+    },
+    Number:{ types:['Number', 'String']},
+    Search:{ types:['ObjectId']},
+    Link:{types:['ObjectId']},
+    List:{types:['ObjectId']}
+}
+
 StaticPlugin.prototype.editors = function () {
-    return ['Text', 'Checkbox',
-        'Checkboxes',
-        'Date',
-        'DateTime',
-        'Hidden',
-        'List',
-        'NestedModel',
-        'Number',
-        'Object',
-        'Password',
-        'Radio',
-        'Select',
-        'TextArea', 'MultiEditor'];
+    return editors;
 }
 StaticPlugin.prototype.filters = function () {
     var prefix = this.baseUrl;
