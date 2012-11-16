@@ -1866,12 +1866,12 @@ Form.editors = (function() {
 
       //Wrap the data in a model if it isn't already a model instance
       var modelInstance = (data.constructor === nestedModel) ? data : new nestedModel(data);
-
-      this.form = new Form({
-        model: modelInstance,
-        idPrefix: this.id + '_',
-        fieldTemplate: 'nestedField'
-      });
+      var opts = {
+          model: modelInstance,
+          idPrefix: this.id + '_',
+          fieldTemplate: 'nestedField'
+      }
+      this.form = modelInstance&& modelInstance.createForm ? modeInstance.createForm(opts) : new Form(opts);
 
       this._observeFormEvents();
 

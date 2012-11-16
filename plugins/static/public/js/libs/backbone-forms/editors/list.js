@@ -494,13 +494,13 @@ define(['jquery', 'underscore', 'Backbone', 'Backbone.Form', 'backbone-modal'], 
       var opts = {schema:this.nestedSchema, _parent:this.options.list, data:this.value};
 
       var model = this.model;
-      var create =               model && model.createForm;
-      var form =  create && create.call(model, opts) || new Form(opts);
+      var form = model && model.createForm ? model.createForm(opts) : new Form(opts);
 
-      var modal = this.modal = new Backbone.BootstrapModal({
+      var modal = this.modal = new editors.List.Modal.ModalAdapter({
         content: form,
         animate: true
-      }).open();
+      });
+      modal.open();
 
       this.trigger('open', this);
       this.trigger('focus', this);

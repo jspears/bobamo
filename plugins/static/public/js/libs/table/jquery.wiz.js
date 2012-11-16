@@ -9,7 +9,7 @@
 }(function ($, replacer, q) {
         var Wizard = function (element, options) {
             var _options = this.options = $.extend({}, $.fn.wiz.defaults, options)
-            this.$fieldsets = $('fieldset', element);
+            this.$fieldsets = $(this.options.fieldset, element);
             if (this.$fieldsets.length < 2){
                 return
             }
@@ -131,7 +131,8 @@
             prev:'&laquo; Previous',
             done:'Finish',
             steps:'Step {current} of {steps}',
-            clsNames:'nav-stacked span3'
+            clsNames:'nav-stacked span3',
+            fieldset:'fieldset'
         }
 
     }
