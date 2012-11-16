@@ -1,0 +1,43 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/Volumes/Macintosh_HD_2/Users/altsang/.nvm/v0.8.14/bin/node',
+1 verbose cli   '/Volumes/Macintosh_HD_2/Users/altsang/.nvm/v0.8.14/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   '../bobamo' ]
+2 info using npm@1.1.65
+3 info using node@v0.8.14
+4 verbose read json /Volumes/Macintosh_HD_2/Users/altsang/Documents/workspace/bobamo/plugins/mongoose/package.json
+5 verbose read json /Volumes/Macintosh_HD_2/Users/altsang/Documents/workspace/bobamo/plugins/mongoose/node_modules/mongoose/package.json
+6 verbose from cache /Volumes/Macintosh_HD_2/Users/altsang/Documents/workspace/bobamo/plugins/mongoose/package.json
+7 verbose readDependencies using package.json deps
+8 verbose cache add [ '../bobamo', null ]
+9 silly cache add name=undefined spec="../bobamo" args=["../bobamo",null]
+10 verbose parsed url { pathname: '../bobamo', path: '../bobamo', href: '../bobamo' }
+11 silly lockFile a05acbce-bobamo ../bobamo
+12 verbose lock ../bobamo /Volumes/Macintosh_HD_2/Users/altsang/.npm/a05acbce-bobamo.lock
+13 info maybeGithub Attempting to fetch ../bobamo from git://github.com/../bobamo
+14 silly lockFile 949b7946-git-github-com-bobamo git://github.com/../bobamo
+15 verbose lock git://github.com/../bobamo /Volumes/Macintosh_HD_2/Users/altsang/.npm/949b7946-git-github-com-bobamo.lock
+16 verbose addRemoteGit [ 'git://github.com/../bobamo', 'master' ]
+17 silly exec git "clone" "git://github.com/../bobamo" "/var/folders/sm/dc6gyw690tb1lpdzjpvzdjdr0000gn/T/npm-5860/1353025232227-0.610417916206643"
+18 silly git,clone,git://github.com/../bobamo,/var/folders/sm/dc6gyw690tb1lpdzjpvzdjdr0000gn/T/npm-5860/1353025232227-0.610417916206643, spawning
+19 error git clone git://github.com/../bobamo Cloning into '/var/folders/sm/dc6gyw690tb1lpdzjpvzdjdr0000gn/T/npm-5860/1353025232227-0.610417916206643'...
+19 error git clone git://github.com/../bobamo
+19 error git clone git://github.com/../bobamo fatal: remote error:
+19 error git clone git://github.com/../bobamo   Repository not found.
+20 silly lockFile 949b7946-git-github-com-bobamo git://github.com/../bobamo
+21 silly lockFile a05acbce-bobamo ../bobamo
+22 error addLocal Could not install ../bobamo
+23 error Error: ENOENT, stat '../bobamo'
+24 error If you need help, you may report this log at:
+24 error     <http://github.com/isaacs/npm/issues>
+24 error or email it to:
+24 error     <npm-@googlegroups.com>
+25 error System Darwin 11.4.2
+26 error command "/Volumes/Macintosh_HD_2/Users/altsang/.nvm/v0.8.14/bin/node" "/Volumes/Macintosh_HD_2/Users/altsang/.nvm/v0.8.14/bin/npm" "install" "../bobamo"
+27 error cwd /Volumes/Macintosh_HD_2/Users/altsang/Documents/workspace/bobamo/plugins/mongoose
+28 error node -v v0.8.14
+29 error npm -v 1.1.65
+30 error path ../bobamo
+31 error code ENOENT
+32 error errno 34
+33 verbose exit [ 34, true ]

@@ -516,4 +516,5 @@ define([
             plural:'Models'
         }
     });
+});
 
