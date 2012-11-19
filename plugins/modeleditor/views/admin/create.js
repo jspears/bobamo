@@ -185,8 +185,11 @@ define([
                 })
                 form.fields.list_fields.setValue(values);
             });
-            form.on('render', enabled);
-
+            form.on('render', function(){
+                enabled();
+               form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
+                    .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
+            })
 
             return form;
         },
