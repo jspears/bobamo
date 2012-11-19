@@ -1,4 +1,4 @@
-define(['Backbone', 'Backbone.Form',  'underscore', 'jquery',  'backbone-modal'], function(Backbone, Form,_,$, BootstrapModal ){
+define(['Backbone', 'Backbone.Form',  'underscore', 'jquery',  'backbone-modal', 'libs/jquery/jquery.ba-farthest-descendant'], function(Backbone, Form,_,$, BootstrapModal ){
    var EBootstrapModal = BootstrapModal.extend({
         render:function onEnchancedBootstrapRender(o) {
             var render =  BootstrapModal.prototype.render;
@@ -8,6 +8,12 @@ define(['Backbone', 'Backbone.Form',  'underscore', 'jquery',  'backbone-modal']
             var $wiz = this.$el.find('.modal-body');
             if ($wiz.wiz) $wiz.wiz({stepKey:'_propStep', clsNames:'', replace:$('a.ok', this.$el), fieldset:'> form.form-horizontal > fieldset'});
             this.$el.find('.cancel').addClass('pull-left');
+            $wiz.find('> form.form-horizontal > fieldset').furthestDecendant('.controls').css({marginLeft:'160px'}).each(function(){
+                $(this).siblings('label').css({display:'block'}).parent().parent().parent().parent().parent().css({marginLeft:0}).siblings('label').css({display:'none'})
+                    .parent().parent().parent().parent().parent().css({marginLeft:0}).siblings('label').css({display:'none'});
+
+            });
+            console.log('furthest', this.$el.furthestDecendant('.controls'))//.style({marginLeft:'160px', border:'1px solid red'});
             return this;
         }
     });
