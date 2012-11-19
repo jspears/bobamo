@@ -1,14 +1,12 @@
 define(['Backbone', 'views/modeleditor/admin/property', 'underscore', 'jquery'], function (b, Property, _, $) {
     "use strict";
-    var TC = b.Collection.extend({
-        parse:function (resp) {
-            var ret = resp.payload;
-            return ret;
-        }
-    });
 
     function json(path, label) {
-        var C = TC.extend({
+        var C =  b.Collection.extend({
+            parse:function (resp) {
+                        var ret = resp.payload;
+                        return ret;
+            },
             url:'${pluginUrl}' + path,
             model:b.Model.extend({
                 toString:function () {
@@ -22,9 +20,7 @@ define(['Backbone', 'views/modeleditor/admin/property', 'underscore', 'jquery'],
                 success:cb
             })
         }
-    }
-
-    ;
+    };
     //   TC.extend({url:'${pluginUrl}/admin/validator/' + type}
     var Validator = function (type) {
         return b.Model.extend({
@@ -32,6 +28,12 @@ define(['Backbone', 'views/modeleditor/admin/property', 'underscore', 'jquery'],
                     name:{
                         type:'Select',
                         options:json('/admin/validators/' + type, 'name')
+                    },
+                    message:{
+                        type:'Text'
+                    },
+                    configure:{
+                        type:'TextArea'
                     }
                 },
                 message:{type:'Text', help:'Error message to display'},
