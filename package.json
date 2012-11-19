@@ -11,7 +11,8 @@
     "less": "latest",
     "connect": "latest",
     "consolidate": "latest",
-    "express": ">=3"
+    "express": ">=3",
+    "mongoose-gen":"latest"
   },
   "devDependencies": {
     "should": "latest",

@@ -219,7 +219,7 @@ function($, _, Backbone, Form, BList) {
     count: 0
   });
 
-  Form.editors.List.Modal.ModalAdapter = Modal;
+ // Form.editors.List.Modal.ModalAdapter = Modal;
   //EXPORTS
   //CommonJS
   if (typeof require == 'function' && typeof module !== 'undefined' && exports) {
@@ -228,7 +228,7 @@ function($, _, Backbone, Form, BList) {
 
   //AMD / RequireJS
 
-  Backbone.BootstrapModal = Modal;
+  //Backbone.BootstrapModal = Modal;
 
 
 

@@ -81,15 +81,34 @@ EditPlugin.prototype.routes = function () {
             payload:models
         })
     }.bind(this));
-    this.app.get(base + '/admin/types', function (req, res) {
-        var types = _u.keys(this.pluginManager.appModel.modelPaths);
+    this.app.get(base+'/admin/validators/:type', function(req,res){
         res.send({
-            status:0,
-            payload:types
-        })
-
+            payload:[{name:'Required', message:'Field is required'}],
+            status:0
+        });
     }.bind(this));
-    this.app.get(base + '/admin/editor/:type', function (req, res) {
+
+    this.app.get(base+'/admin/types/schemas', function(req,res){
+        //TODO abstract this in the displayModel
+       res.send({
+           payload:_u.map(mongoose.schemaTypes, function(v,k){return {type:k}}),
+           status:0
+       })
+    }.bind(this));
+    this.app.get(base+'/admin/types/models', function(req,res){
+       res.send({
+           payload:_u.map(this.pluginManager.appModel.modelPaths, function(v,k){
+               var obj = {modelName:k};
+               if (v.schema){
+                   obj.schema = schema;
+               }
+               return obj;
+           }),
+           status:0
+       })
+    }.bind(this));
+
+    this.app.get(base + '/admin/editors/:type', function (req, res) {
         var editors = [];
         var type = req.params.type;
         _u.each(this.pluginManager.plugins, function (plugin) {
@@ -171,8 +190,8 @@ EditPlugin.prototype.routes = function () {
                     if (_u.isNumber(p.min))
                         s.min = p.min;
                     var d = (s.display = {});
-                    _.each(['description', 'title','editor','placeholder'], function(v,k){
-                       if (! _.isUndefined(p[k]))
+                    _u.each(['description', 'title','editor','placeholder'], function(v,k){
+                       if (! _u.isUndefined(p[k]))
                         d[k] = p[k]
                     });
 

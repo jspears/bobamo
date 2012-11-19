@@ -152,6 +152,9 @@ define([
         createForm:function(options){
              return new Form(options);
         },
+        wizOptions:{
+
+        },
         render:function (opts) {
             var $el = this.$el.html(this.template());
             var id = opts && (opts.id || opts._id);
@@ -168,11 +171,12 @@ define([
             var $fm = $('.form-container', this.$el);
             var isWiz = _.isUndefined(this.isWizard) ? this.fieldsets.length > 1 : this.isWizard;
             var $del = this.$el;
+            var wizOptions = this.wizOptions;
             if (id) {
                 model.fetch({success:function () {
                     $fm.append(form.render().el);
                     if (isWiz)
-                        $('.form-wrap', $del).wiz({replace:$('.save', $del)});
+                        $('.form-wrap', $del).wiz(_.extend({replace:$('.save', $del)}, wizOptions));
                 }});
             } else {
                 var html = form.render().el;
