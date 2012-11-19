@@ -6,7 +6,7 @@ define(['Backbone', 'Backbone.Form',  'underscore', 'jquery',  'backbone-modal']
             console.log('this', typeof this, 'render', typeof render);
             render.apply(this, args);
             var $wiz = this.$el.find('.modal-body');
-            if ($wiz.wiz) $wiz.wiz({stepKey:'_propStep', clsNames:'', replace:$('a.ok', this.$el), fieldset:'> form > fieldset'});
+            if ($wiz.wiz) $wiz.wiz({stepKey:'_propStep', clsNames:'', replace:$('a.ok', this.$el), fieldset:'> form.form-horizontal > fieldset'});
             this.$el.find('.cancel').addClass('pull-left');
             return this;
         }

@@ -75,6 +75,7 @@ define([
             var npaths = (model.paths = []);
             var fixPaths = function (p) {
                 return function (v, k) {
+                    if (!v.name)
                     v.name = k;
                     p.push(v);
                     if (v.type == 'List') {
@@ -139,7 +140,7 @@ define([
             return this;
         },
         wizOptions:{
-            fieldset:'.form-container > form > fieldset'
+            fieldset:'> div.form-container > form.form-horizontal > fieldset'
         },
         createForm:function (opts) {
 
@@ -155,7 +156,9 @@ define([
                     displayFields.plural.editor.$el.attr('placeholder', inflection.titleize(inflection.pluralize(inflection.humanize(modelName))));
                 } else {
                     form.fields.paths.$el.find('button').attr('disabled', 'true');
-                    displayFields.editor.$el.removeAttr('placeholder');
+                    displayFields.title.$el.removeAttr('placeholder');
+                    displayFields.plural.$el.removeAttr('placeholder');
+
                 }
 
             }
@@ -170,7 +173,7 @@ define([
             form.on('paths:change', function () {
                 //update
                 var value = this.fields.paths.getValue();
-                var $el = form.fields.labelAttr.editor.$el;
+                var $el = form.fields.display.editor.form.fields.labelAttr.editor.$el;
                 if (!( value || value.length)) {
                     $el.removeAttr('placeholder');
                 } else {
