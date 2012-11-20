@@ -22,6 +22,7 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
                 required:true,
                 options:_.keys(MongooseType.prototype._schemaTypes)
             },
+
             validation:{
                 type:'NestedModel',
                 model:MongooseType
@@ -53,7 +54,7 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
             }
         },
         fieldsets:[
-            { legend:'Property', fields:['name', 'multiple', 'schemaType', 'paths']},
+            { legend:'Property', fields:['name',  'multiple', 'schemaType', 'paths']},
             { legend:'Validation', fields:['validation']},
             { legend:'Display', fields:['title', 'description']},
             { legend:'Editor', fields:['placeholder', 'editor', 'fieldsets', 'list_fields']}
@@ -113,7 +114,6 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
             };
             form.on('name:change', enableAdd);
             form.on('render', enableAdd);
-
 
             // form.on('validators:change', validators);
             $('.form-horizontal', form.$el).wiz({stepKey:'_propStep'});

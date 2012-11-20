@@ -9,14 +9,13 @@ define([
     'modeleditor/js/inflection',
     'text!${pluginUrl}/templates/admin/edit.html'
 
-], function (_, Backbone, Property,Fieldset, Form, EditView, inflection, template) {
+], function (_, Backbone, Property, Fieldset, Form, EditView, inflection, template) {
     "use strict";
     var typeOptions = ["Text", "Checkbox", "Checkboxes", "Date", "DateTime", "Hidden", "List", "NestedModel", "Number", "Object",
         "Password", "Radio", "Select", "TextArea", "MultiEditor", "ColorEditor", "UnitEditor", "PlaceholderEditor"];
     var dataTypes = ["text", "tel", "time", "url", "range", "number", "week", "month", "year", "date", "datetime", "datetime-local", "email", "color"];
 
     var MatchRe = /^\//;
-
 
 
     var Display = Backbone.Model.extend({
@@ -40,7 +39,6 @@ define([
             "type":"Text",
             required:true
         },
-
         display:{
             type:'NestedModel',
             model:Display
@@ -76,7 +74,7 @@ define([
             var fixPaths = function (p) {
                 return function (v, k) {
                     if (!v.name)
-                    v.name = k;
+                        v.name = k;
                     p.push(v);
 
 //                    if (v.type == 'List') {
@@ -91,9 +89,18 @@ define([
 //                        v.type = v.dataType;
 //                        v.editor = type;
 //                    }
+                    if (v.ref){
+                        v.schemaType = 'ObjectId';
+                    }else{
+                        v.schemaType = v.type;
+                    }
                     if (v.validator && v.validator.length) {
-                         var validation =   (v.validation = {validate:{}})[v.dataType] = {};
-                         validation.validate = _.map(v.validator, function(vv){ var isMatch = MatchRe.test(vv); return {name:isMatch ? 'match': vv, configure:(isMatch ? JSON.stringify({match:vv}) : "")}});
+                        var validation = (v.validation = {validate:{}})[v.dataType] = {};
+//                        validation.validate = _.map(v.validator, function (vv) {
+//                            var isMatch = MatchRe.test(vv);
+//                            return {name:isMatch ? 'match' : vv, configure:(isMatch ? JSON.stringify({match:vv}) : "")}
+//                        });
+                        validation.validate = v.validator;
                     }
                     if (v.subSchema) {
                         var sub = v.subSchema;
@@ -176,9 +183,9 @@ define([
                 })
                 form.fields.list_fields.setValue(values);
             });
-            form.on('render', function(){
+            form.on('render', function () {
                 enabled();
-               form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
+                form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
                     .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
             })
 

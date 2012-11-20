@@ -58,7 +58,7 @@ define(['Backbone', 'views/modeleditor/admin/property', 'underscore', 'jquery'],
                 textCase:{type:'Select', options:['none', 'uppercase', 'lowercase'], title:'Case', help:'Save text in specified case'},
                 trim:{type:'Checkbox', help:'Trim text\'s white space'},
                 enumValues:{type:'List', help:'Allow only these values'},
-                validate:{type:'List', itemType:'NestedModel', model:Validator('String'), help:'Validators '},
+                validate:{type:'List', itemType:'NestedModel', model:Validator('String')},
                 index:{type:'Checkbox', help:'Index this property'},
                 unique:{type:'Checkbox', help:'Make property unique'}
             }
@@ -68,35 +68,35 @@ define(['Backbone', 'views/modeleditor/admin/property', 'underscore', 'jquery'],
                 defaultValue:{type:'Number', help:'Default value for field', title:'Default'},
                 min:{type:'Number', help:'Minimum Value'},
                 max:{type:'Number', help:'Maximum Value'},
-                validate:{type:'List', itemType:'NestedModel', model:Validator('Number'), help:'Validators '}
+                validate:{type:'List', itemType:'NestedModel', model:Validator('Number')}
             }
         }),
         Date:TM.extend({
             schema:{
                 defaultValue:{type:'Text', help:'Default time use "now" for the relative current time and "now:-23232" or a value to pass to the constructor' },
-                validate:{type:'List', itemType:'NestedModel', model:Validator('Number'), help:'Validators '}
+                validate:{type:'List', itemType:'NestedModel', model:Validator('Number')}
             }
         }),
         Boolean:TM.extend({
             schema:{
                 defaultValue:{type:'Checkbox', help:'Default state', title:'Default'},
-                validate:{type:'List', itemType:'NestedModel', model:Validator('Boolean'), help:'Validators '}
+                validate:{type:'List', itemType:'NestedModel', model:Validator('Boolean')}
             }
         }),
         ObjectId:TM.extend({
             schema:{
                 ref:{
                     type:'Select',
-                    options:json('/admin/types/models', 'modelName')
-                }, //new TC.extend({url:"${pluginUrl}/admin/types"})
-                validate:{type:'List', itemType:'NestedModel', model:Validator('ObjectId'), help:'Validators '}
+                    options:json('/admin/types/models', 'modelName'),
+                    help:'Reference another schema'
+                }
             }
         }),
         Buffer:TM.extend({
             schema:{
-                maxSize:{type:'Number', help:'Maximum size of buffer'},
-                unit:{type:'Select', options:['b', 'kb', 'mb', 'gb']},
-                validate:{type:'List', itemType:'NestedModel', model:Validator('Buffer'), help:'Validators '}
+                maxSize:{type:'Number', help:'Maximum size of buffer (16mb)'},
+                unit:{type:'Select', options:['b', 'kb', 'mb']},
+                validate:{type:'List', itemType:'NestedModel', model:Validator('Buffer')}
             },
             default:{
                 maxSize:1,
