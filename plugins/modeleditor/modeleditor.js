@@ -55,12 +55,16 @@ EditPlugin.prototype.routes = function () {
         this.local(res, 'model', editModel.modelPaths[req.params.type]);
         this.local(res, 'pluginUrl', this.pluginUrl);
         this.generate(res, view);
+    }.bind(this))
+
+    this.app.get(base + '/admin/backbone/:modelName', function(req,res){
+        console.log('model', req.params.modelName);
+        res.send({
+            status:0,
+            payload:this.pluginManager.appModel.modelFor(req.params.modelName)
+        })
     }.bind(this));
 
-    // the rest of the routes below that bypass the UI are used as RESTful services that are called by URL to populate the
-    // the Backbone model in other views like the edit.js view
-
-    // this route gets a list of model with summary information only for backbone view display
     this.app.get(base + '/admin', function (req, res) {
 
         var models = [];
@@ -151,6 +155,7 @@ EditPlugin.prototype.routes = function () {
             payload:editModel.modelPaths[req.params.modelName].schemaFor()
         })
     }.bind(this));
+
     function native(type){
         if (type == 'Number') return Number;
         if (type == 'String') return String;

@@ -171,19 +171,20 @@ define([
             var $fm = $('.form-container', this.$el);
             var isWiz = _.isUndefined(this.isWizard) ? this.fieldsets.length > 1 : this.isWizard;
             var $del = this.$el;
-            var wizOptions = this.wizOptions;
+            var wizOptions = _.extend({replace:$('.save', $del)}, this.wizOptions);
+
             if (id) {
                 model.fetch({success:function () {
                     $fm.append(form.render().el);
                     if (isWiz)
-                        $('.form-wrap', $del).wiz(_.extend({replace:$('.save', $del)}, wizOptions));
+                        $('.form-wrap', $del).wiz(wizOptions);
                 }});
             } else {
                 var html = form.render().el;
                 console.log('appending', html);
                 $fm.append(html);
                  if (isWiz)
-                    $('.form-wrap',$del).wiz({replace:$('.save', $del)});
+                    $('.form-wrap',$del).wiz(wizOptions);
             }
             $(this.options.container).html($el);
             return this;
