@@ -92,23 +92,8 @@ define([
 //                        v.editor = type;
 //                    }
                     if (v.validator && v.validator.length) {
-                        var idx = v.validator.indexOf('required')
-                        v.required = ~idx;
-                        var validation =   (v.validation = {validate:{}})[v.dataType] = {};
-
-//                        if (v.required) {
-//                            v.validator.splice(idx, 1);
-//                        }
-
-                        validation.match = _.find(v.validator, function (t, k) {
-                           // v.validator.splice(k, 1, 'match');
-                            var test = MatchRe.test(t);
-
-
-                            return test;
-                        });
-
-                        validation.validate = _.map(v.validator, function(vv){ return {name:MatchRe.test(vv) ? 'match': vv, configure:vv}});
+                         var validation =   (v.validation = {validate:{}})[v.dataType] = {};
+                         validation.validate = _.map(v.validator, function(vv){ var isMatch = MatchRe.test(vv); return {name:isMatch ? 'match': vv, configure:(isMatch ? JSON.stringify({match:vv}) : "")}});
                     }
                     if (v.subSchema) {
                         var sub = v.subSchema;

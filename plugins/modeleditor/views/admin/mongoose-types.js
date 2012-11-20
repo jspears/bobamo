@@ -32,10 +32,10 @@ define(['Backbone', 'views/modeleditor/admin/property', 'underscore', 'jquery'],
                     name:{
                         type:'Select',
                         options:json('/admin/validators/' + type, 'name')
-                    }
+                    },
+                    message:{type:'Text', help:'Error message to display'},
+                    configure:{type:'TextArea', help:'This will be parsed to JSON and passed into the validation method, please use carefully'}
                 },
-                message:{type:'Text', help:'Error message to display'},
-                configure:{type:'TextArea', help:'This will be parsed to JSON and passed into the validation method, please use carefully'},
                 toString:function () {
                     return this.get('name');
                 }
@@ -54,7 +54,7 @@ define(['Backbone', 'views/modeleditor/admin/property', 'underscore', 'jquery'],
                 defaultValue:{type:'Text', help:'Default value for field', title:'Default'},
                 minLength:{type:'Number', help:'Minimum Length'},
                 maxLength:{type:'Number', help:'Maximum Length'},
-                match:{type:'Text', help:'Regular Expression'},
+      //          match:{type:'Text', help:'Regular Expression'},
                 textCase:{type:'Select', options:['none', 'uppercase', 'lowercase'], title:'Case', help:'Save text in specified case'},
                 trim:{type:'Checkbox', help:'Trim text\'s white space'},
                 enumValues:{type:'List', help:'Allow only these values'},
