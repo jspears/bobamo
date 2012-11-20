@@ -15,7 +15,7 @@ define([
         "Password", "Radio", "Select", "TextArea", "MultiEditor", "ColorEditor", "UnitEditor", "PlaceholderEditor"];
     var dataTypes = ["text", "tel", "time", "url", "range", "number", "week", "month", "year", "date", "datetime", "datetime-local", "email", "color"];
 
-    var MatchRe = /^\/.*/gi;
+    var MatchRe = /^\//;
 
 
 
@@ -67,7 +67,7 @@ define([
     };
     var Model = Backbone.Model.extend({
         schema:schema,
-        urlRoot:"${pluginUrl}/admin/model",
+        urlRoot:"${pluginUrl}/admin/backbone/",
         parse:function (resp) {
             var model = resp.payload;
             var paths = model.paths;
@@ -78,31 +78,37 @@ define([
                     if (!v.name)
                     v.name = k;
                     p.push(v);
-                    if (v.type == 'List') {
-                        v.many = true;
-                        v.editor = v.listType;
-                        delete v.listType;
-                    } else if (!v.editor) {
-                        v.editor = v.dataType;
-                    }
-                    if (v.dataType) {
-                        var type = v.type;
-                        v.type = v.dataType;
-                        v.editor = type;
-                    }
+
+//                    if (v.type == 'List') {
+//                        v.many = true;
+//                        v.editor = v.listType;
+//                        delete v.listType;
+//                    } else if (!v.editor) {
+//                        v.editor = v.dataType;
+//                    }
+//                    if (v.dataType) {
+//                        var type = v.type;
+//                        v.type = v.dataType;
+//                        v.editor = type;
+//                    }
                     if (v.validator && v.validator.length) {
                         var idx = v.validator.indexOf('required')
-                        v.required = idx >= 0;
-                        if (v.required) {
-                            v.validator.splice(idx, 1);
-                        }
+                        v.required = ~idx;
+                        var validation =   (v.validation = {validate:{}})[v.dataType] = {};
 
-                        v.match = _.find(v.validator, function (t, k) {
+//                        if (v.required) {
+//                            v.validator.splice(idx, 1);
+//                        }
+
+                        validation.match = _.find(v.validator, function (t, k) {
                            // v.validator.splice(k, 1, 'match');
-                            return MatchRe.test(t);
+                            var test = MatchRe.test(t);
 
+
+                            return test;
                         });
-                        v.validators = v.validator;
+
+                        validation.validate = _.map(v.validator, function(vv){ return {name:MatchRe.test(vv) ? 'match': vv, configure:vv}});
                     }
                     if (v.subSchema) {
                         var sub = v.subSchema;

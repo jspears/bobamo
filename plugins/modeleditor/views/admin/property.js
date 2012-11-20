@@ -8,7 +8,7 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
             description:null,
             type:'String',
             ref:null,
-            many:false
+            multiple:false
         },
         schema:{
             name:{type:'Text', required:true},
@@ -27,7 +27,7 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
                 model:MongooseType
             },
 
-            many:{
+            multiple:{
                 type:'Checkbox',
                 help:'Multiple values as an Array'
 
@@ -53,7 +53,7 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
             }
         },
         fieldsets:[
-            { legend:'Property', fields:['name', 'many', 'schemaType', 'paths']},
+            { legend:'Property', fields:['name', 'multiple', 'schemaType', 'paths']},
             { legend:'Validation', fields:['validation']},
             { legend:'Display', fields:['title', 'description']},
             { legend:'Editor', fields:['placeholder', 'editor', 'fieldsets', 'list_fields']}
