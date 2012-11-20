@@ -54,20 +54,12 @@ EditPlugin.prototype.routes = function () {
         })
     }.bind(this));
 
-    this.app.get(base + '/admin', function (req, res) {
+    this.app.get(base + '/admin/models', function (req, res) {
 
         var models = [];
         var editModel = this.local(res, 'editModel');
         editModel.models.forEach(function (v, k) {
-            var m = _u.extend({}, v);
-            delete m.paths;
-            delete m._paths;
-            delete m.model;
-            delete m.fields;
-            delete m.edit_fields;
-            delete m.list_fields;
-            delete m.fieldsets;
-            models.push(m);
+            models.push({label:v.title, val:v.modelName});
         });
         res.send({
             status:0,

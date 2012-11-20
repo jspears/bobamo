@@ -31,10 +31,10 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
     var defaults = {};
     var opts = p.options || {};
     var apiPath = this.options.apiUri || this.baseUrl + 'rest/';
-  //  var pathShema = schema.path(path);
-    if (opts.display && opts.display.display == 'none' || ( path[0] == '_' && path != '_id')) {
-        return null;
-    }
+    //  var pathShema = schema.path(path);
+//    if (opts.display && (opts.display.display == 'none' || opts.display.hidden) || ( path[0] == '_' && path != '_id')) {
+//        return null;
+//    }
 
 
     if (!tmpP && Model) {
@@ -54,12 +54,14 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                 url:apiPath + opts.ref + '?transform=labelval',
                 dataType:'String',
                 type:'MultiEditor',
-                multiple:false
+                multiple:false,
+                ref:opts.ref
             });
         } else if (path == '_id') {
             _u.extend(defaults, {
                 type:'Hidden',
-                dataType:'String'
+                dataType:'String',
+                ref:opts.ref
             });
         }
     } else if (p.ref) {
@@ -67,7 +69,8 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
             url:apiPath + p.ref + '?transform=labelval',
             dataType:'String',
             type:'MultiEditor',
-            multiple:false
+            multiple:false,
+            ref:p.ref
         });
     } else {
         var modelName = util.depth(p, 'caster.options.ref');
@@ -76,43 +79,48 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                 dataType:'Array',
                 url:apiPath + modelName + '?transform=labelval',
                 type:'MultiEditor',
-                multiple:true
+                multiple:true,
+                ref:modelName
             });
         } else {
             var type = p && (util.depth(p, 'options.type') || p.type);
             if (type instanceof Array) {
-                console.log('it is an array');
                 _u.extend(defaults, {
                     type:'List'
                 });
                 if (type.length) {
                     var o = type[0];
                     defaults.listType = 'Object';
-                    if (o && o.paths){
+                    if (o && o.paths) {
+                        //EmbededDocument. May not actually have a type.
                         var s = defaults.subSchema = {};
                         _u.each(o.paths, function onListType(v, k) {
                             s[k] = this.pluginManager.pluginFor(k, v, o);
                         }, this);
-                    } else{
+                    } else {
                         if (p.caster && p.caster.instance == 'String')
                             defaults.listType = 'Text';
-                        else{
-                            if (p.schema && p.schema.paths){
+                        else {
+                            if (p.schema && p.schema.paths) {
 
                                 var s = (defaults.subSchema || (defaults.subSchema = {}));
-                            //     var s = (ds.subSchema || (ds.subSchema = {}));
-                                _u.each(p.schema.paths, function onTypeOptions(v,k){
-                                      s[k] = this.pluginManager.pluginFor(k, v ,p);
+                                //     var s = (ds.subSchema || (ds.subSchema = {}));
+                                _u.each(p.schema.paths, function onTypeOptions(v, k) {
+                                    s[k] = this.pluginManager.pluginFor(k, v, p);
                                 }, this);
                                 defaults.type = 'List';
                                 defaults.listType = 'Object';
-                                defaults.label= p.path;
+                                defaults.label = p.path;
 
+                            } else {
+                                console.debug('dunno what this is', p, path)
                             }
                         }
 
                     }
 
+                } else {
+                    console.debug('type array with no meta info?', type, path, p);
                 }
             } else if (type) {
 
@@ -136,7 +144,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                         break;
                     case
                     Buffer:
-                        _u.extend(defaults, {type:'File'});
+                        _u.extend(defaults, {type:'File', dataType:'Buffer'});
                         break;
                     case
                     Boolean:
@@ -159,31 +167,45 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                     }
                 }
 
+            } else if (path == 'id') {
+                defaults.dataType = 'String';
+                defaults.type = 'Hidden';
+            } else if (path == '_id') {
+                defaults = {};
             } else {
                 console.log('No Type for [' + path + '] guessing String', p);
                 defaults.dataType = 'String';
+
             }
         }
     }
-    if (opts.required) {
-        util.defaultOrSet(defaults, 'validator', []).push('required');
-//        (defaults.validator ? defaults.validator : (defaults.validator = [])).push('required');
-    }
+
     if (p.validators) {
         _u.each(p.validators, function (v, k) {
-            if (v.length) {
-                if (v[0] instanceof RegExp) {
-                    util.defaultOrSet(defaults, 'validator', []).push('/' + v[0] + '/');
-                } else {
-                    console.warn('can only handle client side regex/required validators for now')
+            _u.each(v, function (vv, kk) {
+                if (vv instanceof RegExp) {
+                    util.defaultOrSet(defaults, 'validator', []).push({name:'match', configure:{match:'/' + vv + '/'}});
+                } else if (vv instanceof String) {
+                    util.defaultOrSet(defaults, 'validator', []).push({name:vv});
+                }else if (vv && vv.name == '__checkRequired'){
+                    util.defaultOrSet(defaults, 'validator', []).push({name:'required'});
+                }else if (vv && vv.name){
+                    util.defaultOrSet(defaults, 'validator', []).push({name:vv.name});
+
                 }
-            }
-        })
+
+                else {
+                    console.warn('can only handle client side regex/required validators for now', vv, kk)
+                }
+            });
+        });
     }
+
+
     var ret = _u.extend({type:'Text'}, defaults, opts.display);
     return ret;
-
 }
+
 
 
 
