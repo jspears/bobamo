@@ -3,42 +3,51 @@ var StaticPlugin = function () {
     Plugin.apply(this, arguments);
 }
 util.inherits(StaticPlugin, Plugin);
-var editors = {
-    Text:{
+var editors = [
+    {
+        name:'Text',
         types:['String', 'Boolean', 'Number', 'Date']
     },
-    TextArea:{
+    {
+        name:'TextArea',
         types:['String', 'Boolean', 'Number', 'Date']
     },
-    Hidden:{
+    {
+        name:'Hidden',
         types:['String', 'Boolean', 'Number', 'Date']
     },
-    Checkbox:{
+    {   name:'Checkbox',
         types:['Boolean', 'String', 'Number']
     },
-    Date:{
+    {   name:'Date',
         types:['Date', 'Number', 'String']
     },
-    DateTime:{
+    {   name:'DateTime',
         types:['Date', 'Number', 'String']
     },
-    Password:{
+    {
+        name:'Password',
         types:['String']
     },
-    Radio:{
+    {
+        name:'Radio',
         types:['Boolean', 'String']
     },
-    Select:{
+    {
+        name:'Select',
         types:['Array', 'Object']
     },
-    MultiEditor:{
+    {
+        name:'MultiEditor',
         types:['Array', 'Object']
     },
-    Number:{ types:['Number', 'String']},
-    Search:{ types:['ObjectId']},
-    Link:{types:['ObjectId']},
-    List:{types:['ObjectId']}
-}
+    {   name:'Number',
+        types:['Number', 'String']
+    },
+    { name:'Search', types:['ObjectId']},
+    { name:'Link', types:['ObjectId']},
+    { name:'List', types:['ObjectId']}
+];
 
 StaticPlugin.prototype.editors = function () {
     return editors;

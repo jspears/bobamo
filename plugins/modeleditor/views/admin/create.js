@@ -39,6 +39,7 @@ define([
             "type":"Text",
             required:true
         },
+
         display:{
             type:'NestedModel',
             model:Display
@@ -66,16 +67,36 @@ define([
     var Model = Backbone.Model.extend({
         schema:schema,
         urlRoot:"${pluginUrl}/admin/backbone/",
+        save:function(){
+          console.log('saving', this.toJSON());
+          Backbone.Model.prototype.save.apply(this, _.toArray(arguments));
+        },
         parse:function (resp) {
             var model = resp.payload;
             var paths = model.paths;
             delete model.paths;
             var npaths = (model.paths = []);
-            var fixPaths = function (p) {
+           function fixPaths(p) {
                 return function (v, k) {
                     if (!v.name)
                         v.name = k;
                     p.push(v);
+                    var model = resp.payload;
+                    var display = {
+                        labelAttr:model.labelAttr,
+                        title:model.title,
+                        description:model.description,
+                        plural:model.plural,
+                        hidden:model.hidden || model.display == 'none'
+                    };
+                    delete model.labelAttr;
+                    delete model.title;
+                    delete model.description;
+                    delete model.plural;
+                    delete model.hidden;
+
+                    _.extend(model.display || (model.display = {}), display);
+
 
 //                    if (v.type == 'List') {
 //                        v.many = true;
@@ -89,18 +110,16 @@ define([
 //                        v.type = v.dataType;
 //                        v.editor = type;
 //                    }
-                    if (v.ref){
-                        v.schemaType = 'ObjectId';
-                    }else{
-                        v.schemaType = v.type;
+                    if (v.ref) {
+                        v.dataType = 'ObjectId';
                     }
+
                     if (v.validator && v.validator.length) {
                         var validation = (v.validation = {validate:{}})[v.dataType] = {};
-//                        validation.validate = _.map(v.validator, function (vv) {
-//                            var isMatch = MatchRe.test(vv);
-//                            return {name:isMatch ? 'match' : vv, configure:(isMatch ? JSON.stringify({match:vv}) : "")}
-//                        });
-                        validation.validate = v.validator;
+                        validation.validate = _.map(v.validator, function (vv) {
+                            var isMatch = MatchRe.test(vv);
+                            return {name:isMatch ? 'match' : vv, configure:(isMatch ? JSON.stringify({match:vv}) : "")}
+                        });
                     }
                     if (v.subSchema) {
                         var sub = v.subSchema;
@@ -123,6 +142,9 @@ define([
     });
 
     return EditView.extend({
+        events:_.extend({
+            'click .preview':'onPreviewClick'
+        }, EditView.prototype.events),
         fieldsets:[
             {legend:'Model Info', fields:['modelName']},
             {legend:'Properties', fields:['paths']},
@@ -139,6 +161,12 @@ define([
         },
         wizOptions:{
             fieldset:'> div.form-container > form.form-horizontal > fieldset'
+        },
+        onPreviewClick:function(e){
+            e.preventDefault();
+            console.log('click preview');
+            this.model.toJSON();
+
         },
         createForm:function (opts) {
 

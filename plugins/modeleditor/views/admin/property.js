@@ -8,7 +8,8 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
             description:null,
             type:'String',
             ref:null,
-            multiple:false
+            multiple:false,
+            virtual:false
         },
         schema:{
             name:{type:'Text', required:true},
@@ -16,16 +17,17 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
             description:{type:'Text'},
             editor:{ title:'Editor Type', type:'Select', options:[], help:'The Editor type helps choose the correct way to change a value for the form.'},
             placeholder:{type:'Text', help:'Default Placeholder text'},
-            schemaType:{
+            dataType:{
                 type:'Select',
                 help:'Type of schema',
                 required:true,
                 options:_.keys(MongooseType.prototype._schemaTypes)
             },
-
             validation:{
                 type:'NestedModel',
-                model:MongooseType
+                model:MongooseType,
+                title:'Mongoose Configuration',
+                help:'Mongoose specific configuration and validation'
             },
 
             multiple:{
@@ -54,7 +56,7 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
             }
         },
         fieldsets:[
-            { legend:'Property', fields:['name',  'multiple', 'schemaType', 'paths']},
+            { legend:'Property', fields:['name', 'multiple', 'dataType', 'paths']},
             { legend:'Validation', fields:['validation']},
             { legend:'Display', fields:['title', 'description']},
             { legend:'Editor', fields:['placeholder', 'editor', 'fieldsets', 'list_fields']}
@@ -83,7 +85,7 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
             var self = this;
 
             function validation() {
-                var val = form.fields.schemaType.getValue();
+                var val = form.fields.dataType.getValue();
                 var vform = form.fields.validation.editor.form;
                 _.each(vform.fields, function (v, k) {
                     v.$el[val == k ? 'show' : 'hide']();
@@ -101,9 +103,12 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
                         cb(resp.payload);
                     });
                 })
+                if (this.options && this.options.data && this.options.data.virtual){
+                    form.fields.validation.$el.hide();
+                }
             }
 
-            form.on('schemaType:change', validation);
+            form.on('dataType:change', validation);
             form.on('render', validation);
             var enableAdd = function () {
                 if (this.fields.name.getValue()) {
@@ -114,6 +119,7 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
             };
             form.on('name:change', enableAdd);
             form.on('render', enableAdd);
+
 
             // form.on('validators:change', validators);
             $('.form-horizontal', form.$el).wiz({stepKey:'_propStep'});
