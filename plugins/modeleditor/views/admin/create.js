@@ -9,13 +9,14 @@ define([
     'modeleditor/js/inflection',
     'text!${pluginUrl}/templates/admin/edit.html'
 
-], function (_, Backbone, Property, Fieldset, Form, EditView, inflection, template) {
+], function (_, Backbone, Property,Fieldset, Form, EditView, inflection, template) {
     "use strict";
     var typeOptions = ["Text", "Checkbox", "Checkboxes", "Date", "DateTime", "Hidden", "List", "NestedModel", "Number", "Object",
         "Password", "Radio", "Select", "TextArea", "MultiEditor", "ColorEditor", "UnitEditor", "PlaceholderEditor"];
     var dataTypes = ["text", "tel", "time", "url", "range", "number", "week", "month", "year", "date", "datetime", "datetime-local", "email", "color"];
 
-    var MatchRe = /^\/.*/gi;
+    var MatchRe = /^\//;
+
 
 
     var Display = Backbone.Model.extend({
@@ -60,15 +61,13 @@ define([
         },
         list_fields:{
             type:'List',
-            itemType:'Select',
             title:'List View',
-            options:[],
             help:'Fields to show in list views'
         }
     };
     var Model = Backbone.Model.extend({
         schema:schema,
-        urlRoot:"${pluginUrl}/admin/model",
+        urlRoot:"${pluginUrl}/admin/backbone/",
         parse:function (resp) {
             var model = resp.payload;
             var paths = model.paths;
@@ -76,33 +75,25 @@ define([
             var npaths = (model.paths = []);
             var fixPaths = function (p) {
                 return function (v, k) {
+                    if (!v.name)
                     v.name = k;
                     p.push(v);
-                    if (v.type == 'List') {
-                        v.many = true;
-                        v.editor = v.listType;
-                        delete v.listType;
-                    } else if (!v.editor) {
-                        v.editor = v.dataType;
-                    }
-                    if (v.dataType) {
-                        var type = v.type;
-                        v.type = v.dataType;
-                        v.editor = type;
-                    }
+
+//                    if (v.type == 'List') {
+//                        v.many = true;
+//                        v.editor = v.listType;
+//                        delete v.listType;
+//                    } else if (!v.editor) {
+//                        v.editor = v.dataType;
+//                    }
+//                    if (v.dataType) {
+//                        var type = v.type;
+//                        v.type = v.dataType;
+//                        v.editor = type;
+//                    }
                     if (v.validator && v.validator.length) {
-                        var idx = v.validator.indexOf('required')
-                        v.required = idx >= 0;
-                        if (v.required) {
-                            v.validator.splice(idx, 1);
-                        }
-
-                        v.match = _.find(v.validator, function (t, k) {
-                            // v.validator.splice(k, 1, 'match');
-                            return MatchRe.test(t);
-
-                        });
-                        v.validators = v.validator;
+                         var validation =   (v.validation = {validate:{}})[v.dataType] = {};
+                         validation.validate = _.map(v.validator, function(vv){ var isMatch = MatchRe.test(vv); return {name:isMatch ? 'match': vv, configure:(isMatch ? JSON.stringify({match:vv}) : "")}});
                     }
                     if (v.subSchema) {
                         var sub = v.subSchema;
@@ -123,9 +114,7 @@ define([
         },
         idAttribute:'modelName'
     });
-    var nameFunc = function (v, k) {
-        return v.name;
-    }
+
     return EditView.extend({
         fieldsets:[
             {legend:'Model Info', fields:['modelName']},
@@ -142,30 +131,11 @@ define([
             return this;
         },
         wizOptions:{
-            fieldset:'.form-container > form > fieldset'
+            fieldset:'> div.form-container > form.form-horizontal > fieldset'
         },
         createForm:function (opts) {
 
             var form = new Form(opts);
-
-            function listFields() {
-                var values = _.map(form.fields.paths.model.get('paths'), nameFunc)
-                var lists = _.map(form.fields.list_fields.editor.items, function(itm){ return itm.editor.$el.val() });
-                var diff = _.without(values, lists);
-                _.each(form.fields.list_fields.editor.items, function (itm) {
-                    var editor = itm.editor;
-                    var val = editor.$el.val();
-                    if (val){
-                        if (~diff.indexOf(val))
-                            editor.setOptions(diff);
-                        else
-                            editor.setOptions([val].concat(diff));
-
-                    }else{
-                        editor.setOptions(diff);
-                    }
-                });
-            }
 
             function enabled(e) {
                 console.log('enabled', e);
@@ -177,15 +147,13 @@ define([
                     displayFields.plural.editor.$el.attr('placeholder', inflection.titleize(inflection.pluralize(inflection.humanize(modelName))));
                 } else {
                     form.fields.paths.$el.find('button').attr('disabled', 'true');
-                    displayFields.editor.$el.removeAttr('placeholder');
+                    displayFields.title.$el.removeAttr('placeholder');
+                    displayFields.plural.$el.removeAttr('placeholder');
+
                 }
 
             }
-            form.on('render', listFields);
-            form.on('list_fields:add', listFields);
-            form.on('list_fields:remove', listFields);
 
-  //          form.on('list_fields:change', listFields);
             form.on('modelName:change', enabled);
             var nameF = function (v) {
                 return v.name && v.name.toLowerCase() == 'name'
@@ -196,18 +164,23 @@ define([
             form.on('paths:change', function () {
                 //update
                 var value = this.fields.paths.getValue();
-                var $el = form.fields.labelAttr.editor.$el;
+                var $el = form.fields.display.editor.form.fields.labelAttr.editor.$el;
                 if (!( value || value.length)) {
                     $el.removeAttr('placeholder');
                 } else {
                     var v = _.find(value, nameF) || _.find(value, labelF);
                     $el.attr('placeholder', v && v.name || value[0]['name']);
                 }
-                var values = _.map(form.fields.paths.getValue(), nameFunc)
-                form.fields.list_fields.editor.setOptions(values);
+                var values = _.map(form.fields.paths.getValue(), function (v) {
+                    return v.name
+                })
+                form.fields.list_fields.setValue(values);
             });
-            form.on('render', enabled);
-
+            form.on('render', function(){
+                enabled();
+               form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
+                    .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
+            })
 
             return form;
         },

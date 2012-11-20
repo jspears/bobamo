@@ -45,6 +45,15 @@ EditPlugin.prototype.routes = function () {
         this.local(res, 'pluginUrl', this.pluginUrl);
         this.generate(res, view);
     }.bind(this))
+
+    this.app.get(base + '/admin/backbone/:modelName', function(req,res){
+        console.log('model', req.params.modelName);
+        res.send({
+            status:0,
+            payload:this.pluginManager.appModel.modelFor(req.params.modelName)
+        })
+    }.bind(this));
+
     this.app.get(base + '/admin', function (req, res) {
 
         var models = [];
@@ -133,6 +142,7 @@ EditPlugin.prototype.routes = function () {
             payload:editModel.modelPaths[req.params.modelName].schemaFor()
         })
     }.bind(this));
+
     function native(type){
         if (type == 'Number') return Number;
         if (type == 'String') return String;

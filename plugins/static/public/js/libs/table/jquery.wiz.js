@@ -36,6 +36,8 @@
                 var path = (0 > idx) ? h : h.substring(0, idx + 1);
                 var obj = q.parse(h.substring(path.length));
                 obj[_options.stepKey] = s;
+                if (path[path.length -1] != '?')
+                    path = path+'?'
                 return path + q.stringify(obj)
             }
 
@@ -85,7 +87,7 @@
             this.current = pos;
             this.$steps.html(replacer(this.options.steps, {current:this.current + 1, steps:this.steps}));
             var isFin = pos == (this.steps - 1);
-            this.$next.toggleClass('save', isFin).html(isFin ? this.options.done : this.options.next);
+            this.$next.toggleClass('save', isFin).toggleClass(this.options.doneCls, isFin).html(isFin ? this.options.done : this.options.next);
 
             this.$prev[pos == 0 ? 'addClass' : 'removeClass']('disabled')
             this.$fieldsets.each(function () {
@@ -130,6 +132,7 @@
             next:'Next &raquo;',
             prev:'&laquo; Previous',
             done:'Finish',
+            doneCls:'ok',
             steps:'Step {current} of {steps}',
             clsNames:'nav-stacked span3',
             fieldset:'fieldset'
