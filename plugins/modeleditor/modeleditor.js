@@ -185,8 +185,7 @@ EditPlugin.prototype.routes = function () {
         return mongoose.Schema.Types[type] || type;
     }
 
-    var fixup = function(req){
-        var body = req.body;
+    var fixup = function(body){
         var model = _u.extend({paths:{}}, body.display);
         function onPath(obj){
             return function(v,k){
@@ -206,12 +205,14 @@ EditPlugin.prototype.routes = function () {
     var create =                               function (req, res, next) {
         var model = fixup(req.body);
         console.log('backbone schema', JSON.stringify(model, null, "\t"))
-        res.send({
-            status:0,
-            payload:{_id:req.body.modelName}
+        this.pluginManager.updateSchema('mongoose', req.body.modelName, model, function(){
+            res.send({
+                status:0,
+                payload:{_id:req.body.modelName}
+            });
         });
 
-    }
+    }.bind(this);
     this.app.post(base + '/admin/preview', function(req, res, next){
         res.send({
             status:0,

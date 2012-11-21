@@ -158,7 +158,7 @@ define([
         render:function (opts) {
             var $el = this.$el.html(this.template());
             var id = opts && (opts.id || opts._id);
-            var model = this.createModel(opts);
+            var model = this.dataModel = this.createModel(opts);
             model.on('sync', this.onSuccess, this);
             var title = id ? '<i class="icon-edit"></i> Edit {title} [{id}]' : '<i class="icon-plus"></i>Create New {title}';
             var config = _.extend({id:id}, this.config);

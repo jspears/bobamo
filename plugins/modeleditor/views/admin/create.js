@@ -7,9 +7,10 @@ define([
     'modeleditor/js/form-model',
     'libs/bobamo/edit',
     'modeleditor/js/inflection',
+    'backbone-modal',
     'text!${pluginUrl}/templates/admin/edit.html'
 
-], function (_, Backbone, Property, Fieldset, Form, EditView, inflection, template) {
+], function (_, Backbone, Property, Fieldset, Form, EditView, inflection, Modal, template) {
     "use strict";
     var typeOptions = ["Text", "Checkbox", "Checkboxes", "Date", "DateTime", "Hidden", "List", "NestedModel", "Number", "Object",
         "Password", "Radio", "Select", "TextArea", "MultiEditor", "ColorEditor", "UnitEditor", "PlaceholderEditor"];
@@ -67,16 +68,17 @@ define([
     var Model = Backbone.Model.extend({
         schema:schema,
         urlRoot:"${pluginUrl}/admin/backbone/",
-        save:function(){
-          console.log('saving', this.toJSON());
-          Backbone.Model.prototype.save.apply(this, _.toArray(arguments));
+        save:function () {
+            console.log('saving', this.toJSON());
+            Backbone.Model.prototype.save.apply(this, _.toArray(arguments));
         },
         parse:function (resp) {
             var model = resp.payload;
             var paths = model.paths;
             delete model.paths;
             var npaths = (model.paths = []);
-           function fixPaths(p) {
+
+            function fixPaths(p) {
                 return function (v, k) {
                     if (!v.name)
                         v.name = k;
@@ -130,6 +132,7 @@ define([
                 }
 
             }
+
             _.each(paths, fixPaths(npaths));
             return model;
         },
@@ -162,10 +165,89 @@ define([
         wizOptions:{
             fieldset:'> div.form-container > form.form-horizontal > fieldset'
         },
-        onPreviewClick:function(e){
+        previewCB:function (model) {
+            return _.bind(function (resp) {
+                var View = EditView.extend({
+                    fieldsets:model.fieldsets,
+                    template:_.template(resp),
+                    collection:new Backbone.Collection(),
+                    model:Backbone.Model.extend({
+                        schema:model.paths
+                    }),
+                    onSave:function(){
+                      alert('Save is unavailable in preview')
+                    },
+                    config:{
+                        title:model.title,
+                        plural:model.plural,
+                        modelName:model.modelName
+                    }
+                });
+
+                require(model.includes, function () {
+                    new Modal({
+                        content:new View(),
+                        animate:true
+                    }).open();
+                })
+            }, this);
+        },
+        onPreviewClick:function (e) {
             e.preventDefault();
-            console.log('click preview');
-            this.model.toJSON();
+
+
+            this.form.commit();
+            var model = this.dataModel.toJSON();
+            var editors = {};
+            var fixup = function (body) {
+                var paths = body.paths;
+                delete body.paths;
+                var model = _.extend({paths:{}}, body.display, body);
+
+                function onPath(obj) {
+                    return function (v, k) {
+                        var paths = v.paths;
+                        delete v.paths;
+                        if (v.type)
+                        editors[v.type] = true;
+                        var nobj = {};
+                        if (paths) {
+                            _.each(paths, onPath((nobj.subSchema = {})));
+                        }
+                        if (v.validation && v.validation[v.dataType]){
+                            var validation =  v.validation[v.dataType];
+                            delete v.validation;
+                            _.extend(nobj, validation);
+                        }
+                        obj[v.name] = _.extend(nobj, v);
+                    }
+
+                }
+
+                _.each(paths, onPath(model.paths))
+
+                model.modelName = body.modelName;
+                return model;
+            }
+            model = fixup(model);
+            _.each(model.fieldsets, function(fieldset){
+               var fields = fieldset.fields || fieldset || [];
+                var idx;
+               while(~(idx = fields.indexOf(null)) && fields.splice(idx,1).length);
+            });
+            model.includes = _.map(_.without(_.keys(editors), _.keys(Form.editors)), function (v, k) {
+                return 'libs/editors/' + inflection.hyphenize(v)
+
+            });
+            console.log('click preview', model);
+            var url = "${baseUrl}templates/" + model.modelName + "/edit.html";
+            $.ajax({
+                type:'POST',
+                url:url,
+                data:model,
+                success:this.previewCB(model),
+                dataType:'text'
+            });
 
         },
         createForm:function (opts) {
