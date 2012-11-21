@@ -1,13 +1,14 @@
-define([
-    'underscore',
+
+define({{html includes(
+    ['underscore',
     'libs/bobamo/edit',
-    'collections/${model.modelName}',
-    'models/${model.modelName}',
-    'text!templates/${model.modelName}/edit.html',
+    'collections/<%=model.modelName%>',
+    'models/<%=model.modelName%>',
+    'text!templates/<%=model.modelName%>/edit.html',
     'libs/backbone-forms/templates/bootstrap',
     'jquery-ui',
-    'libs/backbone-forms/editors/list'
-].concat({{html JSON.stringify(model.editorsFor())}}), function (_,EditView, collection, Model, template) {
+    'libs/backbone-forms/editors/list']
+)}}, function (_,EditView, collection, Model, template) {
     "use strict";
 
     var fieldsets = eval('({{html JSON.stringify(model.fieldsets) }})');

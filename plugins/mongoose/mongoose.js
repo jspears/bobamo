@@ -22,7 +22,42 @@ MongoosePlugin.prototype.appModel = function (options) {
         });
     }
 }
+MongoosePlugin.prototype.updateSchema = function(modelName, schema, callback){
+    var paths = schema.paths;
+    delete schema.paths;
+    var nSchema = {};
+    var pm = this.pluginManager;
+    function onPath(model){
+        return function(v,k){
+            var path = {};
+            model[k.name] = v.multiple ? [path] : path;
+            if (v.ref) path.ref = v.ref;
+            if (v.type != 'Object')
+                path.type = this.options.mongoose.SchemaTypes[v.type];
+            if (v.validators){
+                var valid = (path.validate = []);
+               _u.each(v.validate, function(vv,kk){
+                    valid.push(
+                        {
+                            validator:pm.validator(vv.name),
+                            msg:vv.message
+                        });
+               })
+            }
+            if (v.min)
+               path.min = v.min;
+            if (v.max)
+               path.max = v.max;
+            if (v.default)
+                path.default v.default;
+            //if ()
+        }
+    }
+    _u.each(paths, onPath(nSchema));
 
+
+    callback();
+}
 MongoosePlugin.prototype.editorFor = function (path, p, Model) {
     var schema = Model.schema || Model;
     var tmpP = schema && schema.path && (schema.path(path) || schema.virtuals[path] );
