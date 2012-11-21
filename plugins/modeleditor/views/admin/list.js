@@ -13,6 +13,7 @@ define(['underscore', 'Backbone', 'libs/bobamo/list', 'text!${pluginUrl}/templat
             labelAttr:{
                 type:'String'
             },
+
             hidden:{
                 type:'Checkbox'
             }

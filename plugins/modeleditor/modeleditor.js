@@ -64,7 +64,28 @@ EditPlugin.prototype.routes = function () {
             payload:this.pluginManager.appModel.modelFor(req.params.modelName)
         })
     }.bind(this));
+    this.app.get(base + '/admin', function (req, res) {
 
+        var models = [];
+        var editModel = this.local(res, 'editModel');
+        editModel.models.forEach(function (v, k) {
+            var m = _u.extend({}, v);
+            delete m.paths;
+            delete m._paths;
+            delete m.model;
+            delete m.fields;
+            delete m.edit_fields;
+            delete m.list_fields;
+            delete m.fieldsets;
+            delete m.editors;
+            delete m.schema;
+            models.push(m);
+        });
+        res.send({
+            status:0,
+            payload:models
+        })
+    }.bind(this));
     this.app.get(base + '/admin/models', function (req, res) {
 
         var models = [];
@@ -103,18 +124,26 @@ EditPlugin.prototype.routes = function () {
            status:0
        })
     }.bind(this));
+    /**
+     * This tries to retrun the smartest editor for a type... The
+     * funny rules are, in order of plugin, in order of editor, if name matches
+     * exactly than use it otherwise add it to the list.  if there are no types
+     * it is assumed usable for all types.
+     */
 
     this.app.get(base + '/admin/editors/:type', function (req, res) {
         var editors = [];
         var type = req.params.type;
+        var ReName = new RegExp(type);
         _u.each(this.pluginManager.plugins, function (plugin) {
             _u.each(plugin.editors(), function (edit, k) {
+                var name = edit.name || k;
                 if (edit.types) {
                     var pos = edit.types.indexOf(type);
-                    if (pos == 0) {
-                        editors.unshift(k)
-                    } else if (pos > 0) {
-                        editors.push(k);
+                  if (name == type || ReName.test(name) ){
+                    editors.unshift(name);
+                  }else if (~pos) {
+                        editors.push(name);
                     }
                 } else if (_u.isString(edit)) {
                     editors.push(edit);
@@ -155,59 +184,42 @@ EditPlugin.prototype.routes = function () {
 
         return mongoose.Schema.Types[type] || type;
     }
-    var create =                               function (req, res, next) {
 
-        console.log('body', JSON.stringify(req.body,  null, "\t"))
+    var fixup = function(req){
         var body = req.body;
-        var model = {};
+        var model = _u.extend({paths:{}}, body.display);
+        function onPath(obj){
+            return function(v,k){
+                var paths = v.paths;
+                delete v.paths;
 
-        var properties = req.body.properties;
-        delete req.body.properties;
-        var display = _u.extend({strict:true}, req.body);
-
-        function makeProperty(model) {
-            return function (p) {
-                var s = {};
-                model[p.name] = p.many ? [s] : s;
-
-
-                if (p.type == 'Object' && p.properties && p.properties.length) {
-                    _u.each(p.properties, makeProperty(s))
-                } else {
-                    if (p.required)
-                        s.required = true;
-                    if (p.ref && p.ref != 'None')
-                        s.ref = p.ref;
-                    if (p.type)
-                        s.type = native(p.type);
-
-                    if (_u.isNumber(p.max))
-                        s.max = p.max;
-
-                    if (_u.isNumber(p.min))
-                        s.min = p.min;
-                    var d = (s.display = {});
-                    _u.each(['description', 'title','editor','placeholder'], function(v,k){
-                       if (! _u.isUndefined(p[k]))
-                        d[k] = p[k]
-                    });
-
+                var nobj = (obj[v.name] = _u.extend({},v));
+                if (paths){
+                    _u.each(paths, onPath((nobj.subSchema = {})));
                 }
             }
-        }
 
-        _u.each(properties, makeProperty(model));
-        var schema = new mongoose.Schema(model,  {safe:true, strict:true, display:display});
-        mongoose.model(display.modelName, schema);
-        console.log('model', JSON.stringify(model, null, '\t'), 'display', JSON.stringify(display, null, '\t'));
+        }
+        _u.each(body.paths, onPath(model.paths))
+
+    }
+    var create =                               function (req, res, next) {
+        var model = fixup(req.body);
+        console.log('backbone schema', JSON.stringify(model, null, "\t"))
         res.send({
             status:0,
-            payload:{_id:'testid'}
+            payload:{_id:req.body.modelName}
         });
 
     }
+    this.app.post(base + '/admin/preview', function(req, res, next){
+        res.send({
+            status:0,
+            payload:fixup(req.body)
+        })
+    })
     this.app.post(base + '/admin/model', create);
-    this.app.put(base + '/admin/model', create);
+    this.app.put(base + '/admin/backbone/:modelName?', create);
     this.app.put(base + '/admin/model/:id', function (req, res, next) {
 
         var obj = _u.extend({}, req.body);

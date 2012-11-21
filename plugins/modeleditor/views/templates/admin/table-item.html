@@ -1,5 +1,19 @@
-<td><%= item.get('modelName') %></td>
-<td><%= item.get('title') %></td>
-<td><%= item.get('plural') %></td>
-<td><%= item.get('labelAttr') %></td>
-<td><a href="#/modeleditor/admin/create?id=<%=item.id%>"><i class="icon-edit"></i>Edit</a></td>
+<!--<td><%= item.get('modelName') %></td>-->
+<!--<td><%= item.get('title') %></td>-->
+<!--<td><%= item.get('plural') %></td>-->
+<!--<td><%= item.get('labelAttr') %></td>-->
+<!--<td><a href="#/modeleditor/admin/create?id=<%=item.id%>"><i class="icon-edit"></i>Edit</a></td>-->
+<td>
+    <h2><%= item.get('modelName') %></h2>
+    <p class="lead"><%= item.get('display') && item.get('display').description || 'No Description' %></p>
+    <br/>
+    <a href="<%=item.get('url')%>" target="_blank"><%= item.get('url') %></a>
+    <% if (item.get('managed')){%>
+    <div class="pull-right">
+        <a class="btn active" href="#/modeleditor/admin/create?id=<%=item.id%>"><i class="icon-wrench"></i>Configure</a>
+        <a class="btn" href="#/modeleditor/admin/delete?id=<%=item.id%>"><i class="icon-trash"></i>Delete</a>
+    </div>
+    <% }else{ %>
+    <a href="#/modeleditor/admin/create?id=<%=item.id%>" class="btn btn-primary pull-right"><i class="icon-wrench"></i> Configure</a>
+    <% } %>
+</td>
