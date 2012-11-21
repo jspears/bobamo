@@ -39,7 +39,7 @@ MongoosePlugin.prototype.updateSchema = function(modelName, schema, callback){
                _u.each(v.validate, function(vv,kk){
                     valid.push(
                         {
-                            validator:pm.validator(vv.name),
+                            validator:pm.validator(vv.name).validator,
                             msg:vv.message
                         });
                })
@@ -49,7 +49,7 @@ MongoosePlugin.prototype.updateSchema = function(modelName, schema, callback){
             if (v.max)
                path.max = v.max;
             if (v.default)
-                path.default v.default;
+                path.default = v.default;
             //if ()
         }
     }
