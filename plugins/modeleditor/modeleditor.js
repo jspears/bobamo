@@ -187,7 +187,7 @@ EditPlugin.prototype.routes = function () {
 
         }
         _u.each(body.paths, onPath(model.paths))
-
+        return model;
     }
     var create =                               function (req, res, next) {
         var model = fixup(req.body);
