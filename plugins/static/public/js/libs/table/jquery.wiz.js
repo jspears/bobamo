@@ -71,8 +71,8 @@
             this.$next.on('click', function (e) {
                 if (self.current + 1 < self.steps) {
                     self.step(self.current + 1);
-//                    e.preventDefault();
-//                    e.stopPropagation();
+                }else{
+                    $(this).toggleClass('save', true    ).toggleClass(self.options.doneCls, true);
                 }
             });
             this.$el.on('click', 'a.step', function (e) {
@@ -86,8 +86,10 @@
             pos = pos || 0;
             this.current = pos;
             this.$steps.html(replacer(this.options.steps, {current:this.current + 1, steps:this.steps}));
-            var isFin = pos == (this.steps - 1);
-            this.$next.toggleClass('save', isFin).toggleClass(this.options.doneCls, isFin).html(isFin ? this.options.done : this.options.next);
+            var isFin = pos == this.$fieldsets.length - 1;
+            this.$next
+                //.toggleClass(this.options.doneCls, isFin)
+                    .html(isFin ? this.options.done : this.options.next);
 
             this.$prev[pos == 0 ? 'addClass' : 'removeClass']('disabled')
             this.$fieldsets.each(function () {

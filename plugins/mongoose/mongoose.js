@@ -29,21 +29,21 @@ MongoosePlugin.prototype.updateSchema = function(modelName, schema, callback){
     delete schema.paths;
     var nSchema = {};
     var pm = this.pluginManager;
+    var mongoose = this.options.mongoose;
     function onPath(model){
         return function(v,k){
             var path = {};
-            model[k.name] = v.multiple ? [path] : path;
+            if (v.name == '_id' || v.name == 'id')
+                                      return;
+            model[v.name] = v.multiple ? [path] : path;
             if (v.ref) path.ref = v.ref;
-            if (v.type != 'Object')
-                path.type = this.options.mongoose.SchemaTypes[v.type];
-            if (v.validators){
+            if (v.dataType != 'Object')
+                path.type = mongoose.SchemaTypes[v.dataType];
+
+            if (v.validator){
                 var valid = (path.validate = []);
-               _u.each(v.validate, function(vv,kk){
-                    valid.push(
-                        {
-                            validator:pm.validator(vv.name).validator,
-                            msg:vv.message
-                        });
+               _u.each(v.validator, function(vv,kk){
+                    valid.push([pm.validator(vv).validator, vv.message]);
                })
             }
             if (v.min)
@@ -52,14 +52,40 @@ MongoosePlugin.prototype.updateSchema = function(modelName, schema, callback){
                path.max = v.max;
             if (v.default)
                 path.default = v.default;
+            if (v.subSchema){
+                _u.each(v.subSchema, onPath(path));
+            }
             //if ()
         }
     }
     _u.each(paths, onPath(nSchema));
 
-
+    console.log('updating', modelName, nSchema);
+    if (callback)
     callback();
 }
+MongoosePlugin.prototype.validator = function(v){
+    if ( (v.name || v) == 'match' ){
+        var re = new RegExp(v.configure.match);
+        return {
+            name:'match',
+            validate:function(vv){
+
+                return re.test(vv);
+            },
+            message:v.message
+        }
+    }else if ( (v.name || v) == 'required'){
+        return {
+            name:'required',
+            validate:function(vv){
+
+            },
+            message:v.message
+        }
+    }
+}
+
 MongoosePlugin.prototype.editorFor = function (path, p, Model) {
     var schema = Model.schema || Model;
     var tmpP = schema && schema.path && (schema.path(path) || schema.virtuals[path] );
@@ -161,7 +187,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                         break;
                     case
                     Number:
-                        _u.extend(defaults, {dataType:'Number'});
+                        _u.extend(defaults, {dataType:'Number', type:'Number'});
                         break;
                     case
                     String:
@@ -199,7 +225,8 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                 }
 
             } else {
-                console.log('No Type for [' + path + '] guessing String', p);
+                if (path != 'id')
+                    console.log('No Type for [' + path + '] guessing String', p);
                 defaults.dataType = 'String';
             }
         }

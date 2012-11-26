@@ -9,15 +9,8 @@ define(['Backbone', 'Backbone.Form',  'underscore', 'jquery',  'backbone-modal',
             if ($wiz.wiz) $wiz.wiz({stepKey:'_propStep', clsNames:'', replace:$('a.ok', this.$el), fieldset:'> form.form-horizontal > fieldset'});
             this.$el.find('.cancel').addClass('pull-left');
             //TODO - seriously find a better way to fix nestedforms so that this is not necessary.
-//            $wiz.find('> form.form-horizontal > fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
-//                    .siblings('label').css({display:'block'}).parent().parent().parent().parent().parent().css({marginLeft:0}).siblings('label').css({display:'none'})
-//                    .parent().parent().parent().parent().parent().css({marginLeft:0}).siblings('label').css({display:'none'});
             $wiz.find('> form.form-horizontal > fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
                     .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
-
-             //       .parent().parent().parent().parent().parent().css({marginLeft:0}).siblings('label').css({display:'none'});
-
-            console.log('furthest', this.$el.furthestDecendant('.controls'))//.style({marginLeft:'160px', border:'1px solid red'});
             return this;
         }
     });

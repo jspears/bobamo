@@ -21,7 +21,8 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
                 type:'Select',
                 help:'Type of schema',
                 required:true,
-                options:_.keys(MongooseType.prototype._schemaTypes)
+                options:_.keys(MongooseType.prototype._schemaTypes),
+                required:true
             },
             validation:{
                 type:'NestedModel',

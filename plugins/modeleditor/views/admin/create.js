@@ -98,7 +98,7 @@ define([
                     delete model.hidden;
 
                     _.extend(model.display || (model.display = {}), display);
-
+                    v.multiple = v.type == 'Array' || v.multiple;
 
 //                    if (v.type == 'List') {
 //                        v.many = true;
@@ -125,6 +125,7 @@ define([
                     }
                     if (v.subSchema) {
                         var sub = v.subSchema;
+                        v.dataType = 'Object';
                         delete v.subSchema;
                         var np = (v.paths = []);
                         _.each(sub, fixPaths(np));
@@ -174,8 +175,8 @@ define([
                     model:Backbone.Model.extend({
                         schema:model.paths
                     }),
-                    onSave:function(){
-                      alert('Save is unavailable in preview')
+                    onSave:function () {
+                        alert('Save is unavailable in preview')
                     },
                     config:{
                         title:model.title,
@@ -192,11 +193,8 @@ define([
                 })
             }, this);
         },
-        onPreviewClick:function (e) {
-            e.preventDefault();
+        presave:function () {
 
-
-            this.form.commit();
             var model = this.dataModel.toJSON();
             var editors = {};
             var fixup = function (body) {
@@ -206,16 +204,16 @@ define([
 
                 function onPath(obj) {
                     return function (v, k) {
+
                         var paths = v.paths;
                         delete v.paths;
-                        if (v.type)
-                        editors[v.type] = true;
                         var nobj = {};
-                        if (paths) {
-                            _.each(paths, onPath((nobj.subSchema = {})));
-                        }
-                        if (v.validation && v.validation[v.dataType]){
-                            var validation =  v.validation[v.dataType];
+                        if (v.type == 'Object')
+                             _.each(paths, onPath((nobj.subSchema = {})));
+                        else if (v.type)
+                            editors[v.type] = true;
+                        if (v.validation && v.validation[v.dataType]) {
+                            var validation = v.validation[v.dataType];
                             delete v.validation;
                             _.extend(nobj, validation);
                         }
@@ -230,21 +228,41 @@ define([
                 return model;
             }
             model = fixup(model);
-            _.each(model.fieldsets, function(fieldset){
-               var fields = fieldset.fields || fieldset || [];
+            _.each(model.fieldsets, function (fieldset) {
+                var fields = fieldset.fields || fieldset || [];
                 var idx;
-               while(~(idx = fields.indexOf(null)) && fields.splice(idx,1).length);
+                while (~(idx = fields.indexOf(null)) && fields.splice(idx, 1).length);
             });
             model.includes = _.map(_.without(_.keys(editors), _.keys(Form.editors)), function (v, k) {
                 return 'libs/editors/' + inflection.hyphenize(v)
 
             });
+            return model;
+        },
+        onSave:function (e) {
+            e.preventDefault();
+            $('.error-list').empty().hide();
+            $('.success-list').empty().hide();
+            console.log('changed', this.form.model.changed);
+            this.form.validate();
+            var errors = this.form.commit();
+            var save = this.presave();
+            if (!(errors)) {
+                this.form.model.save(save, {error:this.onError});
+            } else if (errors) {
+                this.onError(this.form.model, errors);
+            }
+
+        },
+        onPreviewClick:function (e) {
+            e.preventDefault();
+            this.form.commit();
             console.log('click preview', model);
             var url = "${baseUrl}templates/" + model.modelName + "/edit.html";
             $.ajax({
                 type:'POST',
                 url:url,
-                data:model,
+                data:this.presave(),
                 success:this.previewCB(model),
                 dataType:'text'
             });
