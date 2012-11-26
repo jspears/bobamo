@@ -3,10 +3,11 @@ define(['Backbone', 'Backbone.Form',  'underscore', 'jquery',  'backbone-modal',
         render:function onEnchancedBootstrapRender(o) {
             var render =  BootstrapModal.prototype.render;
             var args =  Array.prototype.slice.call(arguments, 0);
-            console.log('this', typeof this, 'render', typeof render);
+
             render.apply(this, args);
             var $wiz = this.$el.find('.modal-body');
-            if ($wiz.wiz) $wiz.wiz({stepKey:'_propStep', clsNames:'', replace:$('a.ok', this.$el), fieldset:'> form.form-horizontal > fieldset'});
+            var title = this.options.content && this.options.content.title || '';
+            if ($wiz.wiz) $wiz.wiz({stepKey:'_propStep', clsNames:'',  steps:'Step {current} of {steps}: '+title, replace:$('a.ok', this.$el), fieldset:'> form.form-horizontal > fieldset'});
             this.$el.find('.cancel').addClass('pull-left');
             //TODO - seriously find a better way to fix nestedforms so that this is not necessary.
             $wiz.find('> form.form-horizontal > fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})

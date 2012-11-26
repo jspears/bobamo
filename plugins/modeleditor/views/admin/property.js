@@ -1,4 +1,4 @@
-define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fieldset', 'views/modeleditor/admin/mongoose-types', 'underscore', 'Backbone.Form'], function (b, Form, Fieldset, MongooseType, _) {
+define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fieldset', 'views/modeleditor/admin/mongoose-types','exports', 'underscore', 'Backbone.Form'], function (b, Form, Fieldset, MongooseType, exports, _) {
 
     var Property = b.Model.extend({
 
@@ -17,32 +17,25 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
             description:{type:'Text'},
             editor:{ title:'Editor Type', type:'Select', options:[], help:'The Editor type helps choose the correct way to change a value for the form.'},
             placeholder:{type:'Text', help:'Default Placeholder text'},
-            dataType:{
-                type:'Select',
-                help:'Type of schema',
-                required:true,
-                options:_.keys(MongooseType.prototype._schemaTypes),
-                required:true
-            },
-            validation:{
+
+            persistence:{
                 type:'NestedModel',
                 model:MongooseType,
                 title:'Mongoose Configuration',
-                help:'Mongoose specific configuration and validation'
+                help:'Mongoose specific configuration and persistence'
             },
-
             multiple:{
                 type:'Checkbox',
                 help:'Multiple values as an Array'
 
             },
-            paths:{
-                type:'List',
-                itemType:'NestedModel',
-                required:true,
-                title:'Properties',
-                help:'This is where you add properties to this object.'
-            },
+//            paths:{
+//                type:'List',
+//                itemType:'NestedModel',
+//                required:true,
+//                title:'Properties',
+//                help:'This is where you add properties to this object.'
+//            },
             fieldsets:{
                 type:'List',
                 itemType:'NestedModel',
@@ -57,8 +50,8 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
             }
         },
         fieldsets:[
-            { legend:'Property', fields:['name', 'multiple', 'dataType', 'paths']},
-            { legend:'Validation', fields:['validation']},
+            { legend:'Property', fields:['name', 'multiple']},
+            { legend:'Persistence', fields:['persistence']},
             { legend:'Display', fields:['title', 'description']},
             { legend:'Editor', fields:['placeholder', 'editor', 'fieldsets', 'list_fields']}
         ],
@@ -82,52 +75,42 @@ define(['Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fields
             opts._parent = this;
 
             var form = new Form(opts);
-
+           form.title = this.get('path') || null;
             var self = this;
 
-            function validation() {
-                var val = form.fields.dataType.getValue();
-                var vform = form.fields.validation.editor.form;
-                _.each(vform.fields, function (v, k) {
-                    v.$el[val == k ? 'show' : 'hide']();
-                });
-                var isObj = val == 'Object';
-                var show = isObj ? 'show' : 'hide';
-                form.fields.paths.$el[show]();
+            function onType(c1,c2,c3){
+                var dataType = form.fields.persistence.editor.form.fields.dataType.getValue();
+                console.log('type', dataType);
+                form.fields.editor.editor.setOptions(function(cb){
+                    $.getJSON('${pluginUrl}/admin/editors/'+dataType, function(resp){
+                        cb(resp.payload);
+                    })
+
+                })
+                var show, hide;
+                (dataType == 'Object' || dataType == 'ObjectId') ? (show = 'show', hide='hide') : (show = 'hide', hide='show');
+
                 form.fields.fieldsets.$el[show]();
                 form.fields.list_fields.$el[show]();
-                form.fields.title.$el[isObj ? 'hide' : 'show']();
-                form.fields.description.$el[isObj ? 'hide' : 'show']();
-                form.fields.validation.$el[isObj ? 'hide' : 'show']();
-                form.fields.editor.editor.setOptions(function (cb) {
-                    $.getJSON('${pluginUrl}/admin/editors/' + val, function (resp) {
-                        cb(resp.payload);
-                    });
-                })
-                if (this.options && this.options.data && this.options.data.virtual){
-                    form.fields.validation.$el.hide();
-                }
+                form.fields.editor.$el[hide]();
+                form.fields.placeholder.$el[hide]();
+                form.fields.title.$el[hide]();
+                form.fields.description.$el[hide]();
+
             }
-
-            form.on('dataType:change', validation);
-            form.on('render', validation);
-            var enableAdd = function () {
-                if (this.fields.name.getValue()) {
-                    this.fields.paths.$el.find('button').removeAttr('disabled');
-                } else {
-                    this.fields.paths.$el.find('button').attr('disabled', 'true');
-                }
-            };
-            form.on('name:change', enableAdd);
-            form.on('render', enableAdd);
-
-
-            // form.on('validators:change', validators);
+            form.on("render", onType)
+            form.on("persistence:render", onType);
+            form.on("persistence:dataType:change", onType);
             $('.form-horizontal', form.$el).wiz({stepKey:'_propStep'});
 
             return form;
         }
     });
-    Property.prototype.schema.paths.model = Property;
+ //   Property.prototype.schema.paths.model = Property;
+    exports.property = function(){
+        return Property;
+    }
+
+
     return Property;
 })

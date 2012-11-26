@@ -114,14 +114,15 @@ define([
 //                    }
                     if (v.ref) {
                         v.dataType = 'ObjectId';
-                    }
-
+                    }else  if (!v.dataType)
+                        v.dataType = 'Object';
+                    var persistence = (v.persistence = {dataType:v.dataType})[v.dataType] = v;
                     if (v.validator && v.validator.length) {
-                        var validation = (v.validation = {validate:{}})[v.dataType] = {};
-                        validation.validate = _.map(v.validator, function (vv) {
+                       persistence.validator = _.map(v.validator, function (vv) {
                             var isMatch = MatchRe.test(vv);
                             return {name:isMatch ? 'match' : vv, configure:(isMatch ? JSON.stringify({match:vv}) : "")}
                         });
+                        delete v.validator;
                     }
                     if (v.subSchema) {
                         var sub = v.subSchema;
@@ -169,7 +170,9 @@ define([
         previewCB:function (model) {
             return _.bind(function (resp) {
                 var View = EditView.extend({
-                    fieldsets:model.fieldsets,
+                    fieldsets:model.fieldsets || {
+                        fields:_.keys(model.paths)
+                    },
                     template:_.template(resp),
                     collection:new Backbone.Collection(),
                     model:Backbone.Model.extend({
@@ -195,7 +198,8 @@ define([
         },
         presave:function () {
 
-            var model = this.dataModel.toJSON();
+            var model = this.form.getValue();
+
             var editors = {};
             var fixup = function (body) {
                 var paths = body.paths;
@@ -212,31 +216,35 @@ define([
                              _.each(paths, onPath((nobj.subSchema = {})));
                         else if (v.type)
                             editors[v.type] = true;
-                        if (v.validation && v.validation[v.dataType]) {
-                            var validation = v.validation[v.dataType];
-                            delete v.validation;
-                            _.extend(nobj, validation);
+                        if (v.persistence ) {
+                            _.extend(nobj, v.persistence);
                         }
+                        delete v.persistence;
                         obj[v.name] = _.extend(nobj, v);
                     }
 
                 }
 
-                _.each(paths, onPath(model.paths))
+                _.each(paths, onPath((model.schema = {})))
 
                 model.modelName = body.modelName;
                 return model;
             }
             model = fixup(model);
+            if (model.fieldsets && ! model.fieldsets.length)
+                 model.fieldsets = [{fields:_.keys(model.schema)}];
+            else
             _.each(model.fieldsets, function (fieldset) {
                 var fields = fieldset.fields || fieldset || [];
                 var idx;
                 while (~(idx = fields.indexOf(null)) && fields.splice(idx, 1).length);
             });
+
             model.includes = _.map(_.without(_.keys(editors), _.keys(Form.editors)), function (v, k) {
                 return 'libs/editors/' + inflection.hyphenize(v)
 
             });
+            console.log('postfixup',model);
             return model;
         },
         onSave:function (e) {
@@ -256,13 +264,14 @@ define([
         },
         onPreviewClick:function (e) {
             e.preventDefault();
-            this.form.commit();
+
+            var model = this.presave()
             console.log('click preview', model);
             var url = "${baseUrl}templates/" + model.modelName + "/edit.html";
             $.ajax({
                 type:'POST',
                 url:url,
-                data:this.presave(),
+                data:model,
                 success:this.previewCB(model),
                 dataType:'text'
             });

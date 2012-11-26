@@ -1871,7 +1871,7 @@ Form.editors = (function() {
           idPrefix: this.id + '_',
           fieldTemplate: 'nestedField'
       }
-      this.form = modelInstance&& modelInstance.createForm ? modeInstance.createForm(opts) : new Form(opts);
+      this.form = modelInstance&& modelInstance.createForm ? modelInstance.createForm(opts) : new Form(opts);
 
       this._observeFormEvents();
 
