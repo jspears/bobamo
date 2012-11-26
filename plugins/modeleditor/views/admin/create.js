@@ -175,9 +175,7 @@ define([
                     },
                     template:_.template(resp),
                     collection:new Backbone.Collection(),
-                    model:Backbone.Model.extend({
-                        schema:model.paths
-                    }),
+                    model:Backbone.Model.extend(model),
                     onSave:function () {
                         alert('Save is unavailable in preview')
                     },
