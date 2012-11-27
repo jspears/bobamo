@@ -22,61 +22,84 @@ MongoosePlugin.prototype.appModel = function (options) {
         });
     }
 }
-MongoosePlugin.prototype.updateSchema = function(modelName, schema, callback){
+MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
     var paths = schema.paths;
     delete schema.paths;
     var nSchema = {};
     var pm = this.pluginManager;
     var mongoose = this.options.mongoose;
-    function onPath(model){
-        return function(v,k){
+
+    function onPath(model) {
+        return function (v, k) {
             var path = {};
             if (v.name == '_id' || v.name == 'id')
-                                      return;
+                return;
             model[v.name] = v.multiple ? [path] : path;
             if (v.ref) path.ref = v.ref;
             if (v.dataType != 'Object')
                 path.type = mongoose.SchemaTypes[v.dataType];
 
-            if (v.validator){
+            if (v.validators) {
                 var valid = (path.validate = []);
-               _u.each(v.validator, function(vv,kk){
+                _u.each(v.validators, function (vv, kk) {
                     valid.push([pm.validator(vv).validator, vv.message]);
-               })
+                })
             }
             if (v.min)
-               path.min = v.min;
+                path.min = v.min;
             if (v.max)
-               path.max = v.max;
+                path.max = v.max;
             if (v.default)
                 path.default = v.default;
-            if (v.subSchema){
+            if (v.subSchema) {
                 _u.each(v.subSchema, onPath(path));
             }
             //if ()
         }
     }
+
     _u.each(paths, onPath(nSchema));
 
     console.log('updating', modelName, nSchema);
     if (callback)
-    callback();
+        callback();
 }
-MongoosePlugin.prototype.validator = function(v){
-    if ( (v.name || v) == 'match' ){
+MongoosePlugin.prototype.validators = function (type) {
+    return [
+        {
+           type:'Required'
+        },
+        {
+            types:['String'],
+            type:'RegExp'
+        },
+        {
+            types:['Number'],
+            type:'min'
+        },
+        {
+            types:['Number'],
+            type:'max'
+        }
+
+
+    ]
+}
+MongoosePlugin.prototype.validator = function (v) {
+    if ((v.name || v) == 'match') {
         var re = new RegExp(v.configure.match);
         return {
             name:'match',
-            validate:function(vv){
+            validate:function (vv) {
 
                 return re.test(vv);
             },
             message:v.message
         }
-    }else if ( (v.name || v) == 'required'){
+    } else if ((v.name || v) == 'required') {
         return {
             name:'required',
-            validate:function(vv){
+            validate:function (vv) {
 
             },
             message:v.message
@@ -92,7 +115,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
     var defaults = {};
     var opts = p.options || {};
     var apiPath = this.options.apiUri || this.baseUrl + 'rest/';
-  //  var pathShema = schema.path(path);
+    //  var pathShema = schema.path(path);
     if (opts.display && opts.display.display == 'none' || ( path[0] == '_' && path != '_id')) {
         return null;
     }
@@ -151,25 +174,25 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                 if (type.length) {
                     var o = type[0];
                     defaults.listType = 'Object';
-                    if (o && o.paths){
+                    if (o && o.paths) {
                         var s = defaults.subSchema = {};
                         _u.each(o.paths, function onListType(v, k) {
                             s[k] = this.pluginManager.pluginFor(k, v, o);
                         }, this);
-                    } else{
+                    } else {
                         if (p.caster && p.caster.instance == 'String')
                             defaults.listType = 'Text';
-                        else{
-                            if (p.schema && p.schema.paths){
+                        else {
+                            if (p.schema && p.schema.paths) {
 
                                 var s = (defaults.subSchema || (defaults.subSchema = {}));
-                            //     var s = (ds.subSchema || (ds.subSchema = {}));
-                                _u.each(p.schema.paths, function onTypeOptions(v,k){
-                                      s[k] = this.pluginManager.pluginFor(k, v ,p);
+                                //     var s = (ds.subSchema || (ds.subSchema = {}));
+                                _u.each(p.schema.paths, function onTypeOptions(v, k) {
+                                    s[k] = this.pluginManager.pluginFor(k, v, p);
                                 }, this);
                                 defaults.type = 'List';
                                 defaults.listType = 'Object';
-                                defaults.label= p.path;
+                                defaults.label = p.path;
 
                             }
                         }
@@ -230,16 +253,16 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
         }
     }
     if (opts.required) {
-        util.defaultOrSet(defaults, 'validator', []).push('required');
+        util.defaultOrSet(defaults, 'validators', []).push({type:'required'});
 //        (defaults.validator ? defaults.validator : (defaults.validator = [])).push('required');
     }
     if (p.validators) {
         _u.each(p.validators, function (v, k) {
             if (v.length) {
                 if (v[0] instanceof RegExp) {
-                    util.defaultOrSet(defaults, 'validator', []).push('/' + v[0] + '/');
+                    util.defaultOrSet(defaults, 'validators', []).push({ type:'regexp', configure:{ regexp:'/' + v[0] + '/' }, message:v[1] });
                 } else {
-                    console.warn('can only handle client side regex/required validators for now')
+                    console.warn('can only handle client side regex/required validators for now', v, k)
                 }
             }
         })

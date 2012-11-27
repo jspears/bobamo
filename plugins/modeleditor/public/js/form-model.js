@@ -1,13 +1,20 @@
 define(['Backbone', 'Backbone.Form',  'underscore', 'jquery',  'backbone-modal', 'libs/jquery/jquery.ba-farthest-descendant'], function(Backbone, Form,_,$, BootstrapModal ){
    var EBootstrapModal = BootstrapModal.extend({
+        constructor:function(options){
+            if (options && options.content && options.content.title)
+                options.title = options.content.title;
+
+            BootstrapModal.prototype.constructor.apply(this, _.toArray(arguments));
+            return this;
+        },
         render:function onEnchancedBootstrapRender(o) {
             var render =  BootstrapModal.prototype.render;
             var args =  Array.prototype.slice.call(arguments, 0);
 
             render.apply(this, args);
             var $wiz = this.$el.find('.modal-body');
-            var title = this.options.content && this.options.content.title || '';
-            if ($wiz.wiz) $wiz.wiz({stepKey:'_propStep', clsNames:'',  steps:'Step {current} of {steps}: '+title, replace:$('a.ok', this.$el), fieldset:'> form.form-horizontal > fieldset'});
+//            var title = this.options.content && this.options.content.title || '';
+            if ($wiz.wiz) $wiz.wiz({stepKey:'_propStep', clsNames:'',  steps:'Step {current} of {steps}', replace:$('a.ok', this.$el), fieldset:'> form.form-horizontal > fieldset'});
             this.$el.find('.cancel').addClass('pull-left');
             //TODO - seriously find a better way to fix nestedforms so that this is not necessary.
             $wiz.find('> form.form-horizontal > fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})

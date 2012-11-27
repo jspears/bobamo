@@ -46,7 +46,7 @@ EditPlugin.prototype.routes = function () {
         this.generate(res, view);
     }.bind(this))
 
-    this.app.get(base + '/admin/backbone/:modelName', function(req,res){
+    this.app.get(base + '/admin/backbone/:modelName', function (req, res) {
         console.log('model', req.params.modelName);
         res.send({
             status:0,
@@ -87,31 +87,58 @@ EditPlugin.prototype.routes = function () {
             payload:models
         })
     }.bind(this));
-    this.app.get(base+'/admin/validators/:type', function(req,res){
+    this.app.get(base + '/admin/validators/:type', function (req, res) {
+        var pm = this.pluginManager;
+        var validators = [];
+        var type = req.params.type;
+
+        function onValidator(v, k) {
+            var idx;
+            if (v.types) {
+                if (~(idx = v.types.indexOf(type))) {
+                    if (idx == 0)
+                        validators.unshift(v)
+                    else
+                        validators.shift(v)
+                }
+            } else if (v.type)
+                validators.push({type:v.type})
+            else if (v instanceof String) {
+                validators.push({type:v})
+
+            }
+        }
+
+        _u.each(pm.plugins, function (v, k) {
+            _u.each(v.validators(type), onValidator);
+        });
         res.send({
-            payload:[{name:'Required', message:'Field is required'}],
+            payload:validators,
             status:0
         });
+
     }.bind(this));
 
-    this.app.get(base+'/admin/types/schemas', function(req,res){
+    this.app.get(base + '/admin/types/schemas', function (req, res) {
         //TODO abstract this in the displayModel
-       res.send({
-           payload:_u.map(mongoose.schemaTypes, function(v,k){return {type:k}}),
-           status:0
-       })
+        res.send({
+            payload:_u.map(mongoose.schemaTypes, function (v, k) {
+                return {type:k}
+            }),
+            status:0
+        })
     }.bind(this));
-    this.app.get(base+'/admin/types/models', function(req,res){
-       res.send({
-           payload:_u.map(this.pluginManager.appModel.modelPaths, function(v,k){
-               var obj = {modelName:k};
-               if (v.schema){
-                   obj.schema = schema;
-               }
-               return obj;
-           }),
-           status:0
-       })
+    this.app.get(base + '/admin/types/models', function (req, res) {
+        res.send({
+            payload:_u.map(this.pluginManager.appModel.modelPaths, function (v, k) {
+                var obj = {modelName:k};
+                if (v.schema) {
+                    obj.schema = schema;
+                }
+                return obj;
+            }),
+            status:0
+        })
     }.bind(this));
     /**
      * This tries to retrun the smartest editor for a type... The
@@ -129,9 +156,9 @@ EditPlugin.prototype.routes = function () {
                 var name = edit.name || k;
                 if (edit.types) {
                     var pos = edit.types.indexOf(type);
-                  if (name == type || ReName.test(name) ){
-                    editors.unshift(name);
-                  }else if (~pos) {
+                    if (name == type || ReName.test(name)) {
+                        editors.unshift(name);
+                    } else if (~pos) {
                         editors.push(name);
                     }
                 } else if (_u.isString(edit)) {
@@ -153,6 +180,12 @@ EditPlugin.prototype.routes = function () {
         res.send({
             status:0,
             payload:model
+
+
+
+
+
+
         })
     }.bind(this));
 
@@ -164,7 +197,7 @@ EditPlugin.prototype.routes = function () {
         })
     }.bind(this));
 
-    function native(type){
+    function native(type) {
         if (type == 'Number') return Number;
         if (type == 'String') return String;
         if (type == 'Date' || type == 'DateTime') return Date;
@@ -172,27 +205,66 @@ EditPlugin.prototype.routes = function () {
         return mongoose.Schema.Types[type] || type;
     }
 
-    var fixup = function(body){
+    function mapValidators(v, k) {
+        var type, message;
+        if (_u.isArray(v)) {
+            type = v.length && v[0];
+            message = v.length > 1 && v[1]
+        }
+        if (type instanceof RegExp) {
+            return {
+                type:'regexp',
+                configure:{
+                    regexp:type.toString()
+                }
+            }
+        } else if (type instanceof String) {
+            return {
+                type:v
+            }
+        } else if (v.validator) {
+            return {
+                type:v.validator,
+                configure:JSON.stringify(v.configure),
+                message:v.message
+            }
+        }
+    }
+
+    var fixup = function (body) {
         var model = _u.extend({paths:{}}, body.display);
-        function onPath(obj){
-            return function(v,k){
+
+        function onPath(obj) {
+            return function (v, k) {
                 var paths = v.paths;
                 delete v.paths;
 
-                var nobj = (obj[v.name] = _u.extend({},v));
-                if (paths){
+                var nobj = (obj[v.name] = _u.extend({}, v));
+                var val = v.validate || v.validators;
+                if (val) {
+                    if (_u.isArray(val))
+                        nobj.validators = _.map(val, mapValidators);
+                    else
+                        nobj.validators = mapValidators(val);
+                    delete nobj.validate;
+
+
+                }
+                if (paths) {
                     _u.each(paths, onPath((nobj.subSchema = {})));
                 }
             }
 
         }
+
         _u.each(body.paths, onPath(model.paths))
         return model;
+
     }
-    var create =                               function (req, res, next) {
+    var create = function (req, res, next) {
         var model = fixup(req.body);
         console.log('backbone schema', JSON.stringify(model, null, "\t"))
-        this.pluginManager.updateSchema('mongoose', req.body.modelName, model, function(){
+        this.pluginManager.updateSchema('mongoose', req.body.modelName, model, function () {
             res.send({
                 status:0,
                 payload:{_id:req.body.modelName}
@@ -200,7 +272,7 @@ EditPlugin.prototype.routes = function () {
         });
 
     }.bind(this);
-    this.app.post(base + '/admin/preview', function(req, res, next){
+    this.app.post(base + '/admin/preview', function (req, res, next) {
         res.send({
             status:0,
             payload:fixup(req.body)
