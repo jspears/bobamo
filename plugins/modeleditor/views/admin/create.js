@@ -117,13 +117,13 @@ define([
                     }else  if (!v.dataType)
                         v.dataType = 'Object';
                     var persistence = (v.persistence = {dataType:v.dataType})[v.dataType] = v;
-                    if (v.validator && v.validator.length) {
-                       persistence.validator = _.map(v.validator, function (vv) {
-                            var isMatch = MatchRe.test(vv);
-                            return {name:isMatch ? 'match' : vv, configure:(isMatch ? JSON.stringify({match:vv}) : "")}
-                        });
-                        delete v.validator;
-                    }
+//                    if (v.validators && v.validators.length) {
+//                       persistence.validators = _.map(v.validator, function (vv) {
+//                            var isMatch = MatchRe.test(vv);
+//                            return {name:isMatch ? 'match' : vv, configure:(isMatch ? JSON.stringify({match:vv}) : "")}
+//                        });
+//                        delete v.validator;
+//                    }
                     if (v.subSchema) {
                         var sub = v.subSchema;
                         v.dataType = 'Object';

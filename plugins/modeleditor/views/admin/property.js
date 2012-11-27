@@ -75,7 +75,9 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             opts._parent = this;
 
             var form = new Form(opts);
-           form.title = this.get('path') || null;
+            var title = this.get('path') || this.get('name');
+            if (title)
+               form.title = 'Property ['+title+']';
             var self = this;
 
             function onType(c1,c2,c3){
