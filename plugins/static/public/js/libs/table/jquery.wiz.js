@@ -82,6 +82,7 @@
             });
             this.step(this.current);
         }
+
         Wizard.prototype.step = function (pos) {
             pos = pos || 0;
             this.current = pos;
@@ -92,16 +93,18 @@
                     .html(isFin ? this.options.done : this.options.next);
 
             this.$prev[pos == 0 ? 'addClass' : 'removeClass']('disabled')
-            this.$fieldsets.each(function () {
-                var $this = $(this);
-                if ($this.data('step') == pos) {
-                    $this.show('slide');
-                }
-                else {
-                    $this.hide('slide')
-                }
-            });
+            var $hide = this.$fieldsets.filter('.show');
+            var $show = this.$fieldsets.filter(function () {
+                 return $(this).data('step') == pos;
+            }).addClass('show');
 
+            if ($hide.length)
+                $hide.removeClass('show').hide('slow', function(){
+                    $show.show('slow');
+                })
+            else{
+               $show.show();
+            }
             $('li', this.$ul).removeClass('active').each(function () {
                 if ($(this).data('step') == pos)
                     $(this).addClass('active');
