@@ -76,8 +76,6 @@
                 }
             });
             this.$el.on('click', 'a.step', function (e) {
-//                e.preventDefault();
-//                e.stopPropagation();
                 self.step($(e.currentTarget).parent().data('step'));
             });
             this.step(this.current);
@@ -88,22 +86,21 @@
             this.current = pos;
             this.$steps.html(replacer(this.options.steps, {current:this.current + 1, steps:this.steps}));
             var isFin = pos == this.$fieldsets.length - 1;
-            this.$next
-                //.toggleClass(this.options.doneCls, isFin)
-                    .html(isFin ? this.options.done : this.options.next);
+            this.$next.html(isFin ? this.options.done : this.options.next);
 
             this.$prev[pos == 0 ? 'addClass' : 'removeClass']('disabled')
-            var $hide = this.$fieldsets.filter('.show');
+            var trans = this.options.transition;
+            var $hide = this.$fieldsets.filter('.jwizshow');
             var $show = this.$fieldsets.filter(function () {
                  return $(this).data('step') == pos;
-            }).addClass('show');
+            }).addClass('jwizshow');
 
             if ($hide.length)
-                $hide.removeClass('show').hide('slow', function(){
-                    $show.show('slow');
+                $hide.removeClass('jwizshow').hide(trans, function(){
+                    $show.show(trans);
                 })
             else{
-               $show.show();
+               $show.show(trans);
             }
             $('li', this.$ul).removeClass('active').each(function () {
                 if ($(this).data('step') == pos)
@@ -140,7 +137,8 @@
             doneCls:'ok',
             steps:'Step {current} of {steps}',
             clsNames:'nav-stacked span3',
-            fieldset:'fieldset'
+            fieldset:'fieldset',
+            transition:'fast'
         }
 
     }

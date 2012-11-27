@@ -173,6 +173,15 @@ EditPlugin.prototype.routes = function () {
 
     }.bind(this));
 
+    this.app.post(base +'/admin/editorsFor', function (req,res, next){
+        var body = req.body;
+        res.send({
+            status:0,
+            payload:this.pluginManager.editorsFor(body.path, body.property, this.pluginManager.schemaFor(body.schema))
+        })
+    }.bind(this))
+
+
     this.app.get(base + '/admin/model/:modelName', function (req, res) {
         var editModel = this.local(res, 'editModel');
         var model = _u.extend({}, editModel.modelPaths[req.params.modelName].model);
