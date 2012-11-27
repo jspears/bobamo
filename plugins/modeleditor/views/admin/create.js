@@ -117,6 +117,16 @@ define([
                     }else  if (!v.dataType)
                         v.dataType = 'Object';
                     var persistence = (v.persistence = {dataType:v.dataType})[v.dataType] = v;
+
+                    if (v.validators && v.validators.length){
+                        v.validators = _.map(v.validators, function(v,k){
+                                return {
+                                    type:v.type,
+                                    message:v.message,
+                                    configure:_.omit(v, 'type','message')
+                                }
+                        });
+                    }
 //                    if (v.validators && v.validators.length) {
 //                       persistence.validators = _.map(v.validator, function (vv) {
 //                            var isMatch = MatchRe.test(vv);

@@ -165,17 +165,7 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
             opts._parent = this;
             var form = new Form(opts);
 
-            form.getValue = function(value){
 
-                console.log('form->getValue', value);
-
-              //  var def = Form.prototype.getValue.apply(form, _.toArray(arguments))
-//                var type =            this.fields.dataType.getValue();
-//                var ret = _.extend({
-//                    dataType:type
-//                }, this.fields[type].getValue());
-                return ret;
-            }
 
             if (_.isUndefined( DataType.Object.prototype.schema.paths.model))
             DataType.Object.prototype.schema.paths.model = require( 'views/modeleditor/admin/property');

@@ -260,7 +260,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
         _u.each(p.validators, function (v, k) {
             if (v.length) {
                 if (v[0] instanceof RegExp) {
-                    util.defaultOrSet(defaults, 'validators', []).push({ type:'regexp', configure:{ regexp:'/' + v[0] + '/' }, message:v[1] });
+                    util.defaultOrSet(defaults, 'validators', []).push({ type:'regexp',regexp: v[0]+'', message:v[1] });
                 } else {
                     console.warn('can only handle client side regex/required validators for now', v, k)
                 }
