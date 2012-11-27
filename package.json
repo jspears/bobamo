@@ -5,13 +5,13 @@
   "private": false,
   "dependencies": {
     "jqtpl": ">= 0.0.1",
-    "mongoose": "~3.4.x",
-    "mers": ">= 0.4.1",
+    "mongoose": "3.4.x",
+    "mers": "git+ssh://git@github.com/altsang/mers.git",
     "underscore": "latest",
     "less": "latest",
     "connect": "latest",
     "consolidate": "latest",
-    "express": ">=3",
+    "express": "3.0.x",
     "mongoose-gen":"latest"
   },
   "devDependencies": {
