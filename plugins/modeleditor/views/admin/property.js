@@ -1,5 +1,26 @@
-define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fieldset', 'views/modeleditor/admin/mongoose-types','exports', 'underscore', 'Backbone.Form'], function (b, Form, Fieldset, MongooseType, exports, _) {
-
+define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fieldset', 'views/modeleditor/admin/mongoose-types', 'exports', 'underscore', 'Backbone.Form'], function (b, Form, Fieldset, MongooseType, exports, _) {
+    var DataTypes = {
+        'String':[
+            'text',
+            'password',
+            'color',
+            'date',
+            'datetime',
+            'datetime-local',
+            'email',
+            'month',
+            'number',
+            'range',
+            'search',
+            'tel',
+            'time',
+            'url',
+            'week'],
+        'Number':[
+            'number',
+            'range',
+            'week']
+    }
     var Property = b.Model.extend({
 
         defaults:{
@@ -18,6 +39,26 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             title:{type:'Text'},
             help:{type:'Text'},
             editor:{ title:'Editor Type', type:'Select', options:[], help:'The Editor type helps choose the correct way to change a value for the form.'},
+            dataType:{
+                type:'Select',
+                help:'HTML5 data type to use on input',
+                options:[
+                    'text',
+                    'password',
+                    'color',
+                    'date',
+                    'datetime',
+                    'datetime-local',
+                    'email',
+                    'month',
+                    'number',
+                    'range',
+                    'search',
+                    'tel',
+                    'time',
+                    'url',
+                    'week']
+            },
             placeholder:{type:'Text', help:'Default Placeholder text'},
 
             persistence:{
@@ -48,7 +89,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             { legend:'Property', fields:['name', 'multiple', 'hidden']},
             { legend:'Persistence', fields:['persistence']},
             { legend:'Display', fields:['title', 'help']},
-            { legend:'Editor', fields:['placeholder', 'editor', 'fieldsets', 'list_fields']}
+            { legend:'Editor', fields:['placeholder', 'editor', 'dataType', 'fieldsets', 'list_fields']}
         ],
         toString:function () {
             var description = this.get('help');
@@ -62,46 +103,61 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             var form = this.form = new Form(opts);
             var title = this.get('path') || this.get('name');
             if (title)
-               form.title = 'Property ['+title+']';
-
-            function onType(c1,c2,c3){
+                form.title = 'Property [' + title + ']';
+            var self = this;
+            function onType(c1, c2, c3) {
                 var value = form.getValue();
                 var hidden = form.fields.hidden.getValue();
-                var dataType = form.fields.persistence.editor.form.fields.dataType.getValue();
-                console.log('type', dataType);
+                var schemaType = form.fields.persistence.editor.form.fields.schemaType.getValue();
+                console.log('type', schemaType);
                 if (hidden)
                     form.fields.editor.$el.hide();
                 else
-                    form.fields.editor.editor.setOptions(function(cb){
-                        $.getJSON('${pluginUrl}/admin/editors/'+dataType, function(resp){
-                          cb(resp.payload);
+                    form.fields.editor.editor.setOptions(function (cb) {
+                        $.getJSON('${pluginUrl}/admin/editors/' + schemaType, function (resp) {
+                            cb(resp.payload);
                         })
                     })
 
                 var show, hide;
-                (hidden || dataType == 'Object' || dataType == 'ObjectId') ? (show = 'show', hide='hide') : (show = 'hide', hide='show');
+                (hidden || schemaType == 'Object' || schemaType == 'ObjectId') ? (show = 'show', hide = 'hide') : (show = 'hide', hide = 'show');
 
-                form.fields.fieldsets.$el[hidden || dataType == 'ObjectId' ? 'hide' : show]();
-                form.fields.list_fields.$el[ hidden || dataType == 'ObjectId' ? 'hide' : show]();
-               // form.fields.editor.$el[hide]();
+                form.fields.fieldsets.$el[hidden || schemaType == 'ObjectId' ? 'hide' : show]();
+                form.fields.list_fields.$el[ hidden || schemaType == 'ObjectId' ? 'hide' : show]();
+                // form.fields.editor.$el[hide]();
                 form.fields.placeholder.$el[hide]();
                 form.fields.title.$el[hide]();
                 form.fields.help.$el[hide]();
+                var dataType = form.fields.dataType;
+                if (DataTypes[schemaType]) {
+                    dataType.$el.show();
+                    var options = DataTypes[schemaType];
+                    var val = (self.get('name') || '').toLowerCase();
 
+                    if ( val && ~options.indexOf(val)){
+                        dataType.editor.value = val;
+                    }
+                    dataType.editor.setOptions(DataTypes[schemaType]);
+
+                } else {
+                    form.fields.dataType.$el.hide();
+                }
 
             }
+            form.on('name:change', function(){
 
+            });
             form.on("hidden:change", onType);
             form.on("render", onType)
             form.on("persistence:render", onType);
-            form.on("persistence:dataType:change", onType);
+            form.on("persistence:schemaType:change", onType);
             $('.form-horizontal', form.$el).wiz({stepKey:'_propStep'});
 
             return form;
         }
     });
- //   Property.prototype.schema.paths.model = Property;
-    exports.property = function(){
+    //   Property.prototype.schema.paths.model = Property;
+    exports.property = function () {
         return Property;
     }
 

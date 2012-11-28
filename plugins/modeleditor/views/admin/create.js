@@ -14,7 +14,7 @@ define([
     "use strict";
     var typeOptions = ["Text", "Checkbox", "Checkboxes", "Date", "DateTime", "Hidden", "List", "NestedModel", "Number", "Object",
         "Password", "Radio", "Select", "TextArea", "MultiEditor", "ColorEditor", "UnitEditor", "PlaceholderEditor"];
-    var dataTypes = ["text", "tel", "time", "url", "range", "number", "week", "month", "year", "date", "datetime", "datetime-local", "email", "color"];
+    var schemaTypes = ["text", "tel", "time", "url", "range", "number", "week", "month", "year", "date", "datetime", "datetime-local", "email", "color"];
 
     var MatchRe = /^\//;
 
@@ -33,7 +33,33 @@ define([
         fields:['title', 'plural', 'hidden', 'labelAttr'],
         createForm:function(opts){
             var form = this.form = new Form(opts);
+            var pform = opts.pform;
+            if (pform && pform.fields.modelName){
+                var onModelName = function(){
+                    var modelName =   pform.fields.modelName.getValue()
+                    form.fields.title.editor.$el.attr('placeholder', inflection.titleize(inflection.humanize(modelName)));
+                    form.fields.plural.editor.$el.attr('placeholder', inflection.titleize(inflection.pluralize(inflection.humanize(modelName))));
+                }
+                pform.on('modelName:change', onModelName);
+                pform.on('render', onModelName);
+                pform.on('paths:change', function () {
+                    //update
+                    var value = _.map(pform.fields.paths.getValue(), function(v){
+                        return {schemaType:v.persistence.schemaType, name:v.name};
+                    });
+                    var $el = form.fields.labelAttr.editor.$el;
+                    if (!( value || value.length)) {
+                        $el.removeAttr('placeholder');
+                    } else {
+                        var pv = _.pluck(_.where(value, {schemaType:'String'}), 'name');
+                        if (pv.length){
+                            var labelAttr = ((~pv.indexOf('name') && 'name') || (~pv.indexOf('label') && 'label') || (~pv.indexOf('description') && 'description') || pv[0]);
+                            $el.attr('placeholder', labelAttr );
+                        }
+                    }
 
+                });
+            }
 
             return form;
         }
@@ -77,59 +103,7 @@ define([
             console.log('saving', this.toJSON());
             Backbone.Model.prototype.save.apply(this, _.toArray(arguments));
         },
-        createForm:function (opts) {
-            opts._root = this;
-            var form = this.form = new Form(opts);
 
-            function enabled(e) {
-                console.log('enabled', e);
-                var modelName = form.fields.modelName.getValue()
-                var displayFields = form.fields.display.editor.form.fields;
-                if (modelName) {
-                    form.fields.paths.$el.find('button').removeAttr('disabled');
-                    displayFields.title.editor.$el.attr('placeholder', inflection.titleize(inflection.humanize(modelName)));
-                    displayFields.plural.editor.$el.attr('placeholder', inflection.titleize(inflection.pluralize(inflection.humanize(modelName))));
-                } else {
-                    form.fields.paths.$el.find('button').attr('disabled', 'true');
-                    displayFields.title.$el.removeAttr('placeholder');
-                    displayFields.plural.$el.removeAttr('placeholder');
-
-                }
-
-            }
-
-            form.on('render', hidden);
-            form.on("hidden:change", hidden)
-            form.on('modelName:change', enabled);
-            var nameF = function (v) {
-                return v.name && v.name.toLowerCase() == 'name'
-            }
-            var labelF = function (v) {
-                return v.name && v.name.toLowerCase() == 'label';
-            }
-            form.on('paths:change', function () {
-                //update
-                var value = this.fields.paths.getValue();
-                var $el = form.fields.display.editor.form.fields.labelAttr.editor.$el;
-                if (!( value || value.length)) {
-                    $el.removeAttr('placeholder');
-                } else {
-                    var v = _.find(value, nameF) || _.find(value, labelF);
-                    $el.attr('placeholder', v && v.name || value[0]['name']);
-                }
-                var values = _.map(form.fields.paths.getValue(), function (v) {
-                    return v.name
-                })
-                form.fields.list_fields.setValue(values);
-            });
-            form.on('render', function () {
-                enabled();
-                form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
-                    .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
-            })
-
-            return form;
-        },
         parse:function (resp) {
             var model = resp.payload;
             var paths = model.paths;
@@ -159,10 +133,10 @@ define([
                     v.multiple = v.type == 'Array' || v.multiple;
 
                     if (v.ref) {
-                        v.dataType = 'ObjectId';
-                    }else  if (!v.dataType)
-                        v.dataType = 'Object';
-                    var persistence = (v.persistence = {dataType:v.dataType})[v.dataType] = v;
+                        v.schemaType = 'ObjectId';
+                    }else  if (!v.schemaType)
+                        v.schemaType = 'Object';
+                    var persistence = (v.persistence = {schemaType:v.schemaType})[v.schemaType] = v;
 
                     if (v.validators && v.validators.length){
                         v.validators = _.map(v.validators, function(v,k){
@@ -177,7 +151,7 @@ define([
 
                     if (v.subSchema) {
                         var sub = v.subSchema;
-                        v.dataType = 'Object';
+                        v.schemaType = 'Object';
                         delete v.subSchema;
                         var np = (v.paths = []);
                         _.each(sub, fixPaths(np));
@@ -286,7 +260,7 @@ define([
                       //  delete v.paths;
                         var nobj = {};
                         if (v.persistence ) {
-                            _.extend(v, v.persistence[v.dataType]);
+                            _.extend(v, v.persistence[v.schemaType]);
                         }
 
 
@@ -295,7 +269,7 @@ define([
                                 return _.extend({}, _.omit(vv, 'configure'), vv.configure);
                             });
                         }
-                        if (v.dataType == 'Object')
+                        if (v.schemaType == 'Object')
                              _.each(paths, onPath((nobj.subSchema = {})));
 
                         if (v.type)
@@ -359,10 +333,38 @@ define([
             });
 
         },
-        createForm:function(opts){
-          opts = opts || {};
-          Backbone.Form.prototype._root = this;
-          return new Form(opts);
+        createForm:function (opts) {
+            opts._root = this;
+            var form = this.form = new Form(opts);
+
+            function enabled(e) {
+                console.log('enabled', e);
+                var modelName = form.fields.modelName.getValue()
+                if (modelName && modelName.trim().length) {
+                    form.fields.paths.$el.find('button').removeAttr('disabled');
+                } else {
+                    form.fields.paths.$el.find('button').attr('disabled', 'true');
+                }
+
+            }
+            form.on('modelName:change', enabled);
+
+            form.on('paths:change', function () {
+                //update
+                var value = this.fields.paths.getValue();
+
+                var values = _.map(form.fields.paths.getValue(), function (v) {
+                    return v.name
+                })
+                form.fields.list_fields.setValue(values);
+            });
+            form.on('render', function () {
+                enabled();
+                form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
+                    .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
+            })
+
+            return form;
         },
         config:{
             title:'Model',

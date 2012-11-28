@@ -35,23 +35,7 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
             return JSON.parse(val);
         }
     })
-    var getValue = Form.prototype.getValue;
-    var setValue = Form.prototype.setValue;
-    var PropForm = Form.extend({
-//        getValue:function () {
-//            var value = getValue.call(this);
-//            var type = value.dataType;
-//            return _.extend({dataType:type}, value[type]);
-//        },
-//        setValue:function (val) {
-//            var set = {dataType:val.dataType};
-//            if (val.dataType) {
-//                set[val.dataType] = val;
-//            }
-//            return setValue.call(this, val);
-//        }
-    });
-    //   TC.extend({url:'${pluginUrl}/admin/validator/' + type}
+
     var Validator = function (type) {
         return b.Model.extend({
                 fields:['type', 'message', 'configure'],
@@ -169,7 +153,7 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
     };
 
     var schema = {
-        dataType:{
+        schemaType:{
             type:'Select',
             help:'Type of schema',
             required:true,
@@ -187,7 +171,7 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
         set:function (value, change) {
             console.log('model->set', value);
 
-            //value[value.dataType] = value;
+            //value[value.schemaType] = value;
             //return Form.prototype.setValue.apply(form, _.toArray(arguments))
             var ret = TM.prototype.set.apply(this, _.toArray(arguments));
             console.log('set', ret);
@@ -204,36 +188,26 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
             opts = opts || {};
             opts.fieldsets = this.fieldsets;
             opts._parent = this;
-            var form = this.form = new PropForm(opts);
+            var form = this.form = new Form(opts);
 
 
             if (_.isUndefined(DataType.Object.prototype.schema.paths.model))
                 DataType.Object.prototype.schema.paths.model = require('views/modeleditor/admin/property');
             function validation() {
-                var val = form.fields.dataType.getValue();
+                var val = form.fields.schemaType.getValue();
                 var vform = form;
                 _.each(DataType, function (v, k) {
                     form.fields[k].$el[val == k ? 'show' : 'hide']();
                 });
                 var isObj = val == 'Object';
                 var show = isObj ? 'show' : 'hide';
-//            //    form.fields.paths.$el[show]();
-//                form.fields.fieldsets.$el[show]();
-//                form.fields.list_fields.$el[show]();
-//                form.fields.title.$el[isObj ? 'hide' : 'show']();
-//                form.fields.description.$el[isObj ? 'hide' : 'show']();
-//                form.fields.validation.$el[isObj ? 'hide' : 'show']();
-//                form.fields.editor.editor.setOptions(function (cb) {
-//                    $.getJSON('${pluginUrl}/admin/editors/' + val, function (resp) {
-//                        cb(resp.payload);
-//                    });
-//                })
+
                 if (this.options && this.options.data && this.options.data.virtual) {
                     form.fields.validation.$el.hide();
                 }
             }
 
-            form.on('dataType:change', validation);
+            form.on('schemaType:change', validation);
             form.on('render', validation)
 
             return form;
