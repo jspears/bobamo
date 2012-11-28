@@ -30,47 +30,103 @@ define([
             "hidden":{"title":"Hidden", "help":"Is this object hidden?", "type":"Checkbox"},
             "labelAttr":{"title":"Label Attribute", "help":"This is a label that gives a succinct description of object, dot notation can be used"}
         },
-        fields:['title', 'plural', 'hidden', 'labelAttr']
+        fields:['title', 'plural', 'hidden', 'labelAttr'],
+        createForm:function(opts){
+            var form = this.form = new Form(opts);
+
+
+            return form;
+        }
     });
 
-    var schema = {
-        "modelName":{
-            "title":"Model Name",
-            "help":"The model name of the object",
-            "type":"Text",
-            required:true
-        },
-
-        display:{
-            type:'NestedModel',
-            model:Display
-        },
-        "paths":{
-            type:'List',
-            itemType:'NestedModel',
-            model:Property,
-            title:'Properties',
-            help:'This is where you add properties to this object.'
-        },
-        fieldsets:{
-            type:'List',
-            title:'Edit View',
-            help:'Fields to allow editing',
-            itemType:'NestedModel',
-            model:Fieldset
-        },
-        list_fields:{
-            type:'List',
-            title:'List View',
-            help:'Fields to show in list views'
-        }
-    };
     var Model = Backbone.Model.extend({
-        schema:schema,
+        schema:{
+            "modelName":{
+                "title":"Model Name",
+                "help":"The model name of the object",
+                "type":"Text",
+                required:true
+            },
+
+            display:{
+                type:'NestedModel',
+                model:Display
+            },
+            "paths":{
+                type:'List',
+                itemType:'NestedModel',
+                model:Property,
+                title:'Properties',
+                help:'This is where you add properties to this object.'
+            },
+            fieldsets:{
+                type:'List',
+                title:'Edit View',
+                help:'Fields to allow editing',
+                itemType:'NestedModel',
+                model:Fieldset
+            },
+            list_fields:{
+                type:'List',
+                title:'List View',
+                help:'Fields to show in list views'
+            }
+        },
         urlRoot:"${pluginUrl}/admin/backbone/",
         save:function () {
             console.log('saving', this.toJSON());
             Backbone.Model.prototype.save.apply(this, _.toArray(arguments));
+        },
+        createForm:function (opts) {
+            opts._root = this;
+            var form = this.form = new Form(opts);
+
+            function enabled(e) {
+                console.log('enabled', e);
+                var modelName = form.fields.modelName.getValue()
+                var displayFields = form.fields.display.editor.form.fields;
+                if (modelName) {
+                    form.fields.paths.$el.find('button').removeAttr('disabled');
+                    displayFields.title.editor.$el.attr('placeholder', inflection.titleize(inflection.humanize(modelName)));
+                    displayFields.plural.editor.$el.attr('placeholder', inflection.titleize(inflection.pluralize(inflection.humanize(modelName))));
+                } else {
+                    form.fields.paths.$el.find('button').attr('disabled', 'true');
+                    displayFields.title.$el.removeAttr('placeholder');
+                    displayFields.plural.$el.removeAttr('placeholder');
+
+                }
+
+            }
+
+            form.on('modelName:change', enabled);
+            var nameF = function (v) {
+                return v.name && v.name.toLowerCase() == 'name'
+            }
+            var labelF = function (v) {
+                return v.name && v.name.toLowerCase() == 'label';
+            }
+            form.on('paths:change', function () {
+                //update
+                var value = this.fields.paths.getValue();
+                var $el = form.fields.display.editor.form.fields.labelAttr.editor.$el;
+                if (!( value || value.length)) {
+                    $el.removeAttr('placeholder');
+                } else {
+                    var v = _.find(value, nameF) || _.find(value, labelF);
+                    $el.attr('placeholder', v && v.name || value[0]['name']);
+                }
+                var values = _.map(form.fields.paths.getValue(), function (v) {
+                    return v.name
+                })
+                form.fields.list_fields.setValue(values);
+            });
+            form.on('render', function () {
+                enabled();
+                form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
+                    .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
+            })
+
+            return form;
         },
         parse:function (resp) {
             var model = resp.payload;
@@ -87,43 +143,36 @@ define([
                     var display = {
                         labelAttr:model.labelAttr,
                         title:model.title,
-                        description:model.description,
+                        help:model.help,
                         plural:model.plural,
                         hidden:model.hidden || model.display == 'none'
                     };
                     delete model.labelAttr;
                     delete model.title;
-                    delete model.description;
+                    delete model.help;
                     delete model.plural;
                     delete model.hidden;
 
                     _.extend(model.display || (model.display = {}), display);
                     v.multiple = v.type == 'Array' || v.multiple;
 
-//                    if (v.type == 'List') {
-//                        v.many = true;
-//                        v.editor = v.listType;
-//                        delete v.listType;
-//                    } else if (!v.editor) {
-//                        v.editor = v.dataType;
-//                    }
-//                    if (v.dataType) {
-//                        var type = v.type;
-//                        v.type = v.dataType;
-//                        v.editor = type;
-//                    }
                     if (v.ref) {
                         v.dataType = 'ObjectId';
                     }else  if (!v.dataType)
                         v.dataType = 'Object';
                     var persistence = (v.persistence = {dataType:v.dataType})[v.dataType] = v;
-                    if (v.validator && v.validator.length) {
-                       persistence.validator = _.map(v.validator, function (vv) {
-                            var isMatch = MatchRe.test(vv);
-                            return {name:isMatch ? 'match' : vv, configure:(isMatch ? JSON.stringify({match:vv}) : "")}
+
+                    if (v.validators && v.validators.length){
+                        v.validators = _.map(v.validators, function(v,k){
+                                var mesg = v.message || Form.validators.errMessages[v.type];
+                                return {
+                                    type:v.type,
+                                    message:mesg,
+                                    configure:_.omit(v, 'type','message')
+                                }
                         });
-                        delete v.validator;
                     }
+
                     if (v.subSchema) {
                         var sub = v.subSchema;
                         v.dataType = 'Object';
@@ -177,7 +226,9 @@ define([
                     collection:new Backbone.Collection(),
                     model:Backbone.Model.extend(model),
                     onSave:function () {
-                        alert('Save is unavailable in preview')
+                        var errors = this.validate();
+                        if (!errors)
+                            alert('Save is unavailable in preview')
                     },
                     config:{
                         title:model.title,
@@ -197,7 +248,7 @@ define([
         presave:function () {
 
             var model = this.form.getValue();
-
+            console.log('presave->model', JSON.stringify(model));
             var editors = {};
             var fixup = function (body) {
                 var paths = body.paths;
@@ -208,7 +259,7 @@ define([
                     return function (v, k) {
 
                         var paths = v.paths;
-                        delete v.paths;
+                      //  delete v.paths;
                         var nobj = {};
                         if (v.type == 'Object')
                              _.each(paths, onPath((nobj.subSchema = {})));
@@ -217,8 +268,7 @@ define([
                         if (v.persistence ) {
                             _.extend(nobj, v.persistence);
                         }
-                        delete v.persistence;
-                        obj[v.name] = _.extend(nobj, v);
+                        obj[v.name] = _.extend(nobj, _.omit(v, 'persistence', 'paths'));
                     }
 
                 }
@@ -275,56 +325,10 @@ define([
             });
 
         },
-        createForm:function (opts) {
-
-            var form = new Form(opts);
-
-            function enabled(e) {
-                console.log('enabled', e);
-                var modelName = form.fields.modelName.getValue()
-                var displayFields = form.fields.display.editor.form.fields;
-                if (modelName) {
-                    form.fields.paths.$el.find('button').removeAttr('disabled');
-                    displayFields.title.editor.$el.attr('placeholder', inflection.titleize(inflection.humanize(modelName)));
-                    displayFields.plural.editor.$el.attr('placeholder', inflection.titleize(inflection.pluralize(inflection.humanize(modelName))));
-                } else {
-                    form.fields.paths.$el.find('button').attr('disabled', 'true');
-                    displayFields.title.$el.removeAttr('placeholder');
-                    displayFields.plural.$el.removeAttr('placeholder');
-
-                }
-
-            }
-
-            form.on('modelName:change', enabled);
-            var nameF = function (v) {
-                return v.name && v.name.toLowerCase() == 'name'
-            }
-            var labelF = function (v) {
-                return v.name && v.name.toLowerCase() == 'label';
-            }
-            form.on('paths:change', function () {
-                //update
-                var value = this.fields.paths.getValue();
-                var $el = form.fields.display.editor.form.fields.labelAttr.editor.$el;
-                if (!( value || value.length)) {
-                    $el.removeAttr('placeholder');
-                } else {
-                    var v = _.find(value, nameF) || _.find(value, labelF);
-                    $el.attr('placeholder', v && v.name || value[0]['name']);
-                }
-                var values = _.map(form.fields.paths.getValue(), function (v) {
-                    return v.name
-                })
-                form.fields.list_fields.setValue(values);
-            });
-            form.on('render', function () {
-                enabled();
-                form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
-                    .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
-            })
-
-            return form;
+        createForm:function(opts){
+          opts = opts || {};
+          Backbone.Form.prototype._root = this;
+          return new Form(opts);
         },
         config:{
             title:'Model',

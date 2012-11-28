@@ -17,7 +17,7 @@ define(['Backbone', 'modeleditor/js/form-model', 'underscore'], function (b, For
 
         },
         createForm:function (opts) {
-            var form = new Form(opts);
+            var form = this.form = new Form(opts);
             function fieldOptions(c1, c2, field) {
                 var newValue = field && field.$el.val();
                 var oldValue = field && field.value;

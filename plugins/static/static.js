@@ -46,7 +46,8 @@ var editors = [
     },
     { name:'Search', types:['ObjectId']},
     { name:'Link', types:['ObjectId']},
-    { name:'List', types:['ObjectId']}
+    { name:'List', types:['ObjectId']},
+    { name:'NestedModel', types:['ObjectId']}
 ];
 
 StaticPlugin.prototype.editors = function () {

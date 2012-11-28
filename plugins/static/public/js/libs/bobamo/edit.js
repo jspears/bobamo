@@ -74,12 +74,12 @@ define([
                 }
                 var fields = this.form.fields;
                 var fField;
-                _.each(errors.error.errors, function (v, k) {
+                _.each(errors.error && errors.error.errors || errors, function (v, k) {
                     var field = fields[v.path];
                     if (field && field.$el)
                         field.$el.addClass('error');
                     var $e = $(
-                        replacer('<li><span class="alert-heading pointer">"{path}" is in error: </span>{message}</li>',v)).data({'scroll-to': field.$el, field:v.path});
+                        replacer('<li><span class="alert-heading pointer">"{path}" is in error: </span>{message}</li>',v)).data({'scroll-to':field && field.$el, field:v.path});
                     fField = v.path
                     $error.prepend($e);
                 }, this);
@@ -158,7 +158,7 @@ define([
         render:function (opts) {
             var $el = this.$el.html(this.template());
             var id = opts && (opts.id || opts._id);
-            var model = this.dataModel = this.createModel(opts);
+            var model = this.createModel(opts);
             model.on('sync', this.onSuccess, this);
             var title = id ? '<i class="icon-edit"></i> Edit {title} [{id}]' : '<i class="icon-plus"></i>Create New {title}';
             var config = _.extend({id:id}, this.config);

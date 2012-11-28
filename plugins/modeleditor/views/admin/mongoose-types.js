@@ -20,27 +20,75 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
             })
         });
         var collection = new C();
-        return function (cb) {
-            collection.fetch({
-                success:cb
-            })
-        }
+        return collection;
+
     }
 
     ;
+    var JsonText = Form.editors.JsonTextArea = Form.editors.TextArea.extend({
+        setValue:function(obj){
+            var str = ''+JSON.stringify(obj)
+            Form.editors.TextArea.prototype.setValue.call(this, str);
+        },
+        getValue:function(){
+            var val = Form.editors.TextArea.prototype.getValue.call(this);
+            return JSON.parse(val);
+        }
+    })
+    var getValue = Form.prototype.getValue;
+    var setValue = Form.prototype.setValue;
+    var PropForm = Form.extend({
+        getValue:function(){
+            var value = getValue.call(this);
+            var type = value.dataType;
+            return _.extend({dataType:type}, value[type]);
+        },
+        setValue:function(val){
+            var set = {dataType:val.dataType};
+            if (val.dataType){
+               set[val.dataType] = val;
+           }
+          return setValue.call(this, val);
+        }
+    });
     //   TC.extend({url:'${pluginUrl}/admin/validator/' + type}
     var Validator = function (type) {
         return b.Model.extend({
+                fields:['type', 'message','configure'],
                 schema:{
-                    name:{
+                    type:{
                         type:'Select',
-                        options:json('/admin/validators/' + type, 'name')
+                        options:json('/admin/validators/' + type, 'type')
                     },
                     message:{type:'Text', help:'Error message to display'},
-                    configure:{type:'TextArea', help:'This will be parsed to JSON and passed into the validation method, please use carefully'}
+                    configure:{type:'JsonTextArea', help:'This will be parsed to JSON and passed into the validation method, please use carefully'}
                 },
                 toString:function () {
-                    return this.get('name');
+                    return this.get('type');
+                },
+                createForm:function(opts){
+                    var f = this.form = new Form(opts);
+                    function onChange(){
+                        var type = f.fields.type
+                        var options = type.options.schema.options
+                        console.log('onChange',options);
+                        var value =  type.getValue();
+                        var key = value.toLowerCase();
+                        var m = options.where({type:value})
+                        if (m && m.length){
+                            m = m[0]
+                            var mesg = m.get('message') || Form.validators.errMessages[key];
+                            var def = {};
+                            def[key]="";
+                            var config = m.get('configure') || def;
+                            f.fields.message.setValue(mesg);
+                            f.fields.configure.setValue(JSON.stringify(config)+"");
+                        }
+                    }
+                    f.on("type:change", onChange);
+                    f.on("render", onChange);
+
+                    return f;
                 }
             }
         )
@@ -55,13 +103,13 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
             schema:{
 
                 defaultValue:{type:'Text', help:'Default value for field', title:'Default'},
-                minLength:{type:'Number', help:'Minimum Length'},
-                maxLength:{type:'Number', help:'Maximum Length'},
-                //          match:{type:'Text', help:'Regular Expression'},
+//                minLength:{type:'Number', help:'Minimum Length'},
+//                maxLength:{type:'Number', help:'Maximum Length'},
+//                //          match:{type:'Text', help:'Regular Expression'},
                 textCase:{type:'Select', options:['none', 'uppercase', 'lowercase'], title:'Case', help:'Save text in specified case'},
                 trim:{type:'Checkbox', help:'Trim text\'s white space'},
-                enumValues:{type:'List', help:'Allow only these values'},
-                validate:{type:'List', itemType:'NestedModel', model:Validator('String')},
+//                enumValues:{type:'List', help:'Allow only these values'},
+                validators:{type:'List', itemType:'NestedModel', model:Validator('String')},
                 index:{type:'Checkbox', help:'Index this property'},
                 unique:{type:'Checkbox', help:'Make property unique'}
             }
@@ -69,21 +117,21 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
         Number:TM.extend({
             schema:{
                 defaultValue:{type:'Number', help:'Default value for field', title:'Default'},
-                min:{type:'Number', help:'Minimum Value'},
-                max:{type:'Number', help:'Maximum Value'},
-                validate:{type:'List', itemType:'NestedModel', model:Validator('Number')}
+//                min:{type:'Number', help:'Minimum Value'},
+//                max:{type:'Number', help:'Maximum Value'},
+                validators:{type:'List', itemType:'NestedModel', model:Validator('Number')}
             }
         }),
         Date:TM.extend({
             schema:{
                 defaultValue:{type:'Text', help:'Default time use "now" for the relative current time and "now:-23232" or a value to pass to the constructor' },
-                validate:{type:'List', itemType:'NestedModel', model:Validator('Number')}
+                validators:{type:'List', itemType:'NestedModel', model:Validator('Number')}
             }
         }),
         Boolean:TM.extend({
             schema:{
                 defaultValue:{type:'Checkbox', help:'Default state', title:'Default'},
-                validate:{type:'List', itemType:'NestedModel', model:Validator('Boolean')}
+                validators:{type:'List', itemType:'NestedModel', model:Validator('Boolean')}
             }
         }),
         ObjectId:TM.extend({
@@ -99,7 +147,7 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
             schema:{
                 maxSize:{type:'Number', help:'Maximum size of buffer (16mb)'},
                 unit:{type:'Select', options:['b', 'kb', 'mb']},
-                validate:{type:'List', itemType:'NestedModel', model:Validator('Buffer')}
+                validators:{type:'List', itemType:'NestedModel', model:Validator('Buffer')}
             },
             default:{
                 maxSize:1,
@@ -152,19 +200,9 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
             opts = opts || {};
             opts.fieldsets = this.fieldsets;
             opts._parent = this;
-            var form = new Form(opts);
+            var form = this.form = new PropForm(opts);
 
-            form.getValue = function(value){
 
-                console.log('form->getValue', value);
-
-              //  var def = Form.prototype.getValue.apply(form, _.toArray(arguments))
-//                var type =            this.fields.dataType.getValue();
-//                var ret = _.extend({
-//                    dataType:type
-//                }, this.fields[type].getValue());
-                return ret;
-            }
 
             if (_.isUndefined( DataType.Object.prototype.schema.paths.model))
             DataType.Object.prototype.schema.paths.model = require( 'views/modeleditor/admin/property');
