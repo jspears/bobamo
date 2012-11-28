@@ -24,10 +24,9 @@ MongoosePlugin.prototype.appModel = function (options) {
         });
     }
 }
-MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
+MongoosePlugin.prototype.schemaFor = function(schema){
     var paths = schema.paths;
-    delete schema.paths;
-    var nSchema = {};
+    var nSchema = _u.extend({}, _u.omit(schema, 'paths', 'modelName'));
     var pm = this.pluginManager;
     var mongoose = this.options.mongoose;
 
@@ -61,10 +60,14 @@ MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
     }
 
     _u.each(paths, onPath(nSchema));
-
-    console.log('updating', modelName, nSchema);
+    return new this.options.mongoose.Schema(nSchema);
+}
+MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
+    var mschema = this.schemaFor(schema);
+    var model = this.options.mongoose.model(modelName, mschema);
     if (callback)
-        callback();
+        callback(model);
+    return model;
 }
 MongoosePlugin.prototype.validators = function (type) {
     return [
@@ -82,7 +85,20 @@ MongoosePlugin.prototype.validators = function (type) {
         {
             types:['Number'],
             type:'max'
+        },
+        {
+            types:['String'],
+            type:'maxLength'
+        },
+        {
+            types:['String'],
+            type:'minLength'
+        },
+        {
+            types:['String'],
+            type:'enum'
         }
+
 
 
     ]

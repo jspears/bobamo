@@ -20,11 +20,8 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
             })
         });
         var collection = new C();
-        return function (cb) {
-            collection.fetch({
-                success:cb
-            })
-        }
+        return collection;
+
     }
 
     ;
@@ -38,6 +35,22 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
             return JSON.parse(val);
         }
     })
+    var getValue = Form.prototype.getValue;
+    var setValue = Form.prototype.setValue;
+    var PropForm = Form.extend({
+        getValue:function(){
+            var value = getValue.call(this);
+            var type = value.dataType;
+            return _.extend({dataType:type}, value[type]);
+        },
+        setValue:function(val){
+            var set = {dataType:val.dataType};
+            if (val.dataType){
+               set[val.dataType] = val;
+           }
+          return setValue.call(this, val);
+        }
+    });
     //   TC.extend({url:'${pluginUrl}/admin/validator/' + type}
     var Validator = function (type) {
         return b.Model.extend({
@@ -52,6 +65,30 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
                 },
                 toString:function () {
                     return this.get('type');
+                },
+                createForm:function(opts){
+                    var f = this.form = new Form(opts);
+                    function onChange(){
+                        var type = f.fields.type
+                        var options = type.options.schema.options
+                        console.log('onChange',options);
+                        var value =  type.getValue();
+                        var key = value.toLowerCase();
+                        var m = options.where({type:value})
+                        if (m && m.length){
+                            m = m[0]
+                            var mesg = m.get('message') || Form.validators.errMessages[key];
+                            var def = {};
+                            def[key]="";
+                            var config = m.get('configure') || def;
+                            f.fields.message.setValue(mesg);
+                            f.fields.configure.setValue(JSON.stringify(config)+"");
+                        }
+                    }
+                    f.on("type:change", onChange);
+                    f.on("render", onChange);
+
+                    return f;
                 }
             }
         )
@@ -66,12 +103,12 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
             schema:{
 
                 defaultValue:{type:'Text', help:'Default value for field', title:'Default'},
-                minLength:{type:'Number', help:'Minimum Length'},
-                maxLength:{type:'Number', help:'Maximum Length'},
-                //          match:{type:'Text', help:'Regular Expression'},
+//                minLength:{type:'Number', help:'Minimum Length'},
+//                maxLength:{type:'Number', help:'Maximum Length'},
+//                //          match:{type:'Text', help:'Regular Expression'},
                 textCase:{type:'Select', options:['none', 'uppercase', 'lowercase'], title:'Case', help:'Save text in specified case'},
                 trim:{type:'Checkbox', help:'Trim text\'s white space'},
-                enumValues:{type:'List', help:'Allow only these values'},
+//                enumValues:{type:'List', help:'Allow only these values'},
                 validators:{type:'List', itemType:'NestedModel', model:Validator('String')},
                 index:{type:'Checkbox', help:'Index this property'},
                 unique:{type:'Checkbox', help:'Make property unique'}
@@ -80,8 +117,8 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
         Number:TM.extend({
             schema:{
                 defaultValue:{type:'Number', help:'Default value for field', title:'Default'},
-                min:{type:'Number', help:'Minimum Value'},
-                max:{type:'Number', help:'Maximum Value'},
+//                min:{type:'Number', help:'Minimum Value'},
+//                max:{type:'Number', help:'Maximum Value'},
                 validators:{type:'List', itemType:'NestedModel', model:Validator('Number')}
             }
         }),
@@ -163,7 +200,7 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
             opts = opts || {};
             opts.fieldsets = this.fieldsets;
             opts._parent = this;
-            var form = new Form(opts);
+            var form = this.form = new PropForm(opts);
 
 
 

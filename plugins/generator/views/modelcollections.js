@@ -30,6 +30,13 @@ define([
                 return val;
             }
             return Backbone.Model.prototype.get.call(this, key);
+        },
+        labelAttr:"${model.labelAttr}",
+        toString:function(){
+            if (this.labelAttr)
+                return this.get(this.labelAttr);
+
+            return Backbone.Model.prototype.toString.call(this);
         }
 
     });

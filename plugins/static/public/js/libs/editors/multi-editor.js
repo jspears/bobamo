@@ -4,7 +4,12 @@ define(['Backbone.Form', 'jquery', 'underscore'], function (Form, $, _) {
         initialize:function (options) {
             editors.Base.prototype.initialize.call(this, options);
 
-            if (!this.schema || !(this.schema.options || this.schema.url)) throw "Missing required 'schema.options'";
+            if (!this.schema || !(this.schema.options || this.schema.url || this.schema.ref)) throw "Missing required 'schema.options'";
+            if (this.schema.ref){
+                require(['collections/'+this.schema.ref], function(C){
+                     self.setOptions(C);
+                });
+            }
             if (this.schema && ( this.schema.multiple  !== false || this.schema.dataType == 'Array' || this.schema.type == 'Array' )){
                 this.$el.attr('multiple', 'multiple');
                 this._multiple = true;
