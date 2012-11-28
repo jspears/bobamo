@@ -9,10 +9,12 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             type:'String',
             ref:null,
             multiple:false,
-            virtual:false
+            virtual:false,
+            hidden:false
         },
         schema:{
             name:{type:'Text', required:true},
+            hidden:{type:'Checkbox'},
             title:{type:'Text'},
             help:{type:'Text'},
             editor:{ title:'Editor Type', type:'Select', options:[], help:'The Editor type helps choose the correct way to change a value for the form.'},
@@ -43,7 +45,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             }
         },
         fieldsets:[
-            { legend:'Property', fields:['name', 'multiple']},
+            { legend:'Property', fields:['name', 'multiple', 'hidden']},
             { legend:'Persistence', fields:['persistence']},
             { legend:'Display', fields:['title', 'help']},
             { legend:'Editor', fields:['placeholder', 'editor', 'fieldsets', 'list_fields']}
@@ -61,42 +63,35 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             var title = this.get('path') || this.get('name');
             if (title)
                form.title = 'Property ['+title+']';
-            var self = this;
 
             function onType(c1,c2,c3){
                 var value = form.getValue();
+                var hidden = form.fields.hidden.getValue();
                 var dataType = form.fields.persistence.editor.form.fields.dataType.getValue();
                 console.log('type', dataType);
-                form.fields.editor.editor.setOptions(function(cb){
-                    $.getJSON('${pluginUrl}/admin/editors/'+dataType, function(resp){
-                        cb(resp.payload);
-                    })
-                    var schema =    form._root.presave()
-                    $.ajax({
-                        type:'POST',
-                        url:'${pluginUrl}/admin/editorsFor',
-                        data:{
-                            path:value.path || value.name,
-                          property:value,
-                          schema:schema
-                        },
-                        success:function(resp){
-                            console.log('success', arguments);
-                        }
+                if (hidden)
+                    form.fields.editor.$el.hide();
+                else
+                    form.fields.editor.editor.setOptions(function(cb){
+                        $.getJSON('${pluginUrl}/admin/editors/'+dataType, function(resp){
+                          cb(resp.payload);
+                        })
                     })
 
-                })
                 var show, hide;
-                (dataType == 'Object' || dataType == 'ObjectId') ? (show = 'show', hide='hide') : (show = 'hide', hide='show');
+                (hidden || dataType == 'Object' || dataType == 'ObjectId') ? (show = 'show', hide='hide') : (show = 'hide', hide='show');
 
-                form.fields.fieldsets.$el[dataType == 'ObjectId' ? 'hide' : show]();
-                form.fields.list_fields.$el[dataType == 'ObjectId' ? 'hide' : show]();
+                form.fields.fieldsets.$el[hidden || dataType == 'ObjectId' ? 'hide' : show]();
+                form.fields.list_fields.$el[ hidden || dataType == 'ObjectId' ? 'hide' : show]();
                // form.fields.editor.$el[hide]();
                 form.fields.placeholder.$el[hide]();
                 form.fields.title.$el[hide]();
                 form.fields.help.$el[hide]();
 
+
             }
+
+            form.on("hidden:change", onType);
             form.on("render", onType)
             form.on("persistence:render", onType);
             form.on("persistence:dataType:change", onType);

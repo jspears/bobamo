@@ -81,6 +81,9 @@
             this.step(this.current);
         }
 
+        Wizard.prototype.enable = function(){
+
+        }
         Wizard.prototype.step = function (pos) {
             pos = pos || 0;
             this.current = pos;

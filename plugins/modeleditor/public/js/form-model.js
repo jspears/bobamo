@@ -11,13 +11,13 @@ define(['Backbone', 'Backbone.Form', 'underscore', 'jquery', 'backbone-modal', '
         },
         render:function onEnchancedBootstrapRender(o) {
             renderBootstrapModal.apply(this, _.toArray(arguments));
-            var $wiz = this.$el.find('.modal-body');
-            if ($wiz.wiz)
-                $wiz.wiz({stepKey:'_propStep', clsNames:'', steps:'Step {current} of {steps}', replace:$('a.ok', this.$el), fieldset:'> form.form-horizontal > fieldset'});
-
+            var $mbody = this.$el.find('.modal-body');
+            if ($mbody.wiz){
+                $mbody.wiz({stepKey:'_propStep', clsNames:'', steps:'Step {current} of {steps}', replace:$('a.ok', this.$el), fieldset:'> form.form-horizontal > fieldset'});
+            }
             this.$el.find('.cancel').addClass('pull-left');
             //TODO - seriously find a better way to fix nestedforms so that this is not necessary.
-            $wiz.find('> form.form-horizontal > fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
+            $mbody.find('> form.form-horizontal > fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
                 .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
             return this;
         }
@@ -33,7 +33,6 @@ define(['Backbone', 'Backbone.Form', 'underscore', 'jquery', 'backbone-modal', '
     })
     var editors = Form.editors;
 
-    var List = editors.List;
 
     var Orig = editors.NestedModel;
 

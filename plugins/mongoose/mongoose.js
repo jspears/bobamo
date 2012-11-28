@@ -132,10 +132,12 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
     var opts = p.options || {};
     var apiPath = this.options.apiUri || this.baseUrl + 'rest/';
     //  var pathShema = schema.path(path);
-    if (opts.display && opts.display.display == 'none' || ( path[0] == '_' && path != '_id')) {
+    if (( path[0] == '_' && path != '_id')) {
+
         return null;
     }
-
+        if( opts.display && opts.display.display == 'none')
+            defaults.hidden = true;
 
     if (!tmpP && Model) {
         var obj = { subSchema:{}, type:'Object'}
