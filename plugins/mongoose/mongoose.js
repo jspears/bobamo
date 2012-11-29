@@ -24,6 +24,22 @@ MongoosePlugin.prototype.appModel = function (options) {
         });
     }
 }
+function naturalType(mongoose, type){
+    switch(type){
+        case 'String': return String;
+        case 'Date': return Date;
+        case 'Number': return Number;
+        case 'Boolean': return Boolean;
+        case 'ObjectId': return mongoose.Schema.Types.ObjectId;
+        default:{
+            return mongoose.Schema.Types[type];
+        }
+    }
+}
+var TypeAllow = {
+    'String':['min','max','trim','uppercase','lowercase'],
+    'Number':['min','max']
+}
 MongoosePlugin.prototype.schemaFor = function(schema){
     var paths = schema.paths;
     var nSchema = _u.extend({}, _u.omit(schema, 'paths', 'modelName'));
@@ -37,8 +53,19 @@ MongoosePlugin.prototype.schemaFor = function(schema){
                 return;
             model[v.name] = v.multiple ? [path] : path;
             if (v.ref) path.ref = v.ref;
-            if (v.dataType != 'Object')
-                path.type = mongoose.SchemaTypes[v.dataType];
+            if (v.schemaType == 'Object')
+               return onPath(v.subSchema)
+
+            _u.each(['unique','index','expires','select'], function(vv,k){
+               if (_.isUndefined(v[vv]) || v[vv] == null)
+                    return;
+                path[vv] = v[vv];
+            },this);
+            if (v.schemaType == 'String'){
+                if (~['uppercase','lowercase'].indexOf(v.textCase)){
+                    path[v.textCase] = true;
+                }
+            }
 
             if (v.validators) {
                 var valid = (path.validate = []);
@@ -46,20 +73,12 @@ MongoosePlugin.prototype.schemaFor = function(schema){
                     valid.push([pm.validator(vv).validator, vv.message]);
                 })
             }
-            if (v.min)
-                path.min = v.min;
-            if (v.max)
-                path.max = v.max;
-            if (v.default)
-                path.default = v.default;
-            if (v.subSchema) {
-                _u.each(v.subSchema, onPath(path));
-            }
-            //if ()
+
         }
     }
 
     _u.each(paths, onPath(nSchema));
+
     return new this.options.mongoose.Schema(nSchema);
 }
 MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
@@ -132,12 +151,15 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
         p = tmpP
     var defaults = {};
     var opts = p.options || {};
+
     var apiPath = this.options.apiUri || this.baseUrl + 'rest/';
     //  var pathShema = schema.path(path);
-    if (opts.display && opts.display.display == 'none' || ( path[0] == '_' && path != '_id')) {
+    if (( path[0] == '_' && path != '_id')) {
+
         return null;
     }
-
+        if( opts.display && opts.display.display == 'none')
+            defaults.hidden = true;
 
     if (!tmpP && Model) {
         var obj = { subSchema:{}, type:'Object'}
@@ -154,21 +176,21 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
 
             _u.extend(defaults, {
                 url:apiPath + opts.ref + '?transform=labelval',
-                dataType:'String',
+                schemaType:'String',
                 type:'MultiEditor',
                 multiple:false,
                 ref:opts.ref
-            });
+            }, opts.display);
         } else if (path == '_id') {
             _u.extend(defaults, {
                 type:'Hidden',
-                dataType:'String'
+                schemaType:'String'
             });
         }
     } else if (p.ref) {
         _u.extend(defaults, {
             url:apiPath + p.ref + '?transform=labelval',
-            dataType:'String',
+            schemaType:'String',
             type:'MultiEditor',
             multiple:false
         });
@@ -176,7 +198,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
         var modelName = util.depth(p, 'caster.options.ref');
         if (modelName) {
             _u.extend(defaults, {
-                dataType:'Array',
+                schemaType:'Array',
                 url:apiPath + modelName + '?transform=labelval',
                 type:'MultiEditor',
                 multiple:true,
@@ -226,11 +248,11 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                         break;
                     case
                     Number:
-                        _u.extend(defaults, {dataType:'Number', type:'Number'});
+                        _u.extend(defaults, {schemaType:'Number', type:'Number'});
                         break;
                     case
                     String:
-                        var o = {dataType:'String'};
+                        var o = {schemaType:'String'};
                         if (p.enumValues && p.enumValues.length) {
                             o.options = p.enumValues;
                             o.type = 'MultiEditor';
@@ -245,7 +267,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                     case
                     Boolean:
                         _u.extend(defaults, {
-                            dataType:'Boolean',
+                            schemaType:'Boolean',
                             type:'Checkbox'
                         });
                         break;
@@ -253,7 +275,8 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                     Date:
                         _u.extend(defaults, {
                             type:'DateTime',
-                            dataType:'Date'
+                            schemaType:'Date',
+                            dataType:'date'
 
                         })
                         break;
@@ -266,7 +289,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
             } else {
                 if (path != 'id')
                     console.log('No Type for [' + path + '] guessing String', p);
-                defaults.dataType = 'String';
+                defaults.schemaType = 'String';
             }
         }
     }

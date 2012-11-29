@@ -186,6 +186,7 @@ EditPlugin.prototype.routes = function () {
 
     this.app.post(base +'/admin/editorsFor', function (req,res, next){
         var body = req.body;
+        console.log('editorsFor',body);
         res.send({
             status:0,
             payload:this.pluginManager.editorsFor(body.path, body.property, this.pluginManager.schemaFor(body.schema))
