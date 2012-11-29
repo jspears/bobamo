@@ -1,5 +1,5 @@
 define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!${pluginUrl}/templates/admin/display.html', 'jquery-ui',
-    'libs/backbone-forms/src/jquery-ui-editors', 'libs/editors/unit-editor', 'libs/editors/color-editor', 'libs/editors/placeholder-editor'], function (_, $, Backbone, EditView, template) {
+    'libs/backbone-forms/editors/list', 'libs/editors/unit-editor', 'libs/editors/color-editor', 'libs/editors/placeholder-editor'], function (_, $, Backbone, EditView, template) {
 
     var fieldsets = {{html JSON.stringify(lessFactory.fieldsets())}};
     var schema = {{html JSON.stringify(lessFactory.schemaFor())}};
