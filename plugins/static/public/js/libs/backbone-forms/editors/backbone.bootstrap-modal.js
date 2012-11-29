@@ -12,7 +12,7 @@
  * cancel: The user dismissed the modal
  * ok: The user clicked OK
  */
-define(['jquery', 'underscore', 'Backbone', 'Backbone.Form', 'bootstrap/bootstrap-modal', 'libs/backbone-forms/editors/list'],
+define(['jquery', 'underscore', 'Backbone', 'Backbone.Form', 'bootstrap/js/bootstrap-modal', 'libs/backbone-forms/editors/list'],
 function($, _, Backbone, Form, BList) {
 
   //Set custom template settings
