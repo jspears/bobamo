@@ -91,29 +91,32 @@ EditPlugin.prototype.routes = function () {
         var pm = this.pluginManager;
         var validators = [];
         var type = req.params.type;
+//
+//        function onValidator(v, k) {
+//            var idx;
+//            if (v.types) {
+//                if (~(idx = v.types.indexOf(type))) {
+//                    if (idx == 0)
+//                        validators.unshift(v)
+//                    else
+//                        validators.shift(v)
+//                }
+//            } else if (v.type)
+//                validators.push({type:v.type})
+//            else if (v instanceof String) {
+//                validators.push({type:v})
+//
+//            }
+//        }
 
-        function onValidator(v, k) {
-            var idx;
-            if (v.types) {
-                if (~(idx = v.types.indexOf(type))) {
-                    if (idx == 0)
-                        validators.unshift(v)
-                    else
-                        validators.shift(v)
-                }
-            } else if (v.type)
-                validators.push({type:v.type})
-            else if (v instanceof String) {
-                validators.push({type:v})
-
-            }
-        }
-
+        var validators = [];
         _u.each(pm.plugins, function (v, k) {
-            _u.each(v.validators(type), onValidator);
+            var vals =v.validators(type);
+            if (vals && vals.length)
+                validators = validators.concat(vals);
         });
         res.send({
-            payload:_u.map(validators, function(v){if (v.type) v.type = v.type.toLowerCase(); return v;}),
+            payload:validators,
             status:0
         });
 
