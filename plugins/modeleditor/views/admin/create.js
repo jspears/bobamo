@@ -13,21 +13,20 @@ define([
 ], function (_, Backbone, Property, Fieldset, Form, EditView, inflection, Modal, template) {
     "use strict";
 
-    function onModel(path) {
+    function onModel(body) {
         var editors = {};
-        var paths = body.paths;
-        delete body.paths;
         var model = _.extend({schema:{}}, body.display, _.omit(body, 'paths'));
 
         function onPath(obj) {
             return function (v, k) {
 
-                var paths = v.paths;
-                delete v.paths;
-                var p = _.omit(v, 'persistence', 'paths');
+                  var p = _.omit(v, 'persistence');
                 var schemaType = v.persistence.schemaType;
+                var persistence  = v.persistence[schemaType];
+                var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, persistence);
+                var paths = nobj.paths;
+                delete nobj.paths;
 
-                var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, v.persistence[schemaType]);
                 if (v.type)
                     editors[v.type] = true;
 
@@ -43,7 +42,7 @@ define([
 
         }
 
-        _.each(paths, onPath(model.schema));
+        _.each(body.paths, onPath(model.schema));
 
         model.includes = _.map(_.omit(editors, _.keys(Form.editors)), function (v, k) {
             return 'libs/editors/' + inflection.hyphenize(k)
@@ -283,7 +282,7 @@ define([
         presave:function () {
 
 
-            var model = fixup(this.form.getValue());
+            var model = onModel(this.form.getValue());
             if (model.fieldsets && !model.fieldsets.length)
                 model.fieldsets = [
                     {fields:_.keys(model.schema)}
