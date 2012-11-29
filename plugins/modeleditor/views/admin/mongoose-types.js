@@ -1,6 +1,6 @@
-define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquery'], function (exports, b, Form, _, $) {
+define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validators', 'underscore', 'jquery'], function (exports, b, Form, validators, _, $) {
     "use strict";
-
+    validators.inject(Form);
     var TC = b.Collection.extend({
         parse:function (resp) {
             var ret = resp.payload;
@@ -42,7 +42,14 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
                 schema:{
                     type:{
                         type:'Select',
-                        options:json('/admin/validators/' + type, 'type')
+                        options:(function (type) {
+                            var arr = [];
+                            _.each(validators.validators, function (v, k) {
+                                if (v.types && v.types.indexOf(type) || !v.types)
+                                    arr.push({label:v.name, val:k, validator:v});
+                            })
+                            return arr;
+                        })(type)
                     },
                     message:{type:'Text', help:'Error message to display'},
                     configure:{type:'JsonTextArea', help:'This will be parsed to JSON and passed into the validation method, please use carefully'}
@@ -59,22 +66,23 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'underscore', 'jquer
                         console.log('onChange', options);
                         var value = type.getValue();
                         if (value) {
-                            var key = value.toLowerCase();
-                            var m = options.where({type:value})
+                            var m = _.where(options, {val:value})
                             if (m && m.length) {
                                 m = m[0]
-                                var mesg = m.get('message') || Form.validators.errMessages[key];
-                                var def = {};
-                                def[key] = "";
-                                var config = m.get('configure') || def;
-                                f.fields.message.setValue(mesg);
-                                f.fields.configure.setValue(JSON.stringify(config) + "");
+                                if (m.val != this.fields.type.getValue()) {
+                                    var mesg = m.validator.message || Form.validators.errMessages[key];
+                                    var def = {};
+                                    def[m.val] = "";
+                                    var config = def;
+                                    f.fields.message.setValue(mesg);
+                                    f.fields.configure.setValue(f.fields.configure.getValue() || JSON.stringify(config) + "");
+                                }
                             }
                         }
                     }
 
                     f.on("type:change", onChange);
-                    f.on("render", onChange);
+//                    f.on("render", onChange);
 
                     return f;
                 }

@@ -124,7 +124,7 @@ EditPlugin.prototype.routes = function () {
             _u.each(v.validators(type), onValidator);
         });
         res.send({
-            payload:validators,
+            payload:_u.map(validators, function(v){if (v.type) v.type = v.type.toLowerCase(); return v;}),
             status:0
         });
 

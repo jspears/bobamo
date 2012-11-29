@@ -7,10 +7,6 @@ var MongoosePlugin = function (options) {
 sutil.inherits(MongoosePlugin, Plugin);
 module.exports = MongoosePlugin;
 
-MongoosePlugin.prototype.routes = MongoosePlugin.prototype.filters = function () {
-};
-// the Mongoose plugin is responsible for first adding the modelpaths object to the global AppModel during plugin-manager
-// initialization
 MongoosePlugin.prototype.appModel = function (options) {
     var self = this;
     var mongoose = this.options.mongoose;
@@ -24,23 +20,29 @@ MongoosePlugin.prototype.appModel = function (options) {
         });
     }
 }
-function naturalType(mongoose, type){
-    switch(type){
-        case 'String': return String;
-        case 'Date': return Date;
-        case 'Number': return Number;
-        case 'Boolean': return Boolean;
-        case 'ObjectId': return mongoose.Schema.Types.ObjectId;
-        default:{
+function naturalType(mongoose, type) {
+    switch (type) {
+        case 'String':
+            return String;
+        case 'Date':
+            return Date;
+        case 'Number':
+            return Number;
+        case 'Boolean':
+            return Boolean;
+        case 'ObjectId':
+            return mongoose.Schema.Types.ObjectId;
+        default:
+        {
             return mongoose.Schema.Types[type];
         }
     }
 }
 var TypeAllow = {
-    'String':['min','max','trim','uppercase','lowercase'],
-    'Number':['min','max']
+    'String':['min', 'max', 'trim', 'uppercase', 'lowercase'],
+    'Number':['min', 'max']
 }
-MongoosePlugin.prototype.schemaFor = function(schema){
+MongoosePlugin.prototype.schemaFor = function (schema) {
     var paths = schema.paths;
     var nSchema = _u.extend({}, _u.omit(schema, 'paths', 'modelName'));
     var pm = this.pluginManager;
@@ -54,15 +56,15 @@ MongoosePlugin.prototype.schemaFor = function(schema){
             model[v.name] = v.multiple ? [path] : path;
             if (v.ref) path.ref = v.ref;
             if (v.schemaType == 'Object')
-               return onPath(v.subSchema)
+                return onPath(v.subSchema)
 
-            _u.each(['unique','index','expires','select'], function(vv,k){
-               if (_.isUndefined(v[vv]) || v[vv] == null)
+            _u.each(['unique', 'index', 'expires', 'select'], function (vv, k) {
+                if (_.isUndefined(v[vv]) || v[vv] == null)
                     return;
                 path[vv] = v[vv];
-            },this);
-            if (v.schemaType == 'String'){
-                if (~['uppercase','lowercase'].indexOf(v.textCase)){
+            });
+            if (v.schemaType == 'String') {
+                if (~['uppercase', 'lowercase'].indexOf(v.textCase)) {
                     path[v.textCase] = true;
                 }
             }
@@ -78,7 +80,7 @@ MongoosePlugin.prototype.schemaFor = function(schema){
     }
 
     _u.each(paths, onPath(nSchema));
-
+    console.log('schema', nSchema);
     return new this.options.mongoose.Schema(nSchema);
 }
 MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
@@ -91,7 +93,7 @@ MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
 MongoosePlugin.prototype.validators = function (type) {
     return [
         {
-           type:'Required'
+            type:'Required'
         },
         {
             types:['String'],
@@ -117,7 +119,6 @@ MongoosePlugin.prototype.validators = function (type) {
             types:['String'],
             type:'enum'
         }
-
 
 
     ]
@@ -158,8 +159,8 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
 
         return null;
     }
-        if( opts.display && opts.display.display == 'none')
-            defaults.hidden = true;
+    if (opts.display && opts.display.display == 'none')
+        defaults.hidden = true;
 
     if (!tmpP && Model) {
         var obj = { subSchema:{}, type:'Object'}
@@ -207,7 +208,6 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
         } else {
             var type = p && (util.depth(p, 'options.type') || p.type);
             if (type instanceof Array) {
-                console.log('it is an array');
                 _u.extend(defaults, {
                     type:'List'
                 });
@@ -301,12 +301,30 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
         _u.each(p.validators, function (v, k) {
             if (v.length) {
                 if (v[0] instanceof RegExp) {
-                    util.defaultOrSet(defaults, 'validators', []).push({ type:'regexp',regexp: v[0]+'', message:v[1] });
-                } else {
-                    console.warn('can only handle client side regex/required validators for now', v, k)
+                    util.defaultOrSet(defaults, 'validators', []).push({ type:'regexp', regexp:v[0] + '', message:v[1] });
+                } else if (v[1] == 'required') {
+                    util.defaultOrSet(defaults, 'validators', []).push({ type:'required', message:v[1] });
+
+                } else if (p.instance == 'Number' || _u.isNumber(p.options.min)) {
+                    if (v[1] == 'min') {
+                       util.defaultOrSet(defaults, 'validators', []).push({ type:'min', message:v[1], configure:{min:p.options.max} });
+
+                    } else if (v[1] == 'max' || _u.isNumber(p.options.max)) {
+                       util.defaultOrSet(defaults, 'validators', []).push({ type:'max', message:v[1], configure:{min:p.options.min}  });
+                    }
+                }else {
+                    console.warn('can only handle client side regex/required/min/max validators for now', v)
                 }
             }
         })
+    }
+    if (p.instance == 'String' && p.options){
+        if ( _u.isNumber(p.options.min)) {
+            util.defaultOrSet(defaults, 'validators', []).push({ type:'minlength', configure:{minlength:p.options.min} });
+        }
+        if (_u.isNumber(p.options.max)) {
+            util.defaultOrSet(defaults, 'validators', []).push({ type:'maxlength', configure:{maxlength:p.options.max} });
+        }
     }
     var ret = _u.extend({type:'Text'}, defaults, opts.display);
     return ret;
