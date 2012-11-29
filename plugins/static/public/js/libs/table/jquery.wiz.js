@@ -26,11 +26,13 @@
             function current() {
                 var h = window.location.hash;
                 var obj = q.parse(h.substring(h.indexOf('?') + 1));
-                return  _options.current || obj[_options.stepKey] && parseInt(obj[_options.stepKey]) - 1 || 0;
+                return  _options.current || _options.stepKey && obj[_options.stepKey] && parseInt(obj[_options.stepKey]) - 1 || 0;
             }
 
             this.current = current();
             function hash(s) {
+                if (_options.stepKey == null)
+                    return window.location.hash
                 var h = window.location.hash;
                 var idx = h.indexOf('?');
                 var path = (0 > idx) ? h : h.substring(0, idx + 1);
@@ -81,8 +83,15 @@
             this.step(this.current);
         }
 
-        Wizard.prototype.enable = function(){
-
+        Wizard.prototype.removeStepKey = function(){
+             var h = window.location.hash;
+             var idx = h.indexOf('?');
+             var path = (0 > idx) ? h : h.substring(0, idx + 1);
+             var obj = q.parse(h.substring(path.length));
+             delete obj[this.options.stepKey];
+             if (path[path.length -1] != '?')
+                   path = path+'?'
+             return window.location.hash =path + q.stringify(obj)
         }
         Wizard.prototype.step = function (pos) {
             pos = pos || 0;

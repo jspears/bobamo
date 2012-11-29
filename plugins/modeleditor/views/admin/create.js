@@ -12,12 +12,47 @@ define([
 
 ], function (_, Backbone, Property, Fieldset, Form, EditView, inflection, Modal, template) {
     "use strict";
-    var typeOptions = ["Text", "Checkbox", "Checkboxes", "Date", "DateTime", "Hidden", "List", "NestedModel", "Number", "Object",
-        "Password", "Radio", "Select", "TextArea", "MultiEditor", "ColorEditor", "UnitEditor", "PlaceholderEditor"];
-    var schemaTypes = ["text", "tel", "time", "url", "range", "number", "week", "month", "year", "date", "datetime", "datetime-local", "email", "color"];
 
-    var MatchRe = /^\//;
+    function onModel(path) {
+        var editors = {};
+        var paths = body.paths;
+        delete body.paths;
+        var model = _.extend({schema:{}}, body.display, _.omit(body, 'paths'));
 
+        function onPath(obj) {
+            return function (v, k) {
+
+                var paths = v.paths;
+                delete v.paths;
+                var p = _.omit(v, 'persistence', 'paths');
+                var schemaType = v.persistence.schemaType;
+
+                var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, v.persistence[schemaType]);
+                if (v.type)
+                    editors[v.type] = true;
+
+                if (schemaType == 'Object')
+                    return   _.each(paths, onPath((nobj.subSchema = {})));
+
+                if (nobj.validators) {
+                    nobj.validators = _.map(v.validators, function (vv, kk) {
+                        return _.extend({}, _.omit(vv, 'configure'), vv.configure);
+                    });
+                }
+            }
+
+        }
+
+        _.each(paths, onPath(model.schema));
+
+        model.includes = _.map(_.omit(editors, _.keys(Form.editors)), function (v, k) {
+            return 'libs/editors/' + inflection.hyphenize(k)
+
+        });
+        model.modelName = body.modelName;
+        return model;
+
+    }
 
     var Display = Backbone.Model.extend({
         schema:{
@@ -31,12 +66,12 @@ define([
             "labelAttr":{"title":"Label Attribute", "help":"This is a label that gives a succinct description of object, dot notation can be used"}
         },
         fields:['title', 'plural', 'hidden', 'labelAttr'],
-        createForm:function(opts){
+        createForm:function (opts) {
             var form = this.form = new Form(opts);
             var pform = opts.pform;
-            if (pform && pform.fields.modelName){
-                var onModelName = function(){
-                    var modelName =   pform.fields.modelName.getValue()
+            if (pform && pform.fields.modelName) {
+                var onModelName = function () {
+                    var modelName = pform.fields.modelName.getValue()
                     form.fields.title.editor.$el.attr('placeholder', inflection.titleize(inflection.humanize(modelName)));
                     form.fields.plural.editor.$el.attr('placeholder', inflection.titleize(inflection.pluralize(inflection.humanize(modelName))));
                 }
@@ -44,7 +79,7 @@ define([
                 pform.on('render', onModelName);
                 pform.on('paths:change', function () {
                     //update
-                    var value = _.map(pform.fields.paths.getValue(), function(v){
+                    var value = _.map(pform.fields.paths.getValue(), function (v) {
                         return {schemaType:v.persistence.schemaType, name:v.name};
                     });
                     var $el = form.fields.labelAttr.editor.$el;
@@ -52,9 +87,9 @@ define([
                         $el.removeAttr('placeholder');
                     } else {
                         var pv = _.pluck(_.where(value, {schemaType:'String'}), 'name');
-                        if (pv.length){
+                        if (pv.length) {
                             var labelAttr = ((~pv.indexOf('name') && 'name') || (~pv.indexOf('label') && 'label') || (~pv.indexOf('description') && 'description') || pv[0]);
-                            $el.attr('placeholder', labelAttr );
+                            $el.attr('placeholder', labelAttr);
                         }
                     }
 
@@ -134,18 +169,18 @@ define([
 
                     if (v.ref) {
                         v.schemaType = 'ObjectId';
-                    }else  if (!v.schemaType)
+                    } else if (!v.schemaType)
                         v.schemaType = 'Object';
                     var persistence = (v.persistence = {schemaType:v.schemaType})[v.schemaType] = v;
 
-                    if (v.validators && v.validators.length){
-                        v.validators = _.map(v.validators, function(v,k){
-                                var mesg = v.message || Form.validators.errMessages[v.type];
-                                return {
-                                    type:v.type,
-                                    message:mesg,
-                                    configure:_.omit(v, 'type','message')
-                                }
+                    if (v.validators && v.validators.length) {
+                        v.validators = _.map(v.validators, function (v, k) {
+                            var mesg = v.message || Form.validators.errMessages[v.type];
+                            return {
+                                type:v.type,
+                                message:mesg,
+                                configure:_.omit(v, 'type', 'message')
+                            }
                         });
                     }
 
@@ -170,15 +205,17 @@ define([
         },
         idAttribute:'modelName'
     });
-    function schemaWalk(schema, callback){
-        _.each(schema, function(v,k){
-            if (callback(v,k) === false)
+
+    function schemaWalk(schema, callback) {
+        _.each(schema, function (v, k) {
+            if (callback(v, k) === false)
                 return;
-            if (v.subSchema){
+            if (v.subSchema) {
                 schemaWalk(v.subSchema, callback)
             }
         })
     }
+
     return EditView.extend({
         events:_.extend({
             'click .preview':'onPreviewClick',
@@ -201,13 +238,13 @@ define([
         wizOptions:{
             fieldset:'> div.form-container > form.form-horizontal > fieldset'
         },
-        onPreviewSchema:function(){
+        onPreviewSchema:function () {
             var model = this.presave()
-            var content =     JSON.stringify(model, null,"\t");
+            var content = JSON.stringify(model, null, "\t");
             var rows = content.split("\n").length;
             new Modal({
-                content:'<textarea style="width:100%;height:100%;overflow: hidden;" rows="'+rows+'">'+content+'</textarea>',
-                title:'Schema Preview of ['+model.modelName+']',
+                content:'<textarea style="width:100%;height:100%;overflow: hidden;" rows="' + rows + '">' + content + '</textarea>',
+                title:'Schema Preview of [' + model.modelName + ']',
                 animate:true
             }).open();
             return false;
@@ -245,62 +282,21 @@ define([
         },
         presave:function () {
 
-            var model = this.form.getValue();
-     //       console.log('presave->model', JSON.stringify(model));
-            var editors = {};
-            var fixup = function (body) {
-                var paths = body.paths;
-                delete body.paths;
-                var model = _.extend({schema:{}}, body.display, _.omit(body,'paths'));
 
-                function onPath(obj) {
-                    return function (v, k) {
-
-                        var paths = v.paths;
-                      //  delete v.paths;
-                        var nobj = {};
-                        if (v.persistence ) {
-                            _.extend(v, v.persistence[v.schemaType]);
-                        }
-
-
-                        if (v.validators){
-                            v.validators = _.map(v.validators, function(vv,kk){
-                                return _.extend({}, _.omit(vv, 'configure'), vv.configure);
-                            });
-                        }
-                        if (v.schemaType == 'Object')
-                             _.each(paths, onPath((nobj.subSchema = {})));
-
-                        if (v.type)
-                            editors[v.type] = true;
-
-                        obj[v.name] = _.extend(nobj, _.omit(v, 'persistence', 'paths'));
-                    }
-
-                }
-
-                _.each(paths, onPath(model.schema));
-
-                model.includes = _.map(_.omit(editors, _.keys(Form.editors)), function (v, k) {
-                    return 'libs/editors/' + inflection.hyphenize(k)
-
-                });
-                model.modelName = body.modelName;
-                return model;
-            }
-            model = fixup(model);
-            if (model.fieldsets && ! model.fieldsets.length)
-                 model.fieldsets = [{fields:_.keys(model.schema)}];
+            var model = fixup(this.form.getValue());
+            if (model.fieldsets && !model.fieldsets.length)
+                model.fieldsets = [
+                    {fields:_.keys(model.schema)}
+                ];
             else
-            _.each(model.fieldsets, function (fieldset) {
-                var fields = fieldset.fields || fieldset || [];
-                var idx;
-                while (~(idx = fields.indexOf(null)) && fields.splice(idx, 1).length);
-            });
+                _.each(model.fieldsets, function (fieldset) {
+                    var fields = fieldset.fields || fieldset || [];
+                    var idx;
+                    while (~(idx = fields.indexOf(null)) && fields.splice(idx, 1).length);
+                });
 
 
-            console.log('postfixup',model);
+            console.log('postfixup', model);
             return model;
         },
         onSave:function (e) {
@@ -347,6 +343,7 @@ define([
                 }
 
             }
+
             form.on('modelName:change', enabled);
 
             form.on('paths:change', function () {

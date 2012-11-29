@@ -27,7 +27,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             name:null,
             title:null,
             help:null,
-            type:'String',
+            type:'Text',
             ref:null,
             multiple:false,
             virtual:false,
@@ -38,7 +38,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             hidden:{type:'Checkbox'},
             title:{type:'Text'},
             help:{type:'Text'},
-            editor:{ title:'Editor Type', type:'Select', options:[], help:'The Editor type helps choose the correct way to change a value for the form.'},
+            type:{ title:'Editor Type', type:'Select', options:[], help:'The Editor type helps choose the correct way to change a value for the form.'},
             dataType:{
                 type:'Select',
                 help:'HTML5 data type to use on input',
@@ -89,7 +89,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             { legend:'Property', fields:['name', 'multiple', 'hidden']},
             { legend:'Persistence', fields:['persistence']},
             { legend:'Display', fields:['title', 'help']},
-            { legend:'Editor', fields:['placeholder', 'editor', 'dataType', 'fieldsets', 'list_fields']}
+            { legend:'Editor', fields:['placeholder', 'type', 'dataType', 'fieldsets', 'list_fields']}
         ],
         toString:function () {
             var description = this.get('help');
@@ -111,9 +111,9 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                 var schemaType = form.fields.persistence.editor.form.fields.schemaType.getValue();
                 console.log('type', schemaType);
                 if (hidden)
-                    form.fields.editor.$el.hide();
+                    form.fields.type.$el.hide();
                 else
-                    form.fields.editor.editor.setOptions(function (cb) {
+                    form.fields.type.editor.setOptions(function (cb) {
                         $.getJSON('${pluginUrl}/admin/editors/' + schemaType, function (resp) {
                             cb(resp.payload);
                         })

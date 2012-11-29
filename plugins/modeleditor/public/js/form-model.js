@@ -13,8 +13,13 @@ define(['Backbone', 'Backbone.Form', 'underscore', 'jquery', 'backbone-modal', '
             renderBootstrapModal.apply(this, _.toArray(arguments));
             var $mbody = this.$el.find('.modal-body');
             if ($mbody.wiz){
-                $mbody.wiz({stepKey:'_propStep', clsNames:'', steps:'Step {current} of {steps}', replace:$('a.ok', this.$el), fieldset:'> form.form-horizontal > fieldset'});
+                $mbody.wiz({stepKey:null, clsNames:'', steps:'Step {current} of {steps}', replace:$('a.ok', this.$el), fieldset:'> form.form-horizontal > fieldset'});
             }
+
+//            //Removes the stepkey in the url so when a property or something changes this won't remember the step.
+//            this.on('cancel', function(){
+//                $mbody.wiz('removeStepKey');
+//            })
             this.$el.find('.cancel').addClass('pull-left');
             //TODO - seriously find a better way to fix nestedforms so that this is not necessary.
             $mbody.find('> form.form-horizontal > fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})

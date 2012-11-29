@@ -58,7 +58,7 @@ MongoosePlugin.prototype.schemaFor = function(schema){
                if (_.isUndefined(v[vv]) || v[vv] == null)
                     return;
                 path[vv] = v[vv];
-            },this);
+            });
             if (v.schemaType == 'String'){
                 if (~['uppercase','lowercase'].indexOf(v.textCase)){
                     path[v.textCase] = true;
@@ -76,7 +76,7 @@ MongoosePlugin.prototype.schemaFor = function(schema){
     }
 
     _u.each(paths, onPath(nSchema));
-
+    console.log('schema', nSchema);
     return new this.options.mongoose.Schema(nSchema);
 }
 MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
