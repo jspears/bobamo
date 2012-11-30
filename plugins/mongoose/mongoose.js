@@ -1,5 +1,18 @@
-var Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), MModel = require('./mmodel');
-
+var  requirejs = require('requirejs'), Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), MModel = require('./mmodel');
+console.log('mongoose plugin', __dirname+'/public/js/validators')
+requirejs.config({
+    nodeRequire:require,
+    paths:{
+        'mongoose':__dirname
+    }
+})
+var valid = {};
+var validFuncs =  {};
+requirejs(['mongoose/public/js/validators'], function(v){
+    _u.extend(valid, v);
+    valid.inject(validFuncs);
+    console.log('valid', valid, validFuncs);
+});
 var MongoosePlugin = function (options) {
     Plugin.apply(this, arguments);
     this.pluginUrl = this.baseUrl;
@@ -72,7 +85,7 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
             if (v.validators) {
                 var valid = (path.validate = []);
                 _u.each(v.validators, function (vv, kk) {
-                    valid.push([pm.validator(vv).validator, vv.message]);
+                    valid.push(pm.validator(vv, kk));
                 })
             }
 
@@ -90,59 +103,21 @@ MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
         callback(model);
     return model;
 }
+function onValid(v,k){
+    return _u.extend({type:k}, v);
+}
 MongoosePlugin.prototype.validators = function (type) {
-    return [
-        {
-            type:'Required'
-        },
-        {
-            types:['String'],
-            type:'RegExp'
-        },
-        {
-            types:['Number'],
-            type:'min'
-        },
-        {
-            types:['Number'],
-            type:'max'
-        },
-        {
-            types:['String'],
-            type:'maxLength'
-        },
-        {
-            types:['String'],
-            type:'minLength'
-        },
-        {
-            types:['String'],
-            type:'enum'
-        }
+    var validall =  _u.map(valid.validators, onValid);
 
-
-    ]
+    if (type){
+        return _u.filter(validall, function(v,k){
+            return !v.types ? true : v.types && ~v.types.indexOf(type);
+        });
+    }
+    return validall;
 }
 MongoosePlugin.prototype.validator = function (v) {
-    if ((v.name || v) == 'match') {
-        var re = new RegExp(v.configure.match);
-        return {
-            name:'match',
-            validate:function (vv) {
-
-                return re.test(vv);
-            },
-            message:v.message
-        }
-    } else if ((v.name || v) == 'required') {
-        return {
-            name:'required',
-            validate:function (vv) {
-
-            },
-            message:v.message
-        }
-    }
+   return validFuncs[v.type || v.name || v];
 }
 
 MongoosePlugin.prototype.editorFor = function (path, p, Model) {
