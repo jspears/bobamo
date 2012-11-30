@@ -144,6 +144,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                 }
 
             }
+
             form.on('name:change', function(){
 
             });
