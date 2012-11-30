@@ -11,7 +11,6 @@ var validFuncs =  {};
 requirejs(['mongoose/public/js/validators'], function(v){
     _u.extend(valid, v);
     valid.inject(validFuncs);
-    console.log('valid', valid, validFuncs);
 });
 var MongoosePlugin = function (options) {
     Plugin.apply(this, arguments);
@@ -45,6 +44,8 @@ function naturalType(mongoose, type) {
             return Boolean;
         case 'ObjectId':
             return mongoose.Schema.Types.ObjectId;
+        case 'Array':
+            return Array;
         default:
         {
             return mongoose.Schema.Types[type];
@@ -56,23 +57,24 @@ var TypeAllow = {
     'Number':['min', 'max']
 }
 MongoosePlugin.prototype.schemaFor = function (schema) {
-    var paths = schema.paths;
-    var nSchema = _u.extend({}, _u.omit(schema, 'paths', 'modelName'));
+    schema = schema.schema || schema;
+    var nSchema = {};
     var pm = this.pluginManager;
     var mongoose = this.options.mongoose;
 
-    function onPath(model) {
-        return function (v, k) {
+    function onPath(model, obj) {
+        _u.each(model, function (v, k) {
             var path = {};
             if (v.name == '_id' || v.name == 'id')
                 return;
-            model[v.name] = v.multiple ? [path] : path;
+            obj[v.name] = v.multiple ? [path] : path;
             if (v.ref) path.ref = v.ref;
-            if (v.schemaType == 'Object')
-                return onPath(v.subSchema)
-
+            if (v.schemaType == 'Object'){
+                return onPath(v.subSchema, (path[v.name] = {}))
+            }
+            path.type = naturalType(mongoose, v.schemaType || 'String');
             _u.each(['unique', 'index', 'expires', 'select'], function (vv, k) {
-                if (_.isUndefined(v[vv]) || v[vv] == null)
+                if (_u.isUndefined(v[vv]) || v[vv] == null)
                     return;
                 path[vv] = v[vv];
             });
@@ -89,10 +91,10 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
                 })
             }
 
-        }
+        });
     }
 
-    _u.each(paths, onPath(nSchema));
+    onPath(schema, nSchema);
     console.log('schema', nSchema);
     return new this.options.mongoose.Schema(nSchema);
 }
@@ -127,7 +129,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
         p = tmpP
     var defaults = {};
     var opts = p.options || {};
-
+    var mongoose = this.options.mongoose;
     var apiPath = this.options.apiUri || this.baseUrl + 'rest/';
     //  var pathShema = schema.path(path);
     if (( path[0] == '_' && path != '_id')) {
@@ -182,6 +184,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
             });
         } else {
             var type = p && (util.depth(p, 'options.type') || p.type);
+            type = _u.isString(type) ? naturalType(mongoose, type) :type;
             if (type instanceof Array) {
                 _u.extend(defaults, {
                     type:'List'

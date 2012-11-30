@@ -29,7 +29,10 @@ define([
 
                 if (v.type)
                     editors[v.type] = true;
-
+                if (v.multiple){
+                    nobj.listType = v.schemaType;
+                    nobj.type = 'List';
+                }
                 if (schemaType == 'Object')
                     return   _.each(paths, onPath((nobj.subSchema = {})));
 
@@ -134,8 +137,10 @@ define([
         },
         urlRoot:"${pluginUrl}/admin/backbone/",
         save:function () {
-            console.log('saving', this.toJSON());
-            Backbone.Model.prototype.save.apply(this, _.toArray(arguments));
+            var data = this.presave();
+            var arr =  _.toArray(arguments);
+            arr.splice(0,1,data);
+            Backbone.Model.prototype.save.apply(this, arr);
         },
 
         parse:function (resp) {
@@ -307,7 +312,14 @@ define([
             var errors = this.form.commit();
             var save = this.presave();
             if (!(errors)) {
-                this.form.model.save(save, {error:this.onError});
+                $.ajax({
+                    url:'${pluginUrl}/admin/backbone',
+                    type:'PUT',
+                    data:save,
+                    success:_.bind(this.onSuccess, this)
+
+                });
+                //this.form.model.save(save, {error:this.onError});
             } else if (errors) {
                 this.onError(this.form.model, errors);
             }

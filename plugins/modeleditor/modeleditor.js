@@ -1,4 +1,4 @@
-var Plugin = require('../../lib/plugin-api'), util = require('util'), EditModel = require('./edit-display-model'), _u = require('underscore'), mongoose = require('../../index').mongoose;
+var Plugin = require('../../lib/plugin-api'), util = require('util'), App = require('../../lib/display-model'), EditModel = require('./edit-display-model'), _u = require('underscore'), mongoose = require('../../index').mongoose;
 
 var EditPlugin = function () {
     Plugin.apply(this, arguments);
@@ -17,6 +17,16 @@ EditPlugin.prototype.appModel = function () {
     return this._appModel;
 }
 EditPlugin.prototype.configure = function (conf) {
+    if (conf  && conf.models)
+    _u.each(conf.models, function onModelConfigure(v,k){
+          if (v.configurable)
+             this.pluginManager.loadedPlugins[v.dbType || 'mongoose'].updateSchema(k, v);
+
+    }, this);
+    var arg = {
+        modelpaths:conf.models
+    };
+    new App(arg);
     return _u.extend(this._appModel, conf);
 }
 EditPlugin.prototype.routes = function () {
@@ -274,25 +284,37 @@ EditPlugin.prototype.routes = function () {
         return model;
 
     }
-    var create = function (req, res, next) {
-        var model = fixup(req.body);
-        console.log('backbone schema', JSON.stringify(model, null, "\t"))
-        this.pluginManager.updateSchema('mongoose', req.body.modelName, model, function () {
+
+    this.app.post(base + '/admin/preview', function(req,res){
+        this.save(req.body, function(){
             res.send({
                 status:0,
-                payload:{_id:req.body.modelName}
-            });
-        });
-
-    }.bind(this);
-    this.app.post(base + '/admin/preview', function (req, res, next) {
-        res.send({
-            status:0,
-            payload:fixup(req.body)
+                payload:req.body.modelName
+            })
         })
-    })
-    this.app.post(base + '/admin/model', create);
-    this.app.put(base + '/admin/backbone/:modelName?', create);
+    }.bind(this));
+    var appModel = this.pluginManager.appModel;
+    this.app.put(base + '/admin/backbone/:modelName?', function(req,res){
+
+        var persistPlugin =  this.pluginManager.loadedPlugins[req.body.dbType || 'mongoose'];
+
+        var modelName = req.body.modelName;
+
+       var mo = persistPlugin.updateSchema(modelName, req.body.schema);
+        console.log('modelName', modelName,mo);
+        var models = {models:{}};
+        var model = models.models[modelName] =req.body;
+        if (this._appModel &&  this._appModel.models && this._appModel.models[modelName] && this._appModel.models[modelName].configurable || appModel.modelFor(modelName) == null ){
+            model.configurable = true;
+        }
+        _u.extend(this._appModel, models);
+        this.save(this._appModel, function(){
+            res.send({
+                status:0,
+                payload:{modelName:modelName}
+            })
+        })
+    }.bind(this));
     this.app.put(base + '/admin/model/:id', function (req, res, next) {
 
         var obj = _u.extend({}, req.body);

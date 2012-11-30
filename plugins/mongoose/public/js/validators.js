@@ -171,7 +171,6 @@ define(['underscore'], function (_) {
         validators:validators,
         inject:function (bv) {
             var val = bv ? ( bv.validators || (bv.validators = {})) : {};
-            console.log('val', val);
             if (!val.errMessages) val.errMessages = {};
             _.each(this.validators, function (v, k) {
                 val.errMessages[k] = v.message;
