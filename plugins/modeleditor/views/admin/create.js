@@ -11,6 +11,7 @@ define([
     'text!${pluginUrl}/templates/admin/edit.html'
 
 ], function (_, Backbone, Property, Fieldset, Form, EditView, inflection, Modal, template) {
+
     "use strict";
 
     function onModel(body) {
@@ -20,21 +21,21 @@ define([
         function onPath(obj) {
             return function (v, k) {
 
-                  var p = _.omit(v, 'persistence');
+                var p = _.omit(v, 'persistence');
                 var schemaType = v.persistence.schemaType;
-                var persistence  = v.persistence[schemaType];
+
+                var persistence  = _.omit(v.persistence[schemaType], 'persistence');
                 var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, persistence);
                 var paths = nobj.paths;
                 delete nobj.paths;
 
                 if (v.type)
                     editors[v.type] = true;
-
                 if (schemaType == 'Object')
                     return   _.each(paths, onPath((nobj.subSchema = {})));
 
                 if (nobj.validators) {
-                    nobj.validators = _.map(v.validators, function (vv, kk) {
+                    nobj.validators = _.map(nobj.validators, function (vv, kk) {
                         return _.extend({}, _.omit(vv, 'configure'), vv.configure);
                     });
                 }
@@ -164,7 +165,7 @@ define([
                     delete model.hidden;
 
                     _.extend(model.display || (model.display = {}), display);
-                    v.multiple = v.type == 'Array' || v.multiple;
+                    v.multiple = v.type == 'List' || v.type == 'Array' || v.multiple;
 
                     if (v.ref) {
                         v.schemaType = 'ObjectId';
@@ -237,15 +238,28 @@ define([
         wizOptions:{
             fieldset:'> div.form-container > form.form-horizontal > fieldset'
         },
+        showSchema:function(resp){
+            var model =resp.payload;
+            var content = JSON.stringify(model, null, "\t");
+                      var rows = content.split("\n").length;
+            new Modal({
+                           content:'<textarea style="width:100%;height:100%;overflow: hidden;" rows="' + rows + '">' + content + '</textarea>',
+                           title:'Schema Preview of [' + model.modelName + ']',
+                           animate:true
+                       }).open();
+        },
         onPreviewSchema:function () {
             var model = this.presave()
-            var content = JSON.stringify(model, null, "\t");
-            var rows = content.split("\n").length;
-            new Modal({
-                content:'<textarea style="width:100%;height:100%;overflow: hidden;" rows="' + rows + '">' + content + '</textarea>',
-                title:'Schema Preview of [' + model.modelName + ']',
-                animate:true
-            }).open();
+
+
+            $.ajax({
+                type:'POST',
+                data:model,
+                url:'${pluginUrl}/admin/preview',
+                dataType:'json',
+                success:_.bind(this.showSchema, this)
+            })
+
             return false;
         },
         previewCB:function (model) {

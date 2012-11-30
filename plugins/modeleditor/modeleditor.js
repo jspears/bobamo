@@ -288,9 +288,9 @@ EditPlugin.prototype.routes = function () {
     this.app.post(base + '/admin/preview', function (req, res, next) {
         res.send({
             status:0,
-            payload:fixup(req.body)
+            payload:this.pluginManager.schemaFor(req.body)
         })
-    })
+    }.bind(this))
     this.app.post(base + '/admin/model', create);
     this.app.put(base + '/admin/backbone/:modelName?', create);
     this.app.put(base + '/admin/model/:id', function (req, res, next) {

@@ -55,9 +55,9 @@ var TypeAllow = {
     'String':['min', 'max', 'trim', 'uppercase', 'lowercase'],
     'Number':['min', 'max']
 }
-MongoosePlugin.prototype.schemaFor = function (schema) {
-    var paths = schema.paths;
-    var nSchema = _u.extend({}, _u.omit(schema, 'paths', 'modelName'));
+MongoosePlugin.prototype.schemaFor = function (m) {
+    var paths = m.schema || m;
+    var nSchema = {}//_u.extend({}, _u.omit(schema, 'paths', 'modelName'));
     var pm = this.pluginManager;
     var mongoose = this.options.mongoose;
 
@@ -68,11 +68,12 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
                 return;
             model[v.name] = v.multiple ? [path] : path;
             if (v.ref) path.ref = v.ref;
+            path.type = naturalType(mongoose, v.schemaType || 'String');
             if (v.schemaType == 'Object')
                 return onPath(v.subSchema)
 
             _u.each(['unique', 'index', 'expires', 'select'], function (vv, k) {
-                if (_.isUndefined(v[vv]) || v[vv] == null)
+                if (_u.isUndefined(v[vv]) || v[vv] == null)
                     return;
                 path[vv] = v[vv];
             });
@@ -94,7 +95,12 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
 
     _u.each(paths, onPath(nSchema));
     console.log('schema', nSchema);
-    return new this.options.mongoose.Schema(nSchema);
+    try {
+     return new this.options.mongoose.Schema(nSchema);
+    }catch(e){
+        console.log('warn', e);
+        return null;
+    }
 }
 MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
     var mschema = this.schemaFor(schema);
