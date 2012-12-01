@@ -11,7 +11,6 @@ define([
     'text!${pluginUrl}/templates/admin/edit.html'
 
 ], function (_, Backbone, Property, Fieldset, Form, EditView, inflection, Modal, template) {
-
     "use strict";
 
     function onModel(body) {
@@ -21,21 +20,24 @@ define([
         function onPath(obj) {
             return function (v, k) {
 
-                var p = _.omit(v, 'persistence');
+                  var p = _.omit(v, 'persistence');
                 var schemaType = v.persistence.schemaType;
-
-                var persistence  = _.omit(v.persistence[schemaType], 'persistence');
+                var persistence  = v.persistence[schemaType];
                 var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, persistence);
                 var paths = nobj.paths;
                 delete nobj.paths;
 
                 if (v.type)
                     editors[v.type] = true;
+                if (v.multiple){
+                    nobj.listType = v.schemaType;
+                    nobj.type = 'List';
+                }
                 if (schemaType == 'Object')
                     return   _.each(paths, onPath((nobj.subSchema = {})));
 
                 if (nobj.validators) {
-                    nobj.validators = _.map(nobj.validators, function (vv, kk) {
+                    nobj.validators = _.map(v.validators, function (vv, kk) {
                         return _.extend({}, _.omit(vv, 'configure'), vv.configure);
                     });
                 }
@@ -135,8 +137,10 @@ define([
         },
         urlRoot:"${pluginUrl}/admin/backbone/",
         save:function () {
-            console.log('saving', this.toJSON());
-            Backbone.Model.prototype.save.apply(this, _.toArray(arguments));
+            var data = this.presave();
+            var arr =  _.toArray(arguments);
+            arr.splice(0,1,data);
+            Backbone.Model.prototype.save.apply(this, arr);
         },
 
         parse:function (resp) {
@@ -165,7 +169,7 @@ define([
                     delete model.hidden;
 
                     _.extend(model.display || (model.display = {}), display);
-                    v.multiple = v.type == 'List' || v.type == 'Array' || v.multiple;
+                    v.multiple = v.type == 'Array' || v.multiple;
 
                     if (v.ref) {
                         v.schemaType = 'ObjectId';
@@ -238,28 +242,15 @@ define([
         wizOptions:{
             fieldset:'> div.form-container > form.form-horizontal > fieldset'
         },
-        showSchema:function(resp){
-            var model =resp.payload;
-            var content = JSON.stringify(model, null, "\t");
-                      var rows = content.split("\n").length;
-            new Modal({
-                           content:'<textarea style="width:100%;height:100%;overflow: hidden;" rows="' + rows + '">' + content + '</textarea>',
-                           title:'Schema Preview of [' + model.modelName + ']',
-                           animate:true
-                       }).open();
-        },
         onPreviewSchema:function () {
             var model = this.presave()
-
-
-            $.ajax({
-                type:'POST',
-                data:model,
-                url:'${pluginUrl}/admin/preview',
-                dataType:'json',
-                success:_.bind(this.showSchema, this)
-            })
-
+            var content = JSON.stringify(model, null, "\t");
+            var rows = content.split("\n").length;
+            new Modal({
+                content:'<textarea style="width:100%;height:100%;overflow: hidden;" rows="' + rows + '">' + content + '</textarea>',
+                title:'Schema Preview of [' + model.modelName + ']',
+                animate:true
+            }).open();
             return false;
         },
         previewCB:function (model) {
@@ -321,7 +312,14 @@ define([
             var errors = this.form.commit();
             var save = this.presave();
             if (!(errors)) {
-                this.form.model.save(save, {error:this.onError});
+                $.ajax({
+                    url:'${pluginUrl}/admin/backbone',
+                    type:'PUT',
+                    data:save,
+                    success:_.bind(this.onSuccess, this)
+
+                });
+                //this.form.model.save(save, {error:this.onError});
             } else if (errors) {
                 this.onError(this.form.model, errors);
             }

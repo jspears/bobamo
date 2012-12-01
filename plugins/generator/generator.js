@@ -52,7 +52,7 @@ GeneratorPlugin.prototype.routes = function (options) {
 
     function makeOptions(req) {
         var type = req.params.type;
-        var opts = _u.extend({}, baseOpts);
+        var opts = _u.extend({modelName:type}, baseOpts);
 
         if (type) {
             type = type.replace(extRe, '');
@@ -65,7 +65,7 @@ GeneratorPlugin.prototype.routes = function (options) {
 
     function makePostOptions(req) {
         var type = req.params.type;
-        var opts = _u.extend({}, baseOpts);
+        var opts = _u.extend({modelName:type}, baseOpts);
         if (type) {
             type = type.replace(extRe, '');
             opts.model = req.body;

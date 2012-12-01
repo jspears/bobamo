@@ -19,7 +19,6 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
         'Number':[
             'number',
             'range',
-            'month',
             'week']
     }
     var Property = b.Model.extend({
@@ -90,7 +89,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             { legend:'Property', fields:['name', 'multiple', 'hidden']},
             { legend:'Persistence', fields:['persistence']},
             { legend:'Display', fields:['title', 'help']},
-            { legend:'Editor', fields:[ 'placeholder', 'type', 'dataType', 'fieldsets', 'list_fields']}
+            { legend:'Editor', fields:['placeholder', 'type', 'dataType', 'fieldsets', 'list_fields']}
         ],
         toString:function () {
             var description = this.get('help');
@@ -109,8 +108,8 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             function onType(c1, c2, c3) {
                 var value = form.getValue();
                 var hidden = form.fields.hidden.getValue();
-
                 var schemaType = form.fields.persistence.editor.form.fields.schemaType.getValue();
+                console.log('type', schemaType);
                 if (hidden)
                     form.fields.type.$el.hide();
                 else
@@ -127,8 +126,8 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                 form.fields.list_fields.$el[ hidden || schemaType == 'ObjectId' ? 'hide' : show]();
                 // form.fields.editor.$el[hide]();
                 form.fields.placeholder.$el[hide]();
-//                form.fields.title.$el[hide]();
-//                form.fields.help.$el[hide]();
+                form.fields.title.$el[hide]();
+                form.fields.help.$el[hide]();
                 var dataType = form.fields.dataType;
                 if (DataTypes[schemaType]) {
                     dataType.$el.show();
@@ -146,12 +145,13 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
 
             }
 
+            form.on('name:change', function(){
+
+            });
             form.on("hidden:change", onType);
             form.on("render", onType)
             form.on("persistence:render", onType);
-            form.on("multiple:change", onType)
             form.on("persistence:schemaType:change", onType);
-            $('.form-horizontal', form.$el).wiz({stepKey:'_propStep'});
             $('.form-horizontal', form.$el).wiz({stepKey:'_propStep'});
 
             return form;
