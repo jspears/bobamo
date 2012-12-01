@@ -56,6 +56,9 @@ var TypeAllow = {
     'String':['min', 'max', 'trim', 'uppercase', 'lowercase'],
     'Number':['min', 'max']
 }
+MongoosePlugin.prototype.modelFor = function(m){
+    return this.options.mongoose.models[m];
+}
 MongoosePlugin.prototype.schemaFor = function (schema) {
     schema = schema.schema || schema;
     var nSchema = {};
@@ -101,6 +104,7 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
 MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
     var mschema = this.schemaFor(schema);
     var model = this.options.mongoose.model(modelName, mschema);
+    console.log('loading schema', modelName);
     if (callback)
         callback(model);
     return model;
