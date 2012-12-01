@@ -10,7 +10,6 @@ define({{html includes(
     'libs/backbone-forms/editors/list']
 )}}, function (_,EditView, collection, Model, template) {
     "use strict";
-
     var fieldsets = eval('({{html JSON.stringify(model.fieldsets) }})');
     return EditView.extend({
         fieldsets:fieldsets,

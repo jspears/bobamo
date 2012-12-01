@@ -4,7 +4,7 @@ define([
     'libs/bobamo/edit',
     'text!${pluginUrl}/templates/admin/edit.html',
     'jquery-ui',
-    'libs/backbone-forms/src/jquery-ui-editors',
+    'libs/backbone-forms/editors/list',
     'libs/editors/multi-editor'
 ], function (_, Backbone, EditView, template) {
     "use strict";

@@ -1,4 +1,6 @@
-var _u = require('underscore'), util = require('../../lib/util');
+// Model and Model Schema Editor and Definition
+var _u = require('underscore'), util = require('../../lib/util'), DisplayModel = ('../../lib/display-model');
+// EditApp is instantiated as editModel when you use the modeleditor plugin from the * route
 var EditApp = function (App, options) {
     this.app = App;
     this.options = _u.extend({}, options);
@@ -8,7 +10,7 @@ var EditApp = function (App, options) {
             return k
         });
     });
-
+    // EditApp adds in the editors to the modelPaths object that the display model does not have
     this.__defineGetter__('modelPaths', function () {
         var ret = {};
         _u.each(this.app.modelPaths, function onModelPaths(v, k) {
@@ -33,8 +35,16 @@ EditApp.prototype.modelFor = function (model) {
 }
 
 EditApp.prototype.schemaFor = function (model, fields) {
-    return this.schema;
+    return this.schema;  // used to return the schema for Backbone model
 }
+
+// new function to create a blank model
+EditApp.prototype.createModel = function() {
+   var Schema = mongoose.Schema();
+   var schema = new Schema();
+
+}
+
 var EditModel = function (k, Model, options) {
     this.model = Model;
     this.modelName = k;
@@ -56,7 +66,7 @@ var EditModel = function (k, Model, options) {
         var fieldsets = [
             {
                 legend:'Edit ' + this.title,
-                fields:['title', 'plural', 'hidden', 'labelAttr', 'fieldsets', 'list_fields']
+                fields:['title', 'plural', 'hidden', 'labelAttr', 'fields', 'fieldsets', 'list_fields']
             }
         ];
         //  var _paths = util.flatten(this.schemaFor());
@@ -72,6 +82,8 @@ var EditModel = function (k, Model, options) {
     })
 
 }
+
+// this is the base schema
 EditModel.prototype.schema = {
     plural:{
         title:"Plural",
@@ -90,13 +102,35 @@ EditModel.prototype.schema = {
     },
     labelAttr:{
         title:'Label Attribute',
-        help:'This is a label that gives a sussinct description of object'
+        help:'This is a label that gives a succinct description of object'
     }
 };
 
+// this adds in the field schema information including paths, list_view, edit_view
 EditModel.prototype.schemaFor = function () {
     var fields = this.fields;
     var schema = this._schema = _u.extend({}, this.schema);
+    // new fields control to add fields
+    this._schema.fields = {
+        type:'List',
+        listType:'Object',
+        sortable:true,
+        options:fields,
+        subSchema:{
+            name:{
+                title:'Text',
+                dataType:'Select',
+                options:[
+                    {label:'String', val:'String'},
+                    {label:'Date', val:'Date'},
+                    {label:'Number', val:'Number'},
+                    {label:'Boolean', val:'Boolean'},
+                    {label:'ObjectId', val:'ObjectId'},
+                    {label:'Nested', val:'Nested'}
+                ]
+            }
+        }
+    }
     this._schema.fieldsets = {
         type:'List',
         listType:'Object',

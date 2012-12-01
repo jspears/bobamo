@@ -4,7 +4,7 @@
     , "version": "0.6.0"
     , "private": false
     , "dependencies":{
-        "mers":"latest"
+        "mers":"git+ssh://git@github.com/altsang/mers.git"
     }
 
 }
