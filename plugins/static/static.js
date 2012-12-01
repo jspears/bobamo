@@ -39,15 +39,17 @@ var editors = [
     },
     {
         name:'MultiEditor',
-        types:['Array', 'Object']
+        types:[ 'ObjectId']
     },
     {   name:'Number',
         types:['Number', 'String']
     },
-    { name:'Search', types:['ObjectId']},
-    { name:'Link', types:['ObjectId']},
-    { name:'List', types:['ObjectId']},
-    { name:'NestedModel', types:['ObjectId']}
+  //  { name:'Search', types:['ObjectId']},
+  //  { name:'Link', types:['ObjectId']},
+  //  { name:'List', types:['ObjectId']},
+    { name:'NestedModel', types:['ObjectId', 'Object']},
+    { name:'Object', types:['Object']}
+
 ];
 
 StaticPlugin.prototype.editors = function () {

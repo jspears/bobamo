@@ -20,16 +20,16 @@ define([
         function onPath(obj) {
             return function (v, k) {
 
-                  var p = _.omit(v, 'persistence');
+                var p = _.omit(v, 'persistence');
                 var schemaType = v.persistence.schemaType;
-                var persistence  = v.persistence[schemaType];
+                var persistence = v.persistence[schemaType];
                 var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, persistence);
                 var paths = nobj.paths;
                 delete nobj.paths;
 
                 if (v.type)
                     editors[v.type] = true;
-                if (v.multiple){
+                if (v.multiple) {
                     nobj.listType = v.schemaType;
                     nobj.type = 'List';
                 }
@@ -131,6 +131,7 @@ define([
             },
             list_fields:{
                 type:'List',
+                listType:'String',
                 title:'List View',
                 help:'Fields to show in list views'
             }
@@ -138,8 +139,8 @@ define([
         urlRoot:"${pluginUrl}/admin/backbone/",
         save:function () {
             var data = this.presave();
-            var arr =  _.toArray(arguments);
-            arr.splice(0,1,data);
+            var arr = _.toArray(arguments);
+            arr.splice(0, 1, data);
             Backbone.Model.prototype.save.apply(this, arr);
         },
 
@@ -303,6 +304,18 @@ define([
             console.log('postfixup', model);
             return model;
         },
+        onSuccessRefresh:function (resp) {
+            this.onSuccess.apply(this, _.toArray(arguments));
+            if (resp.status == 0)
+               new Modal({
+                    title:'Save Success',
+                    content:'<h2>To view changes press ok to refresh browser</h2>',
+                    animate:true
+                }).open(function(){
+                    window.location.hash = "";
+                    window.location.reload();
+                });
+        },
         onSave:function (e) {
             e.preventDefault();
             $('.error-list').empty().hide();
@@ -316,7 +329,7 @@ define([
                     url:'${pluginUrl}/admin/backbone',
                     type:'PUT',
                     data:save,
-                    success:_.bind(this.onSuccess, this)
+                    success:_.bind(this.onSuccessRefresh, this)
 
                 });
                 //this.form.model.save(save, {error:this.onError});
@@ -357,17 +370,22 @@ define([
 
             form.on('modelName:change', enabled);
 
-            form.on('paths:change', function () {
-                //update
-                var value = this.fields.paths.getValue();
-
-                var values = _.map(form.fields.paths.getValue(), function (v) {
-                    return v.name
-                })
-                form.fields.list_fields.setValue(values);
+            form.on('paths:add', function (c1, c2, c3) {
+                console.log('value', c3.value.name);
+                form.fields.list_fields.editor.addItem(c3.value.name);
             });
+            form.on('paths:remove', function (c1, c2, c3) {
+                var lf = form.fields.list_fields;
+                //Remove each item that matches the name of the path that is being removed.   Ugly, but setValue does
+                // not work, because list does not remove things from the items list.   A bug in my book, but this works.
+                _.each(_.where(lf.editor.items, {value:c3.value.name}), lf.editor.removeItem, lf.editor);
+            });
+            form.on('all', function () {
+                console.log('all', arguments);
+            })
             form.on('render', function () {
                 enabled();
+
                 form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
                     .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
             })

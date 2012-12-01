@@ -36,7 +36,7 @@ define(['underscore'], function (_) {
         name:'Enum',
         message:"Must be an enumerated value: [{{enums}}]",
         validator:function (options) {
-            var e = options['enum']
+            var e = options['enum'] || options['enums'];
             if (!e) throw new Error('Missing required "field" options for "enum" validator');
             var vals = _.isString(e) ? e.split(',') : e;
             options = _.extend({
@@ -70,17 +70,15 @@ define(['underscore'], function (_) {
             }, options);
             var val = parseInt(options.minlength);
             return function match(value, attrs) {
-                options.value = value;
-
-                var err = {
-                    type:options.type,
-                    message:helpers.createTemplate(options.message, options)
-                };
 
                 //Don't check empty values (add a 'required' validator for this)
                 if (value === null || value === undefined || value === '') return;
 
-                if (val > fullTrim(value).length) return err;
+                if (val > fullTrim(value).length)
+                    return  {
+                        type:options.type,
+                        message:helpers.createTemplate(options.message, _.extend({value:value}, options))
+                    };
             };
         }
     }
@@ -97,17 +95,14 @@ define(['underscore'], function (_) {
             }, options);
             var val = parseInt(options.maxlength);
             return function match(value, attrs) {
-                options.value = value;
-
-                var err = {
-                    type:options.type,
-                    message:helpers.createTemplate(options.message, options)
-                };
 
                 //Don't check empty values (add a 'required' validator for this)
                 if (value === null || value === undefined || value === '') return;
 
-                if (val < fullTrim(value).length) return err;
+                if (val < fullTrim(value).length) return {
+                    type:options.type,
+                    message:helpers.createTemplate(options.message, _.extend({value:value}, options))
+                };
             };
         }
     };
@@ -125,17 +120,15 @@ define(['underscore'], function (_) {
             }, options);
             var val = parseFloat(options.min);
             return function min(value, attrs) {
-                options.value = value;
-
-                var err = {
-                    type:options.type,
-                    message:helpers.createTemplate(options.message, options)
-                };
 
                 //Don't check empty values (add a 'required' validator for this)
                 if (value === null || value === undefined || value === '') return;
 
-                if (val > parseFloat(value)) return err;
+                if (val > parseFloat(value))
+                    return  {
+                        type:options.type,
+                        message:helpers.createTemplate(options.message, _.extend({value:value}, options))
+                    };
             };
         }
     }
@@ -153,18 +146,36 @@ define(['underscore'], function (_) {
 
             var val = parseFloat(options.max);
             return function max(value, attrs) {
-                options.value = value;
-
-                var err = {
-                    type:options.type,
-                    message:helpers.createTemplate(options.message, options)
-                };
 
                 //Don't check empty values (add a 'required' validator for this)
                 if (value === null || value === undefined || value === '') return;
 
-                if (val < parseFloat(value)) return err;
+                if (val < parseFloat(value)) return {
+                    type:options.type,
+                    message:helpers.createTemplate(options.message, _.extend({value:value}, options))
+                };
+
             };
+        }
+    }
+    validators.required = {
+        name:'Required',
+        message:'Required',
+        validator:function (options) {
+
+            options = _.extend({
+                type:'required',
+                message:this.errMessages.required
+            }, options);
+
+            return function (value) {
+
+                if (value === null || value === undefined || value === '')
+                    return {
+                        type:options.type,
+                        message:helpers.createTemplate(options.message, options)
+                    };
+            }
         }
     }
     return {

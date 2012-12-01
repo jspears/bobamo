@@ -2,7 +2,7 @@ var Plugin = require('../../lib/plugin-api'), util = require('util'), App = requ
 
 var EditPlugin = function () {
     Plugin.apply(this, arguments);
-    this._appModel = {};
+    this._appModel = {modelPaths:{}};
 }
 util.inherits(EditPlugin, Plugin);
 
@@ -17,16 +17,13 @@ EditPlugin.prototype.appModel = function () {
     return this._appModel;
 }
 EditPlugin.prototype.configure = function (conf) {
-    if (conf  && conf.models)
-    _u.each(conf.models, function onModelConfigure(v,k){
+    if (conf  && conf.modelPaths)
+    _u.each(conf.modelPaths, function onModelConfigure(v,k){
           if (v.configurable)
              this.pluginManager.loadedPlugins[v.dbType || 'mongoose'].updateSchema(k, v);
 
     }, this);
-    var arg = {
-        modelpaths:conf.models
-    };
-    new App(arg);
+    new App(conf);
     return _u.extend(this._appModel, conf);
 }
 EditPlugin.prototype.routes = function () {
@@ -312,14 +309,12 @@ EditPlugin.prototype.routes = function () {
 
         var modelName = req.body.modelName;
 
-       var mo = persistPlugin.updateSchema(modelName, req.body.schema);
-        console.log('modelName', modelName,mo);
-        var models = {models:{}};
-        var model = models.models[modelName] =req.body;
-        if (this._appModel &&  this._appModel.models && this._appModel.models[modelName] && this._appModel.models[modelName].configurable || appModel.modelFor(modelName) == null ){
-            model.configurable = true;
+
+        if (!persistPlugin.modelFor(modelName) || (this._appModel &&  this._appModel.models && this._appModel.models[modelName] && this._appModel.models[modelName].configurable) ){
+            req.body.configurable = true;
+            persistPlugin.updateSchema(modelName, req.body.schema);
         }
-        _u.extend(this._appModel, models);
+        this._appModel.modelPaths[modelName] =req.body;
         this.save(this._appModel, function(){
             res.send({
                 status:0,
