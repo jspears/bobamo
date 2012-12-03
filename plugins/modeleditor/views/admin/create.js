@@ -8,7 +8,8 @@ define([
     'libs/bobamo/edit',
     'modeleditor/js/inflection',
     'backbone-modal',
-    'text!${pluginUrl}/templates/admin/edit.html'
+    'text!${pluginUrl}/templates/admin/edit.html',
+    'libs/editors/filter-editor'
 
 ], function (_, Backbone, Property, Fieldset, Form, EditView, inflection, Modal, template) {
     "use strict";
@@ -107,8 +108,9 @@ define([
             "modelName":{
                 "title":"Model Name",
                 "help":"The model name of the object",
-                "type":"Text",
-                required:true
+                "type":"FilterText",
+                filter:/^[a-zA-Z_]([a-zA-Z0-9,_,-,$])*$/,
+                validators:['required']
             },
 
             display:{
@@ -307,14 +309,14 @@ define([
         onSuccessRefresh:function (resp) {
             this.onSuccess.apply(this, _.toArray(arguments));
             if (resp.status == 0)
-               new Modal({
+                new Modal({
                     title:'Save Success',
                     content:'<h2>To view changes press ok to refresh browser</h2>',
                     animate:true
-                }).open(function(){
-                    window.location.hash = "";
-                    window.location.reload();
-                });
+                }).open(function () {
+                        window.location.hash = "";
+                        window.location.reload();
+                    });
         },
         onSave:function (e) {
             e.preventDefault();
@@ -380,12 +382,46 @@ define([
                 // not work, because list does not remove things from the items list.   A bug in my book, but this works.
                 _.each(_.where(lf.editor.items, {value:c3.value.name}), lf.editor.removeItem, lf.editor);
             });
-            form.on('all', function () {
-                console.log('all', arguments);
+            var self = this;
+            var retry = 0;
+            var first = false;
+            var onValidModelName = function() {
+                var $wiz = self.$el.find('> .edit-form > .wiz');
+                var wiz = $wiz.data('wiz');
+                //todo figure out how to know when the wiz is done.  but until then
+                if (!(wiz || retry++ > 3)){
+                    setTimeout(onValidModelName, 100 * retry);
+                    return false;
+                }
+                if (!wiz)
+                    return;
+                if (!first){
+                    first = true;
+                    wiz.$next.on('click', onValidModelName);
+                }
+                var val = true;
+                if (wiz.current == 0)
+                    val = !!form.fields.modelName.getValue();
+                else if (wiz.current == 1)
+                    val = !!form.fields.paths.editor.items.length;
+
+
+                if (!val) {
+                    wiz.$next.attr('disabled', 'disabled');
+                } else {
+                    wiz.$next.removeAttr('disabled');
+                }
+
+            }
+            form.on('all', function(){
+                console.log('all',arguments)
             })
+            form.on('paths:change', onValidModelName);
+            form.on('modelName:change', onValidModelName)
             form.on('render', function () {
                 enabled();
-
+                onValidModelName();
+//                setTimeout(onValidModelName,200);
                 form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
                     .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
             })

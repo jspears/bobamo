@@ -13,7 +13,7 @@
             if (this.$fieldsets.length < 2){
                 return
             }
-            this.$el = $(element);
+            this.$el = $(element).addClass('wiz');
             this.$el.last().addClass('tab-content')
             this.$el.prepend('<ul class="nav nav-pills '+this.options.clsNames+' steps" style="margin-right:1em;margin-top:1em"></ul>');
             this.$el.addClass('tab-content tabbable');
