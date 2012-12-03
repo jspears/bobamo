@@ -34,7 +34,7 @@ define(['Backbone.Form','underscore'], function(Form, _){
         initialize:function(options){
            Text.prototype.initialize.call(this, options);
            if (!(options.schema && options.schema.filter)){
-               throw new "Required attribute 'filter' is missing";
+               throw "Required attribute 'filter' is missing";
            }
            this.filter = _.isString(options.schema.filter) ? new RegExp(options.schema.filter) :  options.schema.filter;
 
