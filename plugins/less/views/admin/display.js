@@ -1,5 +1,4 @@
-define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!${pluginUrl}/templates/admin/display.html', 'jquery-ui',
-    'libs/backbone-forms/src/jquery-ui-editors', 'libs/editors/unit-editor', 'libs/editors/color-editor', 'libs/editors/placeholder-editor'], function (_, $, Backbone, EditView, template) {
+define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!${pluginUrl}/templates/admin/display.html',  'libs/editors/unit-editor', 'libs/editors/color-editor', 'libs/editors/placeholder-editor'], function (_, $, Backbone, EditView, template) {
 
     var fieldsets = {{html JSON.stringify(lessFactory.fieldsets())}};
     var schema = {{html JSON.stringify(lessFactory.schemaFor())}};
@@ -50,15 +49,14 @@ define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!${pluginUr
             var self = this;
             var save = this.form.getValue();
             this.form.model.save(save, {success:function onPreviewSave(obj) {
-                require([ 'text!${pluginUrl}/templates/admin/preview.html', 'libs/bootstrap/js/bootstrap-modal'], function (preview) {
-                    var template = _.template(preview, {title:'Display Changes', previewUrl:'${baseUrl}index.html?checksum=' + obj.id});
-
-                    var $modal = $(template);
-                    $('.save', $modal).on('click', $.proxy(self.onSave, self));
-                    $modal.modal().on('hidden', function () {
-                        $(this).remove();
-                    });
-                    $('body').append($modal)
+                require([ 'text!${pluginUrl}/templates/admin/preview.html', 'backbone-modal'], function (preview, Modal) {
+                     new Modal({
+                        content:'<iframe src="${baseUrl}index.html?checksum='+obj.id+'" style="width:100%;height:100%;border:none;"></iframe>',
+                        title:'Display Changes',
+                         animate:true
+                    }).open(
+                        $.proxy(self.onSave, self)
+                    )
                 });
             }});
         },

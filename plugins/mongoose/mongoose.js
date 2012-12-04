@@ -1,4 +1,4 @@
-var  requirejs = require('requirejs'), Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), MModel = require('./mmodel');
+var  requirejs = require('requirejs'), Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), MModel = require('./mongoose-model');
 console.log('mongoose plugin', __dirname+'/public/js/validators')
 requirejs.config({
     nodeRequire:require,

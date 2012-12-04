@@ -19,9 +19,10 @@ EditPlugin.prototype.appModel = function () {
 EditPlugin.prototype.configure = function (conf) {
     if (conf  && conf.modelPaths)
     _u.each(conf.modelPaths, function onModelConfigure(v,k){
-          if (v.configurable)
-             this.pluginManager.loadedPlugins[v.dbType || 'mongoose'].updateSchema(k, v);
-
+          if (v.configurable){
+           var plugin =  this.pluginManager.loadedPlugins[v.dbType || 'mongoose'];
+             plugin.updateSchema(k, v);
+          }
     }, this);
     new App(conf);
     return _u.extend(this._appModel, conf);
@@ -128,12 +129,29 @@ EditPlugin.prototype.routes = function () {
         });
 
     }.bind(this));
+//    this.app.get(base + '/admin/types/:dbType', function(req,res){
+//            var dbType = req.params.dbType || 'mongoose';
+//            var types = [];
+//            _u.each(this.pluginManager.plugins, function(v,k){
+//               if (_u.isFunction(v.types)){
+//                  var ret = v.types(dbType)
+//                if (ret && ret.length){
+//                    types = types.concat(ret);
+//                }
+//               }
+//            });
+//            res.send({
+//                status:0,
+//                payload:types
+//            })
+//        }, this);
 
     this.app.get(base + '/admin/types/schemas', function (req, res) {
         //TODO abstract this in the displayModel
         res.send({
-            payload:_u.map(mongoose.schemaTypes, function (v, k) {
-                return {type:k}
+                payload:_u.map(this.options.mongoose.SchemaTypes, function (v, k) {
+                var disp = v.prototype.display
+                return _u.extend({schemaType:k}, disp || {});
             }),
             status:0
         })

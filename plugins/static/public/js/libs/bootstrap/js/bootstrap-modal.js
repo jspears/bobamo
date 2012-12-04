@@ -97,7 +97,6 @@
 
     }
 
-
     /* MODAL PRIVATE METHODS
      * ===================== */
 
@@ -208,4 +207,5 @@
         })
     })
 
+    return Modal;
 }));
