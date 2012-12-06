@@ -32,8 +32,8 @@ GeoPlugin.prototype.editors = function () {
             types:['GeoPoint'],
             name:'MapEditor',
             schema:{
-                lat:{type:'Number', help:'Default Latitude',  validators:['min', 'max'], min:0, max:181},
-                lon:{type:'Number', help:'Default Longitude', validators:['min', 'max'], min:0, max:181}
+                lat:{type:'Number', help:'Default Latitude',  validators:[{type:'min', min:0}, {type:'max', max:181}]},
+                lon:{type:'Number', help:'Default Longitude', validators:[{type:'min', min:0}, {type:'max', max:181}]}
             },
             fields:['lat','lon']
         }

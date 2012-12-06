@@ -12,7 +12,8 @@
     "connect": "latest",
     "consolidate": "latest",
     "express": ">=3",
-    "requirejs":"latest"
+    "requirejs":"latest",
+    "jquery":"latest"
   },
   "devDependencies": {
     "should": "latest",

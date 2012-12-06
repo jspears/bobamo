@@ -21,10 +21,11 @@ define([
         function onPath(obj) {
             return function (v, k) {
 
-                var p = _.omit(v, 'persistence');
+                var p = _.omit(v, 'persistence', 'editor');
                 var schemaType = v.persistence.schemaType;
-                var persistence = v.persistence[schemaType];
-                var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, persistence);
+                var editor = v.editor[v.type];
+                var persistence = _.omit(v.persistence[schemaType], 'persistence', 'editor');
+                var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, persistence, editor);
                 var paths = nobj.paths;
                 delete nobj.paths;
 

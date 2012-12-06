@@ -26,6 +26,12 @@ define(['underscore'], function (_) {
         }
     }
 
+    function check(obj, field) {
+        if (_.isUndefined(obj[field]))
+            throw new Error('Missing required "field" for "' + field + '" validator')
+
+    }
+
     function fullTrim(str) {
         return str.replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g, '').replace(/\s+/g, ' ');
     }
@@ -35,6 +41,9 @@ define(['underscore'], function (_) {
         types:['String'],
         name:'Enum',
         message:"Must be an enumerated value: [{{enums}}]",
+        schema:{
+            enums:'List'
+        },
         validator:function (options) {
             var e = options['enum'] || options['enums'];
             if (!e) throw new Error('Missing required "field" options for "enum" validator');
@@ -61,8 +70,11 @@ define(['underscore'], function (_) {
         types:['String'],
         name:'Mininum Length',
         message:"Must be at least {{minlength}} charecters",
+        schema:{
+            minlength:'Number'
+        },
         validator:function (options) {
-            if (!options.minlength) throw new Error('Missing required "field" options for "minlength" validator');
+            check(options, 'minlength');
 
             options = _.extend({
                 type:'minlength',
@@ -86,8 +98,12 @@ define(['underscore'], function (_) {
         types:['String'],
         name:'Maximum Length',
         message:"Must be less than {{maxlength}} charecters",
+        schema:{
+            maxlength:'Number',
+            trim:'Checkbox'
+        },
         validator:function (options) {
-            if (!options.maxlength) throw new Error('Missing required "field" options for "maxlength" validator');
+            check(options, 'maxlength');
 
             options = _.extend({
                 type:'maxlength',
@@ -111,9 +127,11 @@ define(['underscore'], function (_) {
         types:['Number'],
         name:'Minimum',
         message:"Must be more than {{min}}",
+        schema:{
+            min:'Number'
+        },
         validator:function (options) {
-            if (!options.min) throw new Error('Missing required "field" options for "min" validator');
-
+            check(options, 'min');
             options = _.extend({
                 type:'min',
                 message:this.errMessages.min
@@ -136,8 +154,11 @@ define(['underscore'], function (_) {
         types:['Number'],
         name:'Maximum',
         message:"Must be less than {{max}}",
+        schema:{
+            max:'Number'
+        },
         validator:function (options) {
-            if (!options.max) throw new Error('Missing required "field" options for "max" validator');
+            check(options, 'max');
 
             options = _.extend({
                 type:'max',
@@ -176,6 +197,17 @@ define(['underscore'], function (_) {
                         message:helpers.createTemplate(options.message, options)
                     };
             }
+        }
+    }
+    validators.match = {
+        name:'Match',
+        message:'Does not match {{field}}',
+        schema:{
+            match:'String'
+        },
+        validator:function(options){
+            check(options, 'match');
+
         }
     }
     return {

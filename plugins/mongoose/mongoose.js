@@ -1,25 +1,21 @@
-var  requirejs = require('requirejs'), Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), MModel = require('./mongoose-model');
-console.log('mongoose plugin', __dirname+'/public/js/validators')
-requirejs.config({
-    nodeRequire:require,
-    paths:{
-        'mongoose':__dirname
-    }
-})
+var  Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), MModel = require('./mongoose-model');
+
 var valid = {};
 var validFuncs =  {};
-requirejs(['mongoose/public/js/validators'], function(v){
-    _u.extend(valid, v);
-    valid.inject(validFuncs);
-});
+
 var MongoosePlugin = function (options) {
     Plugin.apply(this, arguments);
     this.pluginUrl = this.baseUrl;
+
+
 }
 sutil.inherits(MongoosePlugin, Plugin);
 module.exports = MongoosePlugin;
 
 MongoosePlugin.prototype.appModel = function (options) {
+    this.pluginManager.requirejs(['Backbone.Form'], function(Form){
+        console.log('Form.validators', Form.validators);
+    })
     var self = this;
     var mongoose = this.options.mongoose;
     return new function () {

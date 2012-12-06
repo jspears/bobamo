@@ -58,6 +58,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                 type:'NestedModel',
                 model:b.Model.extend({
                     createForm:function () {
+
                         var form = new Form({schema:Editors})
                         return form;
                     }

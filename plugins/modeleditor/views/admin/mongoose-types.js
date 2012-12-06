@@ -45,7 +45,7 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validat
                         options:(function (type) {
                             var arr = [];
                             _.each(validators.validators, function (v, k) {
-                                if (v.types && v.types.indexOf(type) || !v.types)
+                                if (v.types && ~v.types.indexOf(type) || !v.types)
                                     arr.push({label:v.name, val:k, validator:v});
                             })
                             return arr;

@@ -1,6 +1,19 @@
-var Plugin = require('../../lib/plugin-api'), util = require('util'), path = require('path'), static = require('connect/lib/middleware/static');
-var StaticPlugin = function () {
+var Plugin = require('../../lib/plugin-api'), util = require('util'), path = require('path'), static = require('connect/lib/middleware/static'), _u =require('underscore');
+var StaticPlugin = function (options, app, name, p, pluginManager) {
     Plugin.apply(this, arguments);
+    var public = path.join(this.path, 'public', 'js')
+    _u.extend(this.pluginManager.requireConfig.paths, {
+        underscore:path.join(public, 'libs/underscore/underscore-1.4.2'),
+        Backbone:path.join(public, 'libs/backbone/backbone-0.9.2'),
+        'jquery-ui':path.join(public, 'libs/backbone-forms/editors/jquery-ui'),
+        'Backbone.Form':path.join(public, 'libs/bobamo/backbone-forms'),
+        'Backbone.FormOrig':path.join(public, 'libs/backbone-forms/backbone-forms'),
+        'jquery-editors':path.join(public, 'libs/backbone-forms/editors/list'),
+        'bootstrap':path.join(public, 'libs/bootstrap/js'),
+        templates:path.join(public, '../templates'),
+        'backbone-modal':path.join(public, 'libs/backbone-forms/editors/backbone.bootstrap-modal'),
+        'libs':path.join(public, 'libs')
+    });
 }
 util.inherits(StaticPlugin, Plugin);
 
@@ -55,7 +68,7 @@ var editors = [
         }
     },
     {   name:'Checkbox',
-        types:['String', 'Number','Boolean'],
+        types:['String', 'Number', 'Boolean'],
         schema:{
             defaultValue:{type:'Checkbox' }
         }
@@ -81,7 +94,7 @@ var editors = [
     },
     {
         name:'Radio',
-        types:['Boolean','String'],
+        types:['Boolean', 'String'],
         schema:{
             options:{
                 type:'List',
