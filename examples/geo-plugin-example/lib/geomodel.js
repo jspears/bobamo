@@ -1,5 +1,4 @@
-var geocoder = require('geocoder');
-var mongoose = require('bobamo').mongoose;
+var geocoder = require('geocoder'), bobamo = require('bobamo'), mongoose = bobamo.mongoose;
 
 var AddressSchema = new mongoose.Schema({
     name        : {type: String, default : ''},
@@ -8,7 +7,7 @@ var AddressSchema = new mongoose.Schema({
     state       : {type: String, required : true},
     zip         : {type: String, default : ''},
     country     : {type: String},
-    location    : {lng: Number, lat:Number},
+    location    : {type:'GeoPoint'},
     type        : {type: String, enum:['agent', 'agency', 'registrant'], index:true},
     primary     : {type: Boolean, default: false},
     meta        : {

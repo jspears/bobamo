@@ -264,7 +264,15 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                         break;
                     default:
                     {
-                        console.error('unknown type for [' + path + ']', p);
+                        var type = this.pluginManager.pluginFor(path,  p, schema);
+                        if (type == null)
+                          console.error('unknown type for [' + path + ']', p);
+
+                        else{
+                            console.log('found type', type);
+                            _u.extend(defaults, type);
+                        }
+                        break;
                     }
                 }
 

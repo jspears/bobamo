@@ -159,7 +159,24 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validat
             }
         })
     };
+    var _schemaTypes = {{html JSON.stringify(schemaTypes())}} || [];
+//    console.log('_schemaTypes',_schemaTypes);
+    _.each(_schemaTypes, function(v,k){
+        if (_.isUndefined(v.schemaType) || !_.isUndefined(DataType[v.schemaType]) || ~[ 'DocumentArray', 'Array', 'Oid','Bool', 'Mixed'].indexOf(v.schemaType))
+            return;
 
+            DataType[v.schemaType] = TM.extend({
+                schema:_.omit(v, 'schemaType')
+            });
+
+    });
+
+//    DataType.GeoPoint = TM.extend({
+//        schema:{
+//              lat:{type:'Number', help:'Default Latitude'},
+//              lon:{type:'Number', help:'Default Longitude'}
+//        }
+//    })
     var schema = {
         schemaType:{
             type:'Select',
@@ -171,21 +188,6 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validat
     var model = TM.extend({
         schema:schema,
         _schemaTypes:DataType,
-        get:function () {
-            var ret = TM.prototype.get.apply(this, _.toArray(arguments));
-            console.log('get', ret);
-            return ret;
-        },
-        set:function (value, change) {
-            console.log('model->set', value);
-
-            //value[value.schemaType] = value;
-            //return Form.prototype.setValue.apply(form, _.toArray(arguments))
-            var ret = TM.prototype.set.apply(this, _.toArray(arguments));
-            console.log('set', ret);
-
-            return ret;
-        },
         toJSON:function () {
             var ret = TM.prototype.toJSON.apply(this, _.toArray(arguments));
             console.log('toJSON', ret);
@@ -227,7 +229,10 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validat
             model:v
         }
     });
+    var editors = (model.editors = {});
+    _.each(DataType, function(v,k){
+        editors[k] = {type:'Object', subSchema:v.prototype.schema};
+    })
     return model;
 
-})
-;
+});

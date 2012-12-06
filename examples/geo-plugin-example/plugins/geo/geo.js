@@ -1,53 +1,53 @@
-var bobamo = require('bobamo'), mongoose= bobamo.mongoose, PluginApi = bobamo.PluginApi, util = require('util');
+var bobamo = require('bobamo'), mongoose = bobamo.mongoose, PluginApi = bobamo.PluginApi, util = require('util'), _u = require('underscore');
 
 
 var GeoPoint = function GeoPoint(path, options) {
-    options.display = {
-        type:'MapEditor'
-    }
+    options = _u.extend({index:'2d'}, options);
+    this.lat = Number;
+    this.lon = Number;
     GeoPoint.super_.call(this, path, options);
-
+    console.log('geopoint', this);
 };
 
 util.inherits(GeoPoint, mongoose.Schema.Types.Mixed);
-GeoPoint.prototype.display  = {
-    type:'MapEditor'
-}
+
 exports.GeoPoint = GeoPoint;
 
-mongoose.Types.GeoPoint = Object;
+mongoose.Types.GeoPoint = GeoPoint;
+
 mongoose.Schema.Types.GeoPoint = GeoPoint;
 
+GeoPoint.prototype.display = {
 
+
+}
 var GeoPlugin = function () {
     PluginApi.apply(this, arguments);
 }
 util.inherits(GeoPlugin, PluginApi);
 module.exports = GeoPlugin;
 GeoPlugin.prototype.editors = function () {
-    return ['MapEditor']
+    return [
+        {
+            types:['GeoPoint'],
+            name:'MapEditor',
+            schema:{
+                lat:{type:'Number', help:'Default Latitude',  validators:['min', 'max'], min:0, max:181},
+                lon:{type:'Number', help:'Default Longitude', validators:['min', 'max'], min:0, max:181}
+            },
+            fields:['lat','lon']
+        }
+    ]
 }
 GeoPlugin.prototype.editorFor = function (path, property, Model) {
-    if (property && property.lat && property.lng) {
+    if (property.type == 'GeoPoint' || (property.lat && property.lon)) {
         return {
             type:'MapEditor',
-            subSchema:{
-                lat:{type:'Hidden'},
-                lng:{type:'Hidden'}
-            }
+            schemaType:'GeoPoint'
         }
     }
 }
-GeoPlugin.prototype.types = function(dbType){
-    return {
-                schemaType:'GeoPoint',
-                type:'MapEditor',
-                subSchema:{
-                    lat:{type:'Hidden'},
-                    lng:{type:'Hidden'}
-                }
-            }
-}
+
 GeoPlugin.prototype.clientConfig = {
     apiKey:'AIzaSyBXNh3-mlasFlUAjiLKqIG6bCvW_7E8aMc',
     default:{

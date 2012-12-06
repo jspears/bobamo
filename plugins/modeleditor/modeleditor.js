@@ -42,15 +42,24 @@ EditPlugin.prototype.routes = function () {
     var base = this.pluginUrl;
     console.log('base', base);
     var jsView = this.baseUrl + 'js/views/' + this.name;
-    this.app.get(this.baseUrl + 'js/views/modeleditor/admin/:type/:view', function (req, res, next) {
+    this.app.get(this.baseUrl + 'js/views/modeleditor/admin/:type?/:view', function (req, res, next) {
         var view = 'admin/' + req.params.view;
 
         var editModel = new EditModel(this.pluginManager.appModel, {
             editors:this.pluginManager.editors
+
         });
+        var mongoose = this.options.mongoose;
         this.local(res, 'editModel', editModel);
         this.local(res, 'model', editModel.modelPaths[req.params.type]);
         this.local(res, 'pluginUrl', this.pluginUrl);
+        this.local(res, 'schemaTypes', function(){
+            return _u.map(mongoose.SchemaTypes, function (v, k) {
+                var disp = v.prototype.display
+
+                return _u.isUndefined(disp) ? {} : _u.extend({schemaType:k}, disp) ;
+            });
+        });
         this.generate(res, view);
     }.bind(this))
 
