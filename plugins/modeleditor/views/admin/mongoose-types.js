@@ -1,40 +1,33 @@
-define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validators', 'underscore', 'jquery'], function (exports, b, Form, validators, _, $) {
+define(['exports', 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/schema-types', 'mongoose/js/validators', 'underscore', 'jquery'], function (exports, b, Form, schemaTypes, validators, _, $) {
     "use strict";
     validators.inject(Form);
-    var TC = b.Collection.extend({
-        parse:function (resp) {
-            var ret = resp.payload;
-            return ret;
-        }
-    });
 
-    function json(path, label) {
-        var C = TC.extend({
-            url:'${pluginUrl}' + path,
+    var ValidatorCollection = b.Collection.extend({
+        model:b.Model.extend({
+            idAttribute:'id',
+            toString:function(){
+                return this.get('name')
+            }
+        }),
+        filterType:function(type){
+           return _.bind(function(cb){
+               this.on(type+':filter', _.bind(function(){
+                   cb(_.map(this.filter(function (v, k) {
+                       var types = v.get('types');
+                       return (types && ~types.indexOf(type) || !types)
 
-            model:b.Model.extend({
-                idAttribute:label,
-                toString:function () {
-                    return this.get(label);
-                }
-            })
-        });
-        var collection = new C();
-        return collection;
-
-    }
-
-    ;
-    var JsonText = Form.editors.JsonTextArea = Form.editors.TextArea.extend({
-        setValue:function (obj) {
-            var str = '' + JSON.stringify(obj)
-            Form.editors.TextArea.prototype.setValue.call(this, str);
-        },
-        getValue:function () {
-            var val = Form.editors.TextArea.prototype.getValue.call(this);
-            return JSON.parse(val);
+                   }), function(v){
+                       return {val:v.id, label:""+v}
+                   }))
+               }, this));
+           },this);
         }
     })
+
+    var Validators = new ValidatorCollection(_.map(validators.validators, function(v,k){
+        return _.extend({id:k}, v);
+    }));
+
 
     var Validator = function (type) {
         return b.Model.extend({
@@ -42,49 +35,46 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validat
                 schema:{
                     type:{
                         type:'Select',
-                        options:(function (type) {
-                            var arr = [];
-                            _.each(validators.validators, function (v, k) {
-                                if (v.types && ~v.types.indexOf(type) || !v.types)
-                                    arr.push({label:v.name, val:k, validator:v});
-                            })
-                            return arr;
-                        })(type)
+                        options:Validators.filterType(type)
                     },
                     message:{type:'Text', help:'Error message to display'},
-                    configure:{type:'JsonTextArea', help:'This will be parsed to JSON and passed into the validation method, please use carefully'}
+                    configure:{
+                        type:'Object',
+                        subSchema:{}
+                    }
                 },
                 toString:function () {
                     return this.get('type');
                 },
                 createForm:function (opts) {
-                    var f = this.form = new Form(opts);
+                    var config = this.schema.configure.subSchema;
+                    _.each(validators.validators, function(v,k){
+                        if (v.schema){
+                            config[k] = {type:'Object', subSchema:v.schema};
+                        }else{
+                            config[k] = { type:'Hidden'}
+                        }
+                    })
+                    var form = this.form = new Form(opts);
 
                     function onChange() {
-                        var type = f.fields.type
-                        var options = type.options.schema.options
-                        console.log('onChange', options);
-                        var value = type.getValue();
-                        if (value) {
-                            var m = _.where(options, {val:value})
-                            if (m && m.length) {
-                                m = m[0]
-                                if (m.val != this.fields.type.getValue()) {
-                                    var mesg = m.validator.message || Form.validators.errMessages[key];
-                                    var def = {};
-                                    def[m.val] = "";
-                                    var config = def;
-                                    f.fields.message.setValue(mesg);
-                                    f.fields.configure.setValue(f.fields.configure.getValue() || JSON.stringify(config) + "");
-                                }
-                            }
-                        }
+
+                        var type = form.fields.type.getValue();
+                        var fields = form.fields.configure.editor.form.fields;
+                        Validators.each(function (v, k) {
+                            fields[v.id].$el[type == v.id ? 'show' : 'hide']();
+                        });
+
+                        form.fields.message.$el.attr('placeholder', Form.validators.errMessages[type]);
+
+
                     }
 
-                    f.on("type:change", onChange);
-//                    f.on("render", onChange);
+                    form.on('schemaType:change', onChange);
+                    form.on('type:change', onChange);
+                    form.on("render", onChange);
 
-                    return f;
+                    return form;
                 }
             }
         )
@@ -99,12 +89,8 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validat
             schema:{
 
                 defaultValue:{type:'Text', help:'Default value for field', title:'Default'},
-//                minLength:{type:'Number', help:'Minimum Length'},
-//                maxLength:{type:'Number', help:'Maximum Length'},
-//                //          match:{type:'Text', help:'Regular Expression'},
                 textCase:{type:'Select', options:['none', 'uppercase', 'lowercase'], title:'Case', help:'Save text in specified case'},
                 trim:{type:'Checkbox', help:'Trim text\'s white space'},
-//                enumValues:{type:'List', help:'Allow only these values'},
                 validators:{type:'List', itemType:'NestedModel', model:Validator('String')},
                 index:{type:'Checkbox', help:'Index this property'},
                 unique:{type:'Checkbox', help:'Make property unique'}
@@ -113,8 +99,6 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validat
         Number:TM.extend({
             schema:{
                 defaultValue:{type:'Number', help:'Default value for field', title:'Default'},
-//                min:{type:'Number', help:'Minimum Value'},
-//                max:{type:'Number', help:'Maximum Value'},
                 validators:{type:'List', itemType:'NestedModel', model:Validator('Number')}
             }
         }),
@@ -134,7 +118,7 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validat
             schema:{
                 ref:{
                     type:'Select',
-                    options:json('/admin/types/models', 'modelName'),
+                    collection:'views/modeleditor/admin/schema-collection',
                     help:'Reference another schema'
                 }
             }
@@ -159,9 +143,8 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validat
             }
         })
     };
-    var _schemaTypes = {{html JSON.stringify(schemaTypes())}} || [];
-//    console.log('_schemaTypes',_schemaTypes);
-    _.each(_schemaTypes, function(v,k){
+
+    _.each(schemaTypes, function(v,k){
         if (_.isUndefined(v.schemaType) || !_.isUndefined(DataType[v.schemaType]) || ~[ 'DocumentArray', 'Array', 'Oid','Bool', 'Mixed'].indexOf(v.schemaType))
             return;
 
@@ -170,13 +153,6 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validat
             });
 
     });
-
-//    DataType.GeoPoint = TM.extend({
-//        schema:{
-//              lat:{type:'Number', help:'Default Latitude'},
-//              lon:{type:'Number', help:'Default Longitude'}
-//        }
-//    })
     var schema = {
         schemaType:{
             type:'Select',
@@ -188,12 +164,6 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validat
     var model = TM.extend({
         schema:schema,
         _schemaTypes:DataType,
-        toJSON:function () {
-            var ret = TM.prototype.toJSON.apply(this, _.toArray(arguments));
-            console.log('toJSON', ret);
-            return ret;
-
-        },
         createForm:function (opts) {
             opts = opts || {};
             opts.fieldsets = this.fieldsets;
@@ -204,17 +174,18 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'mongoose/js/validat
             if (_.isUndefined(DataType.Object.prototype.schema.paths.model))
                 DataType.Object.prototype.schema.paths.model = require('views/modeleditor/admin/property');
             function validation() {
-                var val = form.fields.schemaType.getValue();
-                var vform = form;
+                var fields = form.fields;
+                var val = fields.schemaType.getValue();
                 _.each(DataType, function (v, k) {
-                    form.fields[k].$el[val == k ? 'show' : 'hide']();
+                    fields[k].$el[val == k ? 'show' : 'hide']();
                 });
-                var isObj = val == 'Object';
-                var show = isObj ? 'show' : 'hide';
+                if (fields[val])
+                    fields[val].trigger('schemaType:change', val);
 
                 if (this.options && this.options.data && this.options.data.virtual) {
-                    form.fields.validation.$el.hide();
+                    fields.validation.$el.hide();
                 }
+
             }
 
             form.on('schemaType:change', validation);

@@ -12,9 +12,11 @@ var MongoosePlugin = function (options) {
 sutil.inherits(MongoosePlugin, Plugin);
 module.exports = MongoosePlugin;
 
+var validFuncs = {};
 MongoosePlugin.prototype.appModel = function (options) {
-    this.pluginManager.requirejs(['Backbone.Form'], function(Form){
-        console.log('Form.validators', Form.validators);
+    this.pluginManager.requirejs(['mongoose/validators'], function(validators){
+
+        validators.inject(validFuncs)
     })
     var self = this;
     var mongoose = this.options.mongoose;

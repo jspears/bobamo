@@ -63,31 +63,8 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                         return form;
                     }
                 })
-                //     subSchema:MongooseType.editors
             },
-//            editor:{
-//              type:'Object'
-//            },
-//            dataType:{
-//                type:'Select',
-//                help:'HTML5 data type to use on input',
-//                options:[
-//                    'text',
-//                    'password',
-//                    'color',
-//                    'date',
-//                    'datetime',
-//                    'datetime-local',
-//                    'email',
-//                    'month',
-//                    'number',
-//                    'range',
-//                    'search',
-//                    'tel',
-//                    'time',
-//                    'url',
-//                    'week']
-//            },
+
             placeholder:{type:'Text', help:'Default Placeholder text'},
 
             persistence:{
@@ -135,45 +112,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             if (title)
                 form.title = 'Property [' + title + ']';
             var self = this;
-//            function onType(c1, c2, c3) {
-//                var value = form.getValue();
-//                var hidden = form.fields.hidden.getValue();
-//                var schemaType = form.fields.persistence.editor.form.fields.schemaType.getValue();
-//                console.log('type', schemaType);
-//                if (hidden)
-//                    form.fields.type.$el.hide();
-//                else
-//                    form.fields.type.editor.setOptions(function (cb) {
-//                        $.getJSON('${pluginUrl}/admin/editors/' + schemaType, function (resp) {
-//                            cb(resp.payload);
-//                        })
-//                    })
-//
-//                var show, hide;
-//                (hidden || schemaType == 'Object' || schemaType == 'ObjectId') ? (show = 'show', hide = 'hide') : (show = 'hide', hide = 'show');
-//
-//                form.fields.fieldsets.$el[hidden || schemaType == 'ObjectId' ? 'hide' : show]();
-//                form.fields.list_fields.$el[ hidden || schemaType == 'ObjectId' ? 'hide' : show]();
-//                // form.fields.editor.$el[hide]();
-//                form.fields.placeholder.$el[hide]();
-//                form.fields.title.$el[hide]();
-//                form.fields.help.$el[hide]();
-//                var dataType = form.fields.dataType;
-//                if (DataTypes[schemaType]) {
-//                    dataType.$el.show();
-//                    var options = DataTypes[schemaType];
-//                    var val = (self.get('name') || '').toLowerCase();
-//
-//                    if ( val && ~options.indexOf(val)){
-//                        dataType.editor.value = val;
-//                    }
-//                    dataType.editor.setOptions(DataTypes[schemaType]);
-//
-//                } else {
-//                    form.fields.dataType.$el.hide();
-//                }
-//
-//            }
+
             function onSchema(c1, c2, field) {
                 var val = field && field.$el.val();
                 console.log('onSchema', val);

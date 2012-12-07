@@ -1,13 +1,16 @@
-// Filename: ${baseUrl}/js/views/list.js
-define([
-    'underscore',
-    'Backbone.Form',
-    'libs/bobamo/list',
+// Filename: ${baseUrl}/js/views/finder.js
 
-    'modelcollections/${model.modelName}',
-    'text!templates/${model.modelName}/table.html',
-    'text!templates/${model.modelName}/table-item.html'
-], function (_,Form,View, m, tableTemplate, tableItemTemplate) {
+define(
+    {{html includes(
+    [   'underscore',
+        'Backbone.Form',
+        'libs/bobamo/list',
+        'modelcollections/<%=model.modelName%>',
+        'text!templates/<%=model.modelName%>/table.html',
+        'text!templates/<%=model.modelName%>/table-item.html'
+
+    ])}}
+    , function (_,Form,View, m, tableTemplate, tableItemTemplate) {
     "use strict";
 
      var qform = {{html JSON.stringify(model.finder(view).display) || 'null' }};

@@ -7,7 +7,7 @@ var AddressSchema = new mongoose.Schema({
     state       : {type: String, required : true},
     zip         : {type: String, default : ''},
     country     : {type: String},
-    location    : {type:'GeoPoint'},
+    location    : {type:'GeoPoint', display:{type:'LocationEditor'}},
     type        : {type: String, enum:['agent', 'agency', 'registrant'], index:true},
     primary     : {type: Boolean, default: false},
     meta        : {
@@ -63,6 +63,23 @@ Address.prototype.geocode = function(next){
     })
 
 };
+AddressSchema.statics.search = function(q){
+    // P.find({pos : { $near : [ 50, 20], $maxDistance: 30 }} , function(err, docs){
+    console.log('searching', q);
+    var near = q.near || {};
+    return this.find({location:{ $near:[near.lon, near.lat], $maxDistance:q.maxDistance/111.2}});
+};
+
+AddressSchema.statics.search.display = {
+    schema:{
+        near:'LocationEditor',
+        maxDistance:{
+            type:'Select',
+            options:[1,5,10,100]
+        }
+    },
+    fieldsets:[{legend:'Near', fields:['near','maxDistance']}]
+}
 AddressSchema.pre('save', function(next){
     this.geocode(next);
 });

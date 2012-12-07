@@ -1,4 +1,4 @@
-var Plugin = require('../../lib/plugin-api'), util = require('util'), _u = require('underscore');
+var Plugin = require('../../lib/plugin-api'), util = require('util'), _u = require('underscore'), schemaUtil = require('../../lib/schema-util');
 
 var GeneratorPlugin = function (options) {
     Plugin.apply(this, arguments);
@@ -45,7 +45,9 @@ GeneratorPlugin.prototype.routes = function (options) {
             arr = _u.map(arr, function (v) {
                 return  _u.template(v, data);
             });
-            var includes = data.model.includes || [];
+            var includes = data.model.includes  || [];
+            if (this.include)
+                includes = includes.concat(this.include);
             return JSON.stringify(arr.concat(includes));
         }
     }
@@ -88,7 +90,20 @@ GeneratorPlugin.prototype.routes = function (options) {
     }.bind(this));
 
     app.get(base + 'js/:super?/views/:type/finder/:view.:format', function (req, res, next) {
-        this.generate(res, 'views/finder.' + req.params.format, makeOptions(req), next);
+        var options = makeOptions(req);
+        var finder = _u.first(_u.filter(options.model.finders, function(v,k){
+            return options.view == v.name
+        }))
+        if (finder ){
+            var includes = options.includes;
+            var inc = schemaUtil.includes(finder.display.schema, finder.list_fields || finder.fields || null);
+            options.includes = function(){
+                var args =  _u.flatten([_u.toArray(arguments), inc])
+                    return includes.call(this, args);
+            }
+
+        }
+        this.generate(res, 'views/finder.' + req.params.format,options, next);
     }.bind(this));
 
     app.get(base + ':view', function (req, res, next) {

@@ -23,9 +23,10 @@ define([
 
                 var p = _.omit(v, 'persistence', 'editor');
                 var schemaType = v.persistence.schemaType;
-                var editor = v.editor[v.type];
+                var editor = v.editor && v.editor[v.type];
                 var persistence = _.omit(v.persistence[schemaType], 'persistence', 'editor');
-                var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, persistence, editor);
+                var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, _.omit(persistence,'validators'), editor);
+
                 var paths = nobj.paths;
                 delete nobj.paths;
 
@@ -38,9 +39,10 @@ define([
                 if (schemaType == 'Object')
                     return   _.each(paths, onPath((nobj.subSchema = {})));
 
-                if (nobj.validators) {
-                    nobj.validators = _.map(v.validators, function (vv, kk) {
-                        return _.extend({}, _.omit(vv, 'configure'), vv.configure);
+                if (persistence.validators) {
+                    nobj.validators = _.map(persistence.validators, function (vv, kk) {
+                        var type = vv.type;
+                        return _.extend({type:type, message:vv.message}, vv.configure[type]);
                     });
                 }
             }
@@ -183,12 +185,13 @@ define([
 
                     if (v.validators && v.validators.length) {
                         v.validators = _.map(v.validators, function (v, k) {
-                            var mesg = v.message || Form.validators.errMessages[v.type];
-                            return {
+                            var ret= {
                                 type:v.type,
-                                message:mesg,
-                                configure:_.omit(v, 'type', 'message')
+                                message:v.message,
+                                configure:{}
                             }
+                            ret.configure[v.type] = _.omit(v, 'type', 'message')
+                            return ret;
                         });
                     }
 

@@ -35,14 +35,16 @@ define(['underscore'], function (_) {
     function fullTrim(str) {
         return str.replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g, '').replace(/\s+/g, ' ');
     }
-
+    function empty(value){
+        return (value === null || value === undefined || value === '')
+    }
     var validators = {};
     validators['enum'] = {
         types:['String'],
         name:'Enum',
         message:"Must be an enumerated value: [{{enums}}]",
         schema:{
-            enums:'List'
+            enums:{type:'List'}
         },
         validator:function (options) {
             var e = options['enum'] || options['enums'];
@@ -54,7 +56,7 @@ define(['underscore'], function (_) {
             }, options);
             return function onEnum(value) {
                 //Don't check empty values (add a 'required' validator for this)
-                if (value === null || value === undefined || value === '') return;
+                if (empty(value)) return;
                 if (!~vals.indexOf(value)) {
 
                     return {
@@ -71,7 +73,7 @@ define(['underscore'], function (_) {
         name:'Mininum Length',
         message:"Must be at least {{minlength}} charecters",
         schema:{
-            minlength:'Number'
+            minlength:{type:'Number'}
         },
         validator:function (options) {
             check(options, 'minlength');
@@ -84,8 +86,7 @@ define(['underscore'], function (_) {
             return function match(value, attrs) {
 
                 //Don't check empty values (add a 'required' validator for this)
-                if (value === null || value === undefined || value === '') return;
-
+                if (empty(value)) return;
                 if (val > fullTrim(value).length)
                     return  {
                         type:options.type,
@@ -99,8 +100,8 @@ define(['underscore'], function (_) {
         name:'Maximum Length',
         message:"Must be less than {{maxlength}} charecters",
         schema:{
-            maxlength:'Number',
-            trim:'Checkbox'
+            maxlength:{type:'Number'},
+            trim:{type:'Checkbox'}
         },
         validator:function (options) {
             check(options, 'maxlength');
@@ -113,7 +114,8 @@ define(['underscore'], function (_) {
             return function match(value, attrs) {
 
                 //Don't check empty values (add a 'required' validator for this)
-                if (value === null || value === undefined || value === '') return;
+                if (empty(value))
+                    return;
 
                 if (val < fullTrim(value).length) return {
                     type:options.type,
@@ -128,7 +130,7 @@ define(['underscore'], function (_) {
         name:'Minimum',
         message:"Must be more than {{min}}",
         schema:{
-            min:'Number'
+            min:{type:'Number'}
         },
         validator:function (options) {
             check(options, 'min');
@@ -140,8 +142,7 @@ define(['underscore'], function (_) {
             return function min(value, attrs) {
 
                 //Don't check empty values (add a 'required' validator for this)
-                if (value === null || value === undefined || value === '') return;
-
+                if (empty(value)) return;
                 if (val > parseFloat(value))
                     return  {
                         type:options.type,
@@ -155,7 +156,7 @@ define(['underscore'], function (_) {
         name:'Maximum',
         message:"Must be less than {{max}}",
         schema:{
-            max:'Number'
+            max:{type:'Number'}
         },
         validator:function (options) {
             check(options, 'max');
@@ -169,8 +170,7 @@ define(['underscore'], function (_) {
             return function max(value, attrs) {
 
                 //Don't check empty values (add a 'required' validator for this)
-                if (value === null || value === undefined || value === '') return;
-
+                if (empty(value)) return;
                 if (val < parseFloat(value)) return {
                     type:options.type,
                     message:helpers.createTemplate(options.message, _.extend({value:value}, options))
@@ -190,8 +190,7 @@ define(['underscore'], function (_) {
             }, options);
 
             return function (value) {
-
-                if (value === null || value === undefined || value === '')
+                if (empty(value))
                     return {
                         type:options.type,
                         message:helpers.createTemplate(options.message, options)
@@ -203,13 +202,24 @@ define(['underscore'], function (_) {
         name:'Match',
         message:'Does not match {{field}}',
         schema:{
-            match:'String'
+            match:{type:'Text'}
         },
-        validator:function(options){
+        validator:function (options, attrs) {
             check(options, 'match');
+            return function (value) {
+                if (empty(value))
+                    return;
 
+                attrs = attrs || this;
+
+                if (value !== attrs[options.field]) return {
+                    type:options.type,
+                    message:Form.helpers.createTemplate(options.message, _.extend({value:value}, options))
+                };
+            }
         }
     }
+
     return {
         validators:validators,
         inject:function (bv) {
