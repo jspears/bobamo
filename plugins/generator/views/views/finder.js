@@ -4,16 +4,18 @@ define(
     {{html includes(
     [   'underscore',
         'Backbone.Form',
+        'Backbone',
         'libs/bobamo/list',
         'modelcollections/<%=model.modelName%>',
         'text!templates/<%=model.modelName%>/table.html',
         'text!templates/<%=model.modelName%>/table-item.html'
 
     ])}}
-    , function (_,Form,View, m, tableTemplate, tableItemTemplate) {
+    , function (_,Form,B,View, m, tableTemplate, tableItemTemplate) {
     "use strict";
 
      var qform = {{html JSON.stringify(model.finder(view).display) || 'null' }};
+    var Model = B.Model.extend(qform);
     return View.extend({
         initialize:function(options, params){
             var FM =     m.Collection.extend({
@@ -38,7 +40,7 @@ define(
         render:function(){
             View.prototype.render.apply(this, arguments);
             if (qform && qform.schema){
-                var form = this.form = new Form(qform).render();
+                var form = this.form = new Form({model:new Model()}).render();
                 form.$el.append('<div class="form-actions"><input type="reset" class="btn" value="Clear"><button type="submit" class="btn pull-right btn-primary save finish">Submit</button></div>')
                 this.$el.find('.table').before(form.el);
             }
