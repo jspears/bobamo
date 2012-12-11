@@ -36,13 +36,19 @@ define(
         },
         onOpenModalClick:function(e){
              this.onFormSubmit(e);
-            var view = $(e.target).data('data').href;
+            var data = $(e.target).data('data');
+            if (!data){
+                console.log('no data from target');
+                return;
+
+            }
+            var view = data.href;
             var idx = view.indexOf('#');
             if (~idx){
                 view = view.substring(idx+1);
             }
             var viewArr = _.isArray(view) ? view : [view];
-            console.log('doModal', viewArr);
+
             var self = this;
             require(viewArr, function (V) {
 

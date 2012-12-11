@@ -77,7 +77,9 @@ define([
                 throw new Error('collection must be defined');
             }
             this.collection.on('reset', this.renderList, this);
-            this.collection.on('fetch', this.renderList, this);
+            this.collection.on('fetch', function(){
+                console.log('fetch', arguments)
+                this.renderList.apply(this, _.toArray(arguments)) }, this);
             return this;
         },
         itemView:ListItemView,
@@ -96,6 +98,7 @@ define([
             _.each(this.collection.models, this.renderItem, this);
             this.$paginate.paginate('update', {sort:this.sort_str ? ' sorting by: ' + this.sort_str : '', total:this.collection.total});
             $('.sortable', this.$table).sorter();
+            this.trigger('fetched', arguments);
             return this;
         },
         sorts:[],
@@ -118,8 +121,11 @@ define([
             });
 
             data.sort = sort.join(',');
-            this.collection.fetch({data:data});
+            this.collection.fetch({data:data, success:_.bind(this._fetch, this)});
             return this;
+        },
+        _fetch:function(){
+          this.collection.trigger('list-data', arguments);
         },
         onSort:function (evt) {
             var obj = {field:evt.field, direction:evt.direction, label:evt.label};
