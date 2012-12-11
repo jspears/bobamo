@@ -3,14 +3,29 @@ define([
     'jquery',
     'underscore',
     'Backbone',
-    // 'libs/backbone/backbone.queryparams',
-    'libs/querystring'], function ($, _, Backbone, query) {
+    'libs/querystring',
+    'backbone-modal'
+], function ($, _, Backbone, query, Modal) {
     var AppRouter = Backbone.Router.extend({
         routes:{
             'login/login*':'doLoginHome',
             'login/*actions':'doLogin',
+            'modal/*actions':'doModal',
             // '/views/:type/finder/:finder':'defaultAction',
             '*actions':'defaultAction'
+        },
+        doModal:function (view) {
+
+            var viewArr = _.isArray(view) ? view : [view];
+            console.log('doModal', viewArr);
+            require(viewArr, function (V) {
+
+                var m = new Modal({
+                    content:new V
+                }).open(function () {
+                        window.history.back();
+                    })
+            });
         },
         doLoginHome:function () {
             this.doLogin('/home')
@@ -78,16 +93,16 @@ define([
                 }
                 if (!fragment.indexOf(this.options.root)) fragment = fragment.substr(this.options.root.length);
                 var idx = fragment.indexOf('?');
-                if (idx > -1){
+                if (idx > -1) {
                     var path = fragment.substring(0, idx);
-                    var obj = query.parse(fragment.substring(idx+1));
+                    var obj = query.parse(fragment.substring(idx + 1));
                     var nobj = {};
-                   _.each(obj, function(v,k){
+                    _.each(obj, function (v, k) {
                         if (k[0] != '_')
                             nobj[k] = v;
 
                     });
-                    fragment = path+'?'+query.stringify(nobj);
+                    fragment = path + '?' + query.stringify(nobj);
                 }
                 return fragment.replace(routeStripper, '');
             };

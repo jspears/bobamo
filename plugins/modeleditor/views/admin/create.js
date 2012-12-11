@@ -9,7 +9,9 @@ define([
     'modeleditor/js/inflection',
     'backbone-modal',
     'text!${pluginUrl}/templates/admin/edit.html',
-    'libs/editors/filter-editor'
+    'libs/editors/filter-editor',
+    'libs/editors/typeahead-editor'
+
 
 ], function (_, Backbone, Property, Fieldset, Form, EditView, inflection, Modal, template) {
     "use strict";
@@ -25,7 +27,7 @@ define([
                 var schemaType = v.persistence.schemaType;
                 var editor = v.editor && v.editor[v.type];
                 var persistence = _.omit(v.persistence[schemaType], 'persistence', 'editor');
-                var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, _.omit(persistence,'validators'), editor);
+                var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, _.omit(persistence, 'validators'), editor);
 
                 var paths = nobj.paths;
                 delete nobj.paths;
@@ -136,7 +138,8 @@ define([
             },
             list_fields:{
                 type:'List',
-                listType:'String',
+                itemType:'TypeAhead',
+                options:[],
                 title:'List View',
                 help:'Fields to show in list views'
             }
@@ -185,7 +188,7 @@ define([
 
                     if (v.validators && v.validators.length) {
                         v.validators = _.map(v.validators, function (v, k) {
-                            var ret= {
+                            var ret = {
                                 type:v.type,
                                 message:v.message,
                                 configure:{}
@@ -361,6 +364,27 @@ define([
         },
         createForm:function (opts) {
             opts._root = this;
+            opts.model.schema.fieldsets.model.prototype.allPaths = opts.model.schema.list_fields.options = function () {
+                var paths = [];
+
+                function onPathFux(prev) {
+                    return function (v) {
+                        var path = v.path || _.isUndefined(prev) ? v.name : [prev, v.name].join('.');
+                        paths.push(path);
+                        var dPaths = v.persistence && v.persistence[v.type] && v.persistence[v.type].paths
+                        _.each(dPaths, onPathFux(path))
+
+                    }
+                }
+
+
+                var json = form.getValue();
+
+                _.each(json.paths, onPathFux());//getValue()
+                return paths;
+                //console.log('paths',paths);
+                // _.each(editor.items, function(v){v.editor.setOptions(paths)});
+            }
             var form = this.form = new Form(opts);
 
             function enabled(e) {
@@ -378,7 +402,8 @@ define([
 
             form.on('paths:add', function (c1, c2, c3) {
                 console.log('value', c3.value.name);
-                form.fields.list_fields.editor.addItem(c3.value.name);
+                var editor = form.fields.list_fields.editor
+                editor.addItem(c3.value.name);
             });
             form.on('paths:remove', function (c1, c2, c3) {
                 var lf = form.fields.list_fields;
@@ -389,17 +414,17 @@ define([
             var self = this;
             var retry = 0;
             var first = false;
-            var onValidModelName = function() {
+            var onValidModelName = function () {
                 var $wiz = self.$el.find('> .edit-form > .wiz');
                 var wiz = $wiz.data('wiz');
                 //todo figure out how to know when the wiz is done.  but until then
-                if (!(wiz || retry++ > 3)){
+                if (!(wiz || retry++ > 3)) {
                     setTimeout(onValidModelName, 100 * retry);
                     return false;
                 }
                 if (!wiz)
                     return;
-                if (!first){
+                if (!first) {
                     first = true;
                     wiz.$next.on('click', onValidModelName);
                 }
@@ -417,17 +442,21 @@ define([
                 }
 
             }
-            form.on('all', function(){
-                console.log('all',arguments)
+            form.on('all', function () {
+                console.log('all', arguments)
             })
             form.on('paths:change', onValidModelName);
             form.on('modelName:change', onValidModelName)
+
             form.on('render', function () {
                 enabled();
                 onValidModelName();
 //                setTimeout(onValidModelName,200);
                 form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
                     .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
+
+
+                //      editor.setOptions(paths)
             })
 
             return form;

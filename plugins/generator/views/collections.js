@@ -1,5 +1,5 @@
 define([
-    'modelcollections/${model.modelName}'
+    'modelcollections/{{if collection}}${collection}{{else}}${model.modelName}{{/if}}'
 ], function(ns) {
   {{if isAdmin}}
       var data = {{html JSON.stringify(modelData)}}

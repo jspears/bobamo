@@ -1,4 +1,4 @@
-define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fieldset', 'views/modeleditor/admin/editors', 'views/modeleditor/admin/mongoose-types', 'exports', 'underscore', 'Backbone.Form'], function (b, Form, Fieldset, Editors, MongooseType, exports, _) {
+define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fieldset', 'views/modeleditor/admin/editors', 'views/modeleditor/admin/mongoose-types', 'exports', 'underscore', 'Backbone.Form', 'libs/editors/typeahead-editor'], function (b, Form, Fieldset, Editors, MongooseType, exports, _) {
     var DataTypes = {
         'String':[
             'text',
@@ -77,18 +77,6 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                 type:'Checkbox',
                 help:'Multiple values as an Array'
 
-            },
-            fieldsets:{
-                type:'List',
-                itemType:'NestedModel',
-                model:Fieldset,
-                help:'Fields to allow editing',
-                title:'Edit Fields'
-            },
-            list_fields:{
-                type:'List',
-                help:'Fields to show in list views',
-                title:'List Fields'
             }
         },
         fieldsets:[

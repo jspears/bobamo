@@ -1,4 +1,4 @@
-var Plugin = require('../../lib/plugin-api'), util = require('util'), path = require('path'), static = require('connect/lib/middleware/static'), _u =require('underscore');
+var Plugin = require('../../lib/plugin-api'), util = require('util'), path = require('path'), static = require('connect/lib/middleware/static'), _u = require('underscore');
 var StaticPlugin = function (options, app, name, p, pluginManager) {
     Plugin.apply(this, arguments);
     var public = path.join(this.path, 'public', 'js')
@@ -38,6 +38,53 @@ var DataTypes = {
         'number',
         'range']
 }
+var formatters = [
+    {name:'Text',
+        schema:{
+            default:'Text',
+            labelAttr:'Text',
+            maxLength:'Number'
+        }
+    },
+    {
+        name:'Number',
+        types:['Number'],
+        schema:{
+           numberFormat:{
+               type:'Text',
+               placeholder:'##.#'
+           }
+
+        }
+    },
+    {
+        name:'Date',
+        types:['Date','DateTime'],
+        schema:{
+            dateFormat:'Text'
+        }
+    },
+    {
+        name:'Password',
+        schema:{
+            showAs:{
+                type:'Select',
+                options:['******', 'Text', 'None']
+            }
+        }
+    },
+    {
+        name:'List',
+        types:['List','Array'],
+        schema:{
+            labelAttr:'Text',
+            count:{
+                type:'Radio',
+                options:['None', 'count', 'delimited']
+            }
+        }
+    }
+]
 var editors = [
     {
         name:'Text',
@@ -141,7 +188,17 @@ var editors = [
     { name:'Object', types:['Object']}
 
 ];
+StaticPlugin.prototype.format = function(obj){
+    if (obj){
+      var val = obj.name ||obj;
+      return _u.filter(formatters, function(v){
+          return !v.types || ~v.types.indexOf(val);
+      });
 
+    }
+    return formatters;
+
+}
 StaticPlugin.prototype.editors = function () {
     return editors;
 }

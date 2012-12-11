@@ -61,6 +61,7 @@ GeneratorPlugin.prototype.routes = function (options) {
             opts.model = appModel.modelFor(type);
             opts.type = type;
             opts.view = req.params.view;
+            opts.urlRoot =opts.model.modelName
         }
         return opts;
     }
@@ -101,9 +102,27 @@ GeneratorPlugin.prototype.routes = function (options) {
                 var args =  _u.flatten([_u.toArray(arguments), inc])
                     return includes.call(this, args);
             }
-
         }
         this.generate(res, 'views/finder.' + req.params.format,options, next);
+    }.bind(this));
+    app.get(base + 'js/:super?/:clz/:type/finder/:view.:format', function (req, res, next) {
+        var options = makeOptions(req);
+        var finder = _u.first(_u.filter(options.model.finders, function(v,k){
+            return options.view == v.name
+        }))
+        if (finder ){
+            var includes = options.includes;
+            var inc = schemaUtil.includes(finder.display.schema, finder.list_fields || finder.fields || null);
+            options.includes = function(){
+                var args =  _u.flatten([_u.toArray(arguments), inc])
+                return includes.call(this, args);
+            }
+            options = _u.extend(options, {
+                urlRoot:options.type+'/finder/'+options.view,
+                collection:req.params.type+'/finder/'+options.view
+            });
+        }
+        this.generate(res, req.params.clz +'.'+ req.params.format,options, next);
     }.bind(this));
 
     app.get(base + ':view', function (req, res, next) {

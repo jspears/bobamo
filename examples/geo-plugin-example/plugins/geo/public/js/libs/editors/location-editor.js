@@ -68,7 +68,7 @@ define(['Backbone.Form', 'underscore', 'jquery', 'libs/editors/gmaps', 'libs/boo
             return this;
         },
         getValue:function () {
-            return this.value && this.value.toJSON();
+            return  this.value.toJSON ? this.value.toJSON() : this.value;
         }
     });
     return GeoView;

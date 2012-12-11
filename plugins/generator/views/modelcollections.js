@@ -10,7 +10,7 @@ define([
     var defaults = {{html JSON.stringify(model.defaults || {})}};
 
     var Model = Backbone.Model.extend({
-        urlRoot:'${api}/${model.modelName}',
+        urlRoot:'${api}/${urlRoot}',
         schema:schema,
         defaults:defaults,
         initialize: function() {},
@@ -42,7 +42,7 @@ define([
     });
     var Collection = Backbone.Collection.extend({
         model: Model,
-        url:'${api}/${model.modelName}',
+        url:'${api}/${urlRoot}',
         initialize: function() {
              this.total = 0;
         },
