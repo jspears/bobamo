@@ -45,9 +45,8 @@ GeneratorPlugin.prototype.routes = function (options) {
             arr = _u.map(arr, function (v) {
                 return  _u.template(v, data);
             });
-            var includes = data.model.includes  || [];
-            if (this.include)
-                includes = includes.concat(this.include);
+            var includes = data.model.includes || [];
+
             return JSON.stringify(arr.concat(includes));
         }
     }
@@ -61,7 +60,8 @@ GeneratorPlugin.prototype.routes = function (options) {
             opts.model = appModel.modelFor(type);
             opts.type = type;
             opts.view = req.params.view;
-            opts.urlRoot =opts.model.modelName
+            opts.urlRoot = opts.model && opts.model.modelName ;
+            opts.collection = opts.model && opts.model.modelName;
         }
         return opts;
     }
@@ -74,6 +74,7 @@ GeneratorPlugin.prototype.routes = function (options) {
             opts.model = req.body;
             opts.type = type;
             opts.view = req.params.view;
+            opts.collection = type;
         }
         return opts;
     }
@@ -90,39 +91,28 @@ GeneratorPlugin.prototype.routes = function (options) {
         res.redirect(this.baseUrl + (this.options.index || 'index.html'));
     }.bind(this));
 
-    app.get(base + 'js/:super?/views/:type/finder/:view.:format', function (req, res, next) {
+    function finderOpts(req){
         var options = makeOptions(req);
-        var finder = _u.first(_u.filter(options.model.finders, function(v,k){
-            return options.view == v.name
-        }))
-        if (finder ){
-            var includes = options.includes;
-            var inc = schemaUtil.includes(finder.display.schema, finder.list_fields || finder.fields || null);
-            options.includes = function(){
-                var args =  _u.flatten([_u.toArray(arguments), inc])
-                    return includes.call(this, args);
-            }
-        }
-        this.generate(res, 'views/finder.' + req.params.format,options, next);
+        var finder = options.model.finder(options.view);
+        options = _u.extend(options, {
+            urlRoot:options.type + '/finder/' + options.view,
+            collection:req.params.type + '/finder/' + options.view,
+            model:finder.model
+        });
+        return options;
+    }
+    app.get(base + 'js/:super?/views/:type/finder/:view.:format', function (req, res, next) {
+        this.generate(res, 'views/finder.' + req.params.format, finderOpts(req), next);
     }.bind(this));
     app.get(base + 'js/:super?/:clz/:type/finder/:view.:format', function (req, res, next) {
-        var options = makeOptions(req);
-        var finder = _u.first(_u.filter(options.model.finders, function(v,k){
-            return options.view == v.name
-        }))
-        if (finder ){
-            var includes = options.includes;
-            var inc = schemaUtil.includes(finder.display.schema, finder.list_fields || finder.fields || null);
-            options.includes = function(){
-                var args =  _u.flatten([_u.toArray(arguments), inc])
-                return includes.call(this, args);
-            }
-            options = _u.extend(options, {
-                urlRoot:options.type+'/finder/'+options.view,
-                collection:req.params.type+'/finder/'+options.view
-            });
-        }
-        this.generate(res, req.params.clz +'.'+ req.params.format,options, next);
+
+        this.generate(res, req.params.clz + '.' + req.params.format, finderOpts(req), next);
+    }.bind(this));
+
+    app.get(base + 'templates/:type/finder/:view/:tmpl', function (req, res, next) {
+        console.log('here I am')
+        this.generate(res, 'templates/' + req.params.tmpl, finderOpts(req), next);
+
     }.bind(this));
 
     app.get(base + ':view', function (req, res, next) {

@@ -8,16 +8,16 @@ define(
         'backbone-modal',
         'libs/bobamo/list',
 
-        'collections/<%=model.modelName%>/finder/<%=view%>',
-        'text!templates/<%=model.modelName%>/table.html',
-        'text!templates/<%=model.modelName%>/table-item.html'
+        'collections/<%=collection%>',
+        'text!templates/<%=collection%>/table.html',
+        'text!templates/<%=collection%>/table-item.html'
 
     ])}}
     , function (_,B, Form,Modal,View, collection, tableTemplate, tableItemTemplate) {
     "use strict";
 
-     var qform = {{html JSON.stringify(model.finder(view).display) || 'null' }};
-    var Model = B.Model.extend(qform);
+     var qform = {{html JSON.stringify(model) || 'null' }};
+    var Model = B.Model.extend({schema:qform.paths});
     var FinderModel = new Model;
     define('findermodel/${model.modelName}/${view}', function(){
         return FinderModel;
@@ -28,15 +28,23 @@ define(
                 submit:'onFormSubmit',
                 'click .open-modal':'onOpenModalClick'
         }),
+        initialize:function(){
+            View.prototype.initialize.apply(this, _.toArray(arguments));
+            this.form = new Form({model:FinderModel});
+            _.each(FinderModel.events, function(k,v){
+                  this.form.on(v, _.bind(this[k], this));
+            },this)
+
+        },
         onFormSubmit:function(e){
-            e.preventDefault();
+            if (e && e.preventDefault)
+             e.preventDefault();
             console.log('onFormSubmit',this.form.getValue());
             this.$paginate.paginate('update', {skip:0}); //reset the skip.
             this.update(null, {skip:0});
         },
         onOpenModalClick:function(e){
-             this.onFormSubmit(e);
-            var data = $(e.target).data('data');
+            var data = $(e.currentTarget).data('data') || e;
             if (!data){
                 console.log('no data from target');
                 return;
@@ -69,7 +77,7 @@ define(
             if (qform && qform.schema){
                 var buttons = qform.buttons;
                 collection.finder = FinderModel;
-                var form = this.form = new Form({model:FinderModel}).render();
+                var form = this.form.render();
                 var $div = $('<div class="form-actions"><input type="reset" class="btn" value="Clear"></div>');
                 console.log('btns', buttons);
                 var btns =   _.map(buttons, function(v){

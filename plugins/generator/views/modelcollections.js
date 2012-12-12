@@ -1,7 +1,7 @@
 define([
     'underscore',
     'Backbone'
-], function(_, Backbone, Bobabmo) {
+], function(_, Backbone) {
     "use strict";
 
     //we define these together because they often link together and if they are in seperate callbacks bad things happen.

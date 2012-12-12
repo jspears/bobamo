@@ -7,7 +7,6 @@ var MongoosePlugin = function (options) {
     Plugin.apply(this, arguments);
     this.pluginUrl = this.baseUrl;
 
-
 }
 sutil.inherits(MongoosePlugin, Plugin);
 module.exports = MongoosePlugin;

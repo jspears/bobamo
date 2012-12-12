@@ -21,9 +21,7 @@
 !function($){
 
     "use strict"; // jshint ;_;
-
-
-    /* TYPEAHEAD PUBLIC CLASS DEFINITION
+   /* TYPEAHEAD PUBLIC CLASS DEFINITION
      * ================================= */
 
     var Typeahead = function (element, options) {
@@ -306,5 +304,6 @@
         e.preventDefault()
         $this.typeahead($this.data())
     })
+    return $;
 
 }(window.jQuery);

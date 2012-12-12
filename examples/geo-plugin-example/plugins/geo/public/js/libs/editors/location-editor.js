@@ -14,20 +14,34 @@ define(['Backbone.Form', 'underscore', 'jquery', 'libs/editors/gmaps', 'libs/boo
             return str.replace.apply(str, _.toArray(arguments));
         }
         this.toJSON = function () {
-            var loc = this.geometry.location
+            var loc = this.geometry && this.geometry.location
             return {
                 formatted_address:this.toString(),
-                lat:this.lat || loc.lat(),
-                lon:this.lon || loc.lng()
+                lat:this.lat || loc && loc.lat(),
+                lon:this.lon || loc && loc.lng()
             }
+        }
+        this.equals = function(that){
+            return that && this.lat == that.lat && this.lon == that.lon;
         }
 
     }
     var GeoView = Form.editors.LocationEditor = Form.editors.Text.extend({
+        determineChange: function(event) {
+            var currentValue = this.value && this.value instanceof  ResultItem ? this.value : (this.value = new ResultItem(this.value));
+            var changed = (currentValue &! this.previousValue) || !currentValue.equals(this.previousValue)
+
+            if (changed) {
+                this.previousValue = currentValue;
+
+                this.trigger('change', this);
+            }
+        },
         render:function () {
             Form.editors.Text.prototype.render.call(this);
             var _this = this;
             var setValue = _.bind(this.setValue, this);
+            var change = _.bind(this.determineChange, this);
             this.$addr = this.$el.typeahead({
                 delay:0,
                 minLength:6,
@@ -40,6 +54,7 @@ define(['Backbone.Form', 'underscore', 'jquery', 'libs/editors/gmaps', 'libs/boo
                 },
                 updater:function (event, ui) {
                     setValue(event);
+                    change(event);
                     return event;
                 },
                 source:_.bind(this.load, this)

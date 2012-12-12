@@ -4,7 +4,7 @@
  * - "data-type" attributes are required.
  * - The main placeholder tags such as the following are required: fieldsets, fields
  */
-define(['jquery', 'underscore', 'Backbone', 'Backbone.Form'], function($, _, Backbone, Form) {
+define(['Backbone.FormOrig'], function(Form) {
 
     
   //TWITTER BOOTSTRAP TEMPLATES

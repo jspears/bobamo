@@ -1,6 +1,6 @@
 /**
  * Bootstrap Modal wrapper for use with Backbone.
- * 
+ *
  * Takes care of instantiation, manages multiple modals,
  * adds several options and removes the element from the DOM when closed
  *
@@ -44,7 +44,7 @@ function($, _, Backbone, Form, BList) {
 
   //Reset to users' template settings
   _.templateSettings = _interpolateBackup;
-  
+
 
   var Modal = Backbone.View.extend({
 
@@ -98,7 +98,7 @@ function($, _, Backbone, Form, BList) {
 
     /**
      * Creates the DOM element
-     * 
+     *
      * @api private
      */
     render: function() {
@@ -113,7 +113,7 @@ function($, _, Backbone, Form, BList) {
 
       //Insert the main content if it's a view
       if (content.$el) {
-        content.render();
+        this.view = content.render();
         $el.find('.modal-body').html(content.$el);
       }
 
@@ -161,7 +161,7 @@ function($, _, Backbone, Form, BList) {
         $backdrop.one('click', function() {
           self.trigger('cancel');
         });
-        
+
         $(document).one('keyup.dismiss.modal', function (e) {
           e.which == 27 && self.trigger('cancel');
         });
@@ -177,7 +177,7 @@ function($, _, Backbone, Form, BList) {
       if (cb) {
         self.on('ok', cb);
       }
-      
+
       return this;
     },
 
@@ -193,18 +193,22 @@ function($, _, Backbone, Form, BList) {
         this._preventClose = false;
         return;
       }
+        $el.one('hidden', function() {
+            self.remove();
 
+            self.trigger('hidden');
+        });
       $el.modal('hide');
 
-      $el.one('hidden', function() {
-        self.remove();
 
-        self.trigger('hidden');
-      });
 
       Modal.count--;
     },
-
+    remove:function(){
+        if (this.view)
+            this.view.remove();
+        Backbone.View.prototype.remove.call(this);
+    },
     /**
      * Stop the modal from closing.
      * Can be called from within a 'close' or 'ok' event listener.

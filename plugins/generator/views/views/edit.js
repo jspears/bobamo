@@ -2,9 +2,9 @@
 define({{html includes(
     ['underscore',
     'libs/bobamo/edit',
-    'collections/<%=model.modelName%>',
-    'models/<%=model.modelName%>',
-    'text!templates/<%=model.modelName%>/edit.html',
+    'collections/<%=collection%>',
+    'models/<%=collection%>',
+    'text!templates/<%=collection%>/edit.html',
     'libs/backbone-forms/templates/bootstrap',
     'jquery-ui',
     'libs/backbone-forms/editors/list'])}}

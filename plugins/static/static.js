@@ -96,6 +96,17 @@ var editors = [
         }
     },
     {
+        name:'TypeAhead',
+        types:['String', 'Number', 'Date'],
+        schema:{
+            placeholder:{ type:'Text' },
+            dataType:{ type:'Select', options:DataTypes.String},
+            options:{
+                type:'List'
+            }
+        }
+    },
+    {
         name:'TextArea',
         types:['String', 'Boolean', 'Number', 'Date'],
         schema:{

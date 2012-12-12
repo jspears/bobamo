@@ -1,4 +1,5 @@
-define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection', 'mongoose/js/validators'], function (Form, _, inflection, validators) {
+define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection', 'mongoose/js/validators',  'libs/backbone-forms/templates/bootstrap'], function (Form, _, inflection, validators) {
+   // require([ 'libs/backbone-forms/templates/bootstrap']);
     var regexp = Form.validators.regexp
     var rere = /\/*(.*)\/(.*)\/([i,m,g,y]*)/g;
     validators.inject(Form);

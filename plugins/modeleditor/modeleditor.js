@@ -17,13 +17,14 @@ EditPlugin.prototype.appModel = function () {
     return this._appModel;
 }
 EditPlugin.prototype.configure = function (conf) {
-    if (conf  && conf.modelPaths)
-    _u.each(conf.modelPaths, function onModelConfigure(v,k){
-          if (v.configurable){
-           var plugin =  this.pluginManager.loadedPlugins[v.dbType || 'mongoose'];
-             plugin.updateSchema(k, v);
-          }
-    }, this);
+    if (conf && conf.modelPaths)
+        _u.each(conf.modelPaths, function onModelConfigure(v, k) {
+            if (v.configurable) {
+                var plugin = this.pluginManager.loadedPlugins[v.dbType || 'mongoose'];
+                if (plugin && plugin.updateSchema)
+                    plugin.updateSchema(k, v);
+            }
+        }, this);
     new App(conf);
     return _u.extend(this._appModel, conf);
 }
@@ -53,11 +54,11 @@ EditPlugin.prototype.routes = function () {
         this.local(res, 'editModel', editModel);
         this.local(res, 'model', editModel.modelPaths[req.params.type]);
         this.local(res, 'pluginUrl', this.pluginUrl);
-        this.local(res, 'schemaTypes', function(){
+        this.local(res, 'schemaTypes', function () {
             return _u.map(mongoose.SchemaTypes, function (v, k) {
                 var disp = v.prototype.display
 
-                return _u.isUndefined(disp) ? {} : _u.extend({schemaType:k}, disp) ;
+                return _u.isUndefined(disp) ? {} : _u.extend({schemaType:k}, disp);
             });
         });
         this.generate(res, view);
@@ -128,7 +129,7 @@ EditPlugin.prototype.routes = function () {
 
         var validators = [];
         _u.each(pm.plugins, function (v, k) {
-            var vals =v.validators(type);
+            var vals = v.validators(type);
             if (vals && vals.length)
                 validators = validators.concat(vals);
         });
@@ -158,7 +159,7 @@ EditPlugin.prototype.routes = function () {
     this.app.get(base + '/admin/types/schemas', function (req, res) {
         //TODO abstract this in the displayModel
         res.send({
-                payload:_u.map(this.options.mongoose.SchemaTypes, function (v, k) {
+            payload:_u.map(this.options.mongoose.SchemaTypes, function (v, k) {
                 var disp = v.prototype.display
                 return _u.extend({schemaType:k}, disp || {});
             }),
@@ -210,9 +211,9 @@ EditPlugin.prototype.routes = function () {
 
     }.bind(this));
 
-    this.app.post(base +'/admin/editorsFor', function (req,res, next){
+    this.app.post(base + '/admin/editorsFor', function (req, res, next) {
         var body = req.body;
-        console.log('editorsFor',body);
+        console.log('editorsFor', body);
         res.send({
             status:0,
             payload:this.pluginManager.editorsFor(body.path, body.property, this.pluginManager.schemaFor(body.schema))
@@ -309,8 +310,8 @@ EditPlugin.prototype.routes = function () {
 
     }
 
-    this.app.post(base + '/admin/preview', function(req,res){
-        this.save(req.body, function(){
+    this.app.post(base + '/admin/preview', function (req, res) {
+        this.save(req.body, function () {
             res.send({
                 status:0,
                 payload:req.body.modelName
@@ -318,19 +319,19 @@ EditPlugin.prototype.routes = function () {
         })
     }.bind(this));
     var appModel = this.pluginManager.appModel;
-    this.app.put(base + '/admin/backbone/:modelName?', function(req,res){
+    this.app.put(base + '/admin/backbone/:modelName?', function (req, res) {
 
-        var persistPlugin =  this.pluginManager.loadedPlugins[req.body.dbType || 'mongoose'];
+        var persistPlugin = this.pluginManager.loadedPlugins[req.body.dbType || 'mongoose'];
 
         var modelName = req.body.modelName;
 
 
-        if (!persistPlugin.modelFor(modelName) || (this._appModel &&  this._appModel.models && this._appModel.models[modelName] && this._appModel.models[modelName].configurable) ){
+        if (!persistPlugin.modelFor(modelName) || (this._appModel && this._appModel.models && this._appModel.models[modelName] && this._appModel.models[modelName].configurable)) {
             req.body.configurable = true;
             persistPlugin.updateSchema(modelName, req.body.schema);
         }
-        this._appModel.modelPaths[modelName] =req.body;
-        this.save(this._appModel, function(){
+        this._appModel.modelPaths[modelName] = req.body;
+        this.save(this._appModel, function () {
             res.send({
                 status:0,
                 payload:{modelName:modelName}

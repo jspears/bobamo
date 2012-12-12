@@ -1,4 +1,4 @@
-define(['Backbone.Form', 'underscore', 'jquery', 'bootstrap/bootstrap-typeahead'], function (Form, _, $) {
+define(['Backbone.Form', 'underscore','bootstrap/bootstrap-typeahead'], function (Form, _) {
     "use strict";
     var editors = Form.editors;
     var Select = editors.Select;
