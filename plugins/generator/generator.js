@@ -97,7 +97,8 @@ GeneratorPlugin.prototype.routes = function (options) {
         options = _u.extend(options, {
             urlRoot:options.type + '/finder/' + options.view,
             collection:req.params.type + '/finder/' + options.view,
-            model:finder.model
+            model:finder.model,
+            finder:finder
         });
         return options;
     }

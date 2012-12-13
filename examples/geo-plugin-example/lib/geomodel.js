@@ -1,4 +1,4 @@
-var geocoder = require('geocoder'), bobamo = require('bobamo'), mongoose = bobamo.mongoose, _u = require('underscore');
+var geocoder = require('geocoder'), bobamo = require('bobamo'), mongoose = bobamo.mongoose, _u = require('underscore'), Query = require('bobamo/node_modules/mers/lib/callback-query');
 
 var AddressSchema = new mongoose.Schema({
     name:{type:String, default:''},
@@ -38,60 +38,24 @@ var config = {};
 //};
 var MILE_DEGREE = 69.047;
 AddressSchema.statics.search = function (q) {
-    // P.find({pos : { $near : [ 50, 20], $maxDistance: 30 }} , function(err, docs){
-
-    var near = q.near || {};
-
     var collection = this.collection;
-
-    console.log('searching', near);
-    function Query(lat, lon, distance) {
-        console.log('onexec', collection.name, near)
+    var lon = parseFloat(q.near.lon), lat = parseFloat(q.near.lat);
+    return new Query(function(callback){
         var _this = this;
-        this.opts = {maxDistance: distance/MILE_DEGREE, distanceMultiplier:MILE_DEGREE}
-        this.exec = function (callback) {
-
-            if (_this._results || _this._err){
-                console.log('has results already')
-                return callback(_this._err, _this._results);
-            }
-            collection.geoNear(lon,lat, this.opts , function (err, result) {
+        collection.geoNear(lon,lat, _u.extend(this.options, {maxDistance:parseFloat(q.maxDistance)/MILE_DEGREE, distanceMultiplier:MILE_DEGREE}) , function (err, result) {
                 err = err || result && result.errmsg ? result : null;
                 if (err) {
-                    _this._err = err;
                     return callback(err, null);
                 }
                 var res = _u.map(result.results, function (o) {
                     return _u.extend({dis:o.dis}, o.obj);
                 });
-                _this._count = result.stats.objectsLoaded
-                _this._results = res;
+                 _this._count = result.stats.objectsLoaded
+                 _this._results = res;
                 callback(null, res);
             });
-        }
-
-        this.limit = function(limit){
-            this.opts.limit = limit;
-            return this;
-        }
-        this.skip = function(skip){
-            this.opts.skip = skip;
-            return this;
-        }
-        this.count = function(callback){
-            if (!(_u.isUndefined(_this._count || _this._err)))
-                callback(_this._err, _this._count);
-            else
-               this.exec(function(e, r){
-                   console.log('count', _this._count);
-                   callback(_this._err, _this._count);
-               })
-        }
-    };
-
-    return new Query(parseFloat(near.lat), parseFloat(near.lon), q.maxDistance);
+    });
 };
-
 
 AddressSchema.statics.search.display = {
     schema:{

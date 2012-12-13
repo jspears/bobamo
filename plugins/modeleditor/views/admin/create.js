@@ -18,7 +18,7 @@ define([
 
     function onModel(body) {
         var editors = {};
-        var model = _.extend({schema:{}}, body.display, _.omit(body, 'paths'));
+        var model = _.extend({schema:{}}, body.display, _.omit(body, 'schema'));
 
         function onPath(obj) {
             return function (v, k) {
@@ -29,8 +29,8 @@ define([
                 var persistence = _.omit(v.persistence[schemaType], 'persistence', 'editor');
                 var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, _.omit(persistence, 'validators'), editor);
 
-                var paths = nobj.paths;
-                delete nobj.paths;
+                var paths = nobj.schema;
+                delete nobj.schema;
 
                 if (v.type)
                     editors[v.type] = true;
@@ -51,7 +51,7 @@ define([
 
         }
 
-        _.each(body.paths, onPath(model.schema));
+        _.each(body.schema, onPath(model.schema));
 
         model.includes = _.map(_.omit(editors, _.keys(Form.editors)), function (v, k) {
             return 'libs/editors/' + inflection.hyphenize(k)
@@ -87,7 +87,7 @@ define([
                 pform.on('render', onModelName);
                 pform.on('paths:change', function () {
                     //update
-                    var value = _.map(pform.fields.paths.getValue(), function (v) {
+                    var value = _.map(pform.fields.schema.getValue(), function (v) {
                         return {schemaType:v.persistence.schemaType, name:v.name};
                     });
                     var $el = form.fields.labelAttr.editor.$el;
@@ -122,7 +122,7 @@ define([
                 type:'NestedModel',
                 model:Display
             },
-            "paths":{
+            "schema":{
                 type:'List',
                 itemType:'NestedModel',
                 model:Property,
@@ -154,9 +154,9 @@ define([
 
         parse:function (resp) {
             var model = resp.payload;
-            var paths = model.paths;
-            delete model.paths;
-            var npaths = (model.paths = []);
+            var paths = model.schema;
+            delete model.schema;
+            var npaths = (model.schema = []);
 
             function fixPaths(p) {
                 return function (v, k) {
@@ -202,7 +202,7 @@ define([
                         var sub = v.subSchema;
                         v.schemaType = 'Object';
                         delete v.subSchema;
-                        var np = (v.paths = []);
+                        var np = (v.schema = []);
                         _.each(sub, fixPaths(np));
                     }
                 }
@@ -215,7 +215,7 @@ define([
 
         defaults:{
             hidden:false,
-            paths:[]
+            schema:[{'_id':{type:'Hidden', schemaType:'String'}}]
         },
         idAttribute:'modelName'
     });
@@ -237,7 +237,7 @@ define([
         }, EditView.prototype.events),
         fieldsets:[
             {legend:'Model Info', fields:['modelName']},
-            {legend:'Properties', fields:['paths']},
+            {legend:'Properties', fields:['schema']},
             {legend:'Display', fields:['display']},
             {legend:'Views', fields:['fieldsets', 'list_fields']}
         ],
@@ -267,7 +267,7 @@ define([
             return _.bind(function (resp) {
                 var View = EditView.extend({
                     fieldsets:model.fieldsets || {
-                        fields:_.keys(model.paths)
+                        fields:_.keys(model.schema)
                     },
                     template:_.template(resp),
                     collection:new Backbone.Collection(),
@@ -371,7 +371,7 @@ define([
                     return function (v) {
                         var path = v.path || _.isUndefined(prev) ? v.name : [prev, v.name].join('.');
                         paths.push(path);
-                        var dPaths = v.persistence && v.persistence[v.type] && v.persistence[v.type].paths
+                        var dPaths = v.persistence && v.persistence[v.type] && v.persistence[v.type].schema
                         _.each(dPaths, onPathFux(path))
 
                     }
@@ -380,7 +380,7 @@ define([
 
                 var json = form.getValue();
 
-                _.each(json.paths, onPathFux());//getValue()
+                _.each(json.schema, onPathFux());//getValue()
                 return paths;
                 //console.log('paths',paths);
                 // _.each(editor.items, function(v){v.editor.setOptions(paths)});
@@ -391,21 +391,21 @@ define([
                 console.log('enabled', e);
                 var modelName = form.fields.modelName.getValue()
                 if (modelName && modelName.trim().length) {
-                    form.fields.paths.$el.find('button').removeAttr('disabled');
+                    form.fields.schema.$el.find('button').removeAttr('disabled');
                 } else {
-                    form.fields.paths.$el.find('button').attr('disabled', 'true');
+                    form.fields.schema.$el.find('button').attr('disabled', 'true');
                 }
 
             }
 
             form.on('modelName:change', enabled);
 
-            form.on('paths:add', function (c1, c2, c3) {
+            form.on('schema:add', function (c1, c2, c3) {
                 console.log('value', c3.value.name);
                 var editor = form.fields.list_fields.editor
                 editor.addItem(c3.value.name);
             });
-            form.on('paths:remove', function (c1, c2, c3) {
+            form.on('schema:remove', function (c1, c2, c3) {
                 var lf = form.fields.list_fields;
                 //Remove each item that matches the name of the path that is being removed.   Ugly, but setValue does
                 // not work, because list does not remove things from the items list.   A bug in my book, but this works.
@@ -432,7 +432,7 @@ define([
                 if (wiz.current == 0)
                     val = !!form.fields.modelName.getValue();
                 else if (wiz.current == 1)
-                    val = !!form.fields.paths.editor.items.length;
+                    val = !!form.fields.schema.editor.items.length;
 
 
                 if (!val) {
@@ -445,7 +445,7 @@ define([
             form.on('all', function () {
                 console.log('all', arguments)
             })
-            form.on('paths:change', onValidModelName);
+            form.on('schema:change', onValidModelName);
             form.on('modelName:change', onValidModelName)
 
             form.on('render', function () {

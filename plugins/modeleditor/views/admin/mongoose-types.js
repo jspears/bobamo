@@ -136,7 +136,7 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/a
         }),
         Object:TM.extend({
             schema:{
-                paths:{
+                schema:{
                     type:'List',
                     itemType:'NestedModel'
                 }
@@ -171,8 +171,8 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/a
             var form = this.form = new Form(opts);
 
 
-            if (_.isUndefined(DataType.Object.prototype.schema.paths.model))
-                DataType.Object.prototype.schema.paths.model = require('views/modeleditor/admin/property');
+            if (_.isUndefined(DataType.Object.prototype.schema.schema.model))
+                DataType.Object.prototype.schema.schema.model = require('views/modeleditor/admin/property');
             function validation() {
                 var fields = form.fields;
                 var val = fields.schemaType.getValue();

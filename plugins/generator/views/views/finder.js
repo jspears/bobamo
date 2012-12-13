@@ -17,7 +17,8 @@ define(
     "use strict";
 
      var qform = {{html JSON.stringify(model) || 'null' }};
-    var Model = B.Model.extend({schema:qform.paths});
+ //    var qform = _.extend({schema:_qform.paths}, _.omit(_qform, 'paths'));
+    var Model = B.Model.extend(qform);
     var FinderModel = new Model;
     define('findermodel/${model.modelName}/${view}', function(){
         return FinderModel;
@@ -30,8 +31,9 @@ define(
         }),
         initialize:function(){
             View.prototype.initialize.apply(this, _.toArray(arguments));
-            this.form = new Form({model:FinderModel});
-            _.each(FinderModel.events, function(k,v){
+            this.model = FinderModel;
+            this.form = new Form({model:this.model});
+            _.each(this.model.events, function(k,v){
                   this.form.on(v, _.bind(this[k], this));
             },this)
 
@@ -74,9 +76,9 @@ define(
         template:_.template(tableTemplate),
         render:function(){
             View.prototype.render.apply(this, arguments);
-            if (qform && qform.schema){
-                var buttons = qform.buttons;
-                collection.finder = FinderModel;
+            if (this.model.schema){
+                var buttons = this.model.buttons;
+                collection.finder = this.model;
                 var form = this.form.render();
                 var $div = $('<div class="form-actions"><input type="reset" class="btn" value="Clear"></div>');
                 console.log('btns', buttons);
@@ -112,14 +114,14 @@ define(
                 this.$el.find('.table').before(form.el);
             }
 
-            this.$table.find('.title').append(" &gt; <span>${model.finder(view).title}</span>")
+            this.$table.find('.title').append(" &gt; <span>${model.title}</span>")
 
             return this;
         },
         listItemTemplate:_.template(tableItemTemplate),
         config:{
-            title:'${model.title}',
-            modelName:'${model.modelName}',
+            title:'${finder.title}',
+            modelName:'${modelName}',
             plural:'${model.plural}'
         }
     });

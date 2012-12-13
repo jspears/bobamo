@@ -77,7 +77,7 @@ EditPlugin.prototype.routes = function () {
         var editModel = this.local(res, 'editModel');
         editModel.models.forEach(function (v, k) {
             var m = _u.extend({}, v);
-            delete m.paths;
+            delete m.schema;
             delete m._paths;
             delete m.model;
             delete m.fields;
@@ -280,12 +280,12 @@ EditPlugin.prototype.routes = function () {
     }
 
     var fixup = function (body) {
-        var model = _u.extend({paths:{}}, body.display);
+        var model = _u.extend({schema:{}}, body.display);
 
         function onPath(obj) {
             return function (v, k) {
-                var paths = v.paths;
-                delete v.paths;
+                var paths = v.schema;
+                delete v.schema;
 
                 var nobj = (obj[v.name] = _u.extend({}, v));
                 var val = v.validate || v.validators;
@@ -305,7 +305,7 @@ EditPlugin.prototype.routes = function () {
 
         }
 
-        _u.each(body.paths, onPath(model.paths))
+        _u.each(body.schema, onPath(model.schema))
         return model;
 
     }

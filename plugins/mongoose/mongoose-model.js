@@ -35,7 +35,7 @@ module.exports = function MModel(m, manager) {
     });
     this.defaults = defaults;
 
-    this.__defineGetter__('paths', function () {
+    this.__defineGetter__('schema', function () {
         var ret = {};
         _u.each(m.schema.tree, function (v,k) {
             ret[k] = new MField(k, manager.pluginFor(k, v, m, this));

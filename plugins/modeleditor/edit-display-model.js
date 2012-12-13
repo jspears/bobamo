@@ -42,14 +42,14 @@ var EditModel = function (k, Model, options) {
     this.plural = this.model.plural;
     this.editors = options.editors;
 
-    this.__defineGetter__('paths', function () {
-        var paths = this.schema;
-        return _u.map(this.schema, function (v, k) {
-            paths[k].path = k;
-        });
-    })
+//    this.__defineGetter__('schema', function () {
+//        var paths = this.schema;
+//        return _u.map(this.schema, function (v, k) {
+//            paths[k].path = k;
+//        });
+//    })
     this.__defineGetter__('fields', function () {
-        var fields = Object.keys(util.flatten(this.model.paths));
+        var fields = Object.keys(util.flatten(this.model.schema));
         return fields;
     });
     this.__defineGetter__('fieldsets', function () {
@@ -126,8 +126,8 @@ EditModel.prototype.schemaFor = function () {
         sortable:true
     }
 
-    var obj = (this._schema.paths = { subSchema:{}, type:'Object'}).subSchema;
-    _u(this.model.paths).each(function (v, k) {
+    var obj = (this._schema.schema = { subSchema:{}, type:'Object'}).subSchema;
+    _u(this.model.schema).each(function (v, k) {
         obj[k] = {type:'Object', subSchema:createSubSchema(this.editors, k, v) };
 
     }, this);
