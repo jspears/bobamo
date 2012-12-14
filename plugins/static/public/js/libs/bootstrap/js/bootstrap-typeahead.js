@@ -61,7 +61,7 @@ define(
             this.$menu.css({
                 top: pos.top + pos.height
                 , left: pos.left
-                ,  'z-index': 10401 //maximum z-index
+        //        ,  'z-index': 10401 //maximum z-index
             })
 
             this.$menu.show()
@@ -305,7 +305,7 @@ define(
 //        e.preventDefault()
 //        $this.typeahead($this.data())
 //    })
-
+    console.log('loaded typeahead... now what?');
     return Typeahead;
 
 });

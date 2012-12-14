@@ -174,18 +174,18 @@ var Form = (function() {
           this.trigger.apply(this, args);
         }, self);
         
-        field.editor.on('change', function() {
+        field.editor.on('change', function onChange() {
           this.trigger('change', self);
         }, self);
 
-        field.editor.on('focus', function() {
+        field.editor.on('focus', function onFucus() {
           if (this.hasFocus) return;
           this.trigger('focus', this);
         }, self);
-        field.editor.on('blur', function() {
+        field.editor.on('blur', function onBlur() {
           if (!this.hasFocus) return;
           var self = this;
-          setTimeout(function() {
+          setTimeout(function onTimeoutBlur() {
             if (_.find(self.fields, function(field) { return field.editor.hasFocus; })) return;
             self.trigger('blur', self);
           }, 0);
@@ -388,7 +388,7 @@ var Form = (function() {
     },
     
     
-    trigger: function(event) {
+    trigger: function onTriggerFocusBlur(event) {
       if (event === 'focus') {
         this.hasFocus = true;
       }

@@ -40,8 +40,7 @@ GeoPlugin.prototype.editors = function () {
                 defaults:{
                     type:'LocationEditor'
                 }
-            },
-            fields:['lat', 'lon']
+            }
         },
         {
             types:['GeoPoint'],

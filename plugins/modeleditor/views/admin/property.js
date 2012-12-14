@@ -92,8 +92,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
         },
         createForm:function (opts) {
 
-            opts.fieldsets = this.fieldsets;
-            opts._parent = this;
+            opts.fieldsets = _(this.fieldsets).chain().map(function(v){ return _.extend({}, v)}).value();
 
             var form = this.form = new Form(opts);
             var title = this.get('path') || this.get('name');
@@ -123,7 +122,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                         editor.value = first || second || third || 'Text';
                         cb(editorsFor(val));
                     });
-                onType();
+                //onType();
             }
 
             function onType() {
@@ -137,9 +136,6 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                     fields[type].$el.show();
             }
 
-            form.on('name:change', function () {
-
-            });
             form.on("hidden:change", onType);
             function onEditor(c1, field) {
                 var newValue = form.fields.type.value;

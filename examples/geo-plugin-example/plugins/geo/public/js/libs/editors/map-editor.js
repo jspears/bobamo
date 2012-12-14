@@ -1,4 +1,4 @@
-define(['jquery', 'Backbone.Form', 'libs/editors/gmaps'], function ($, Form, GMaps) {
+define(['jquery', 'underscore', 'Backbone.Form', 'libs/editors/gmaps'], function ($, _, Form, GMaps) {
     var editors = Form.editors;
     var MapEditor = editors.MapEditor = editors.Base.extend({
         initialize:function (options) {
