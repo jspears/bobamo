@@ -17,12 +17,12 @@
  * limitations under the License.
  * ============================================================ */
 
-
-!function($){
-
-    "use strict"; // jshint ;_;
-   /* TYPEAHEAD PUBLIC CLASS DEFINITION
-     * ================================= */
+/**
+ * Not sure why this has to be defined this way, it loads fine, then gives
+ * an error of timeout,
+ */
+define(
+    'libs/bootstrap/js/bootstrap-typeahead', ['jquery'], function($){
 
     var Typeahead = function (element, options) {
         this.$element = $(element)
@@ -61,6 +61,7 @@
             this.$menu.css({
                 top: pos.top + pos.height
                 , left: pos.left
+                ,  'z-index': 10401 //maximum z-index
             })
 
             this.$menu.show()
@@ -297,13 +298,14 @@
 
     /*   TYPEAHEAD DATA-API
      * ================== */
+//
+//    $(document).on('focus.typeahead.data-api', '[data-provide="typeahead"]', function (e) {
+//        var $this = $(this)
+//        if ($this.data('typeahead')) return
+//        e.preventDefault()
+//        $this.typeahead($this.data())
+//    })
 
-    $(document).on('focus.typeahead.data-api', '[data-provide="typeahead"]', function (e) {
-        var $this = $(this)
-        if ($this.data('typeahead')) return
-        e.preventDefault()
-        $this.typeahead($this.data())
-    })
-    return $;
+    return Typeahead;
 
-}(window.jQuery);
+});

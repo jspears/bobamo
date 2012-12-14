@@ -37,14 +37,9 @@ GeoPlugin.prototype.editors = function () {
             types:['GeoPoint'],
             name:'MapEditor',
             schema:{
-                lat:{type:'Number', help:'Default Latitude', validators:[
-                    {type:'min', min:0},
-                    {type:'max', max:181}
-                ]},
-                lon:{type:'Number', help:'Default Longitude', validators:[
-                    {type:'min', min:0},
-                    {type:'max', max:181}
-                ]}
+                defaults:{
+                    type:'LocationEditor'
+                }
             },
             fields:['lat', 'lon']
         },
@@ -52,16 +47,10 @@ GeoPlugin.prototype.editors = function () {
             types:['GeoPoint'],
             name:'LocationEditor',
             schema:{
-                lat:{type:'Number', help:'Default Latitude', validators:[
-                    {type:'min', min:0},
-                    {type:'max', max:181}
-                ]},
-                lon:{type:'Number', help:'Default Longitude', validators:[
-                    {type:'min', min:0},
-                    {type:'max', max:181}
-                ]}
-            },
-            fields:['lat', 'lon']
+                defaults:{
+                    type:'LocationEditor'
+                }
+            }
         }
     ]
 }

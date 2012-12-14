@@ -25,6 +25,7 @@ var EditApp = function (App, options) {
         });
         return d;
     });
+
 }
 EditApp.prototype.modelFor = function (model) {
     var paths = this.modelPaths;

@@ -1,4 +1,4 @@
-var Plugin = require('../../lib/plugin-api'), util = require('util'), App = require('../../lib/display-model'), EditModel = require('./edit-display-model'), _u = require('underscore'), mongoose = require('../../index').mongoose;
+var Plugin = require('../../lib/plugin-api'), util = require('util'), App = require('../../lib/display-model'), EditModel = require('./edit-display-model'), _u = require('underscore'), mongoose = require('../../index').mongoose, schemautil = require('../../lib/schema-util');
 
 var EditPlugin = function () {
     Plugin.apply(this, arguments);
@@ -44,6 +44,7 @@ EditPlugin.prototype.routes = function () {
     console.log('base', base);
     var jsView = this.baseUrl + 'js/views/' + this.name;
     this.app.get(this.baseUrl + 'js/views/modeleditor/admin/:type?/:view', function (req, res, next) {
+        console.log('here');
         var view = 'admin/' + req.params.view;
 
         var editModel = new EditModel(this.pluginManager.appModel, {
@@ -60,6 +61,17 @@ EditPlugin.prototype.routes = function () {
 
                 return _u.isUndefined(disp) ? {} : _u.extend({schemaType:k}, disp);
             });
+        });
+        var pm = this.pluginManager;
+        this.local(res, 'includes', function (arr) {
+            var data = this.data;
+            arr = arr || [];
+            arr = _u.map(arr, function (v) {
+                return  _u.template(v, data);
+            });
+            var includes = schemautil.includes(pm.editors);
+
+            return JSON.stringify(arr.concat(includes));
         });
         this.generate(res, view);
     }.bind(this))

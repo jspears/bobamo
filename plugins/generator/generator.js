@@ -1,4 +1,4 @@
-var Plugin = require('../../lib/plugin-api'), util = require('util'), _u = require('underscore'), schemaUtil = require('../../lib/schema-util');
+var Plugin = require('../../lib/plugin-api'), util = require('util'), _u = require('underscore'), schemaUtil = require('../../lib/schema-util'), inflection = require('../../lib/inflection');
 
 var GeneratorPlugin = function (options) {
     Plugin.apply(this, arguments);
@@ -35,6 +35,7 @@ GeneratorPlugin.prototype.filters = function (options) {
     }.bind(this));
 
 }
+
 var extRe = /\.(js|html|css|htm)$/i;
 GeneratorPlugin.prototype.routes = function (options) {
     var appModel = this.pluginManager.appModel;
@@ -48,6 +49,10 @@ GeneratorPlugin.prototype.routes = function (options) {
             var includes = data.model.includes || [];
 
             return JSON.stringify(arr.concat(includes));
+        },
+        includeSchema:function (schema) {
+            console.log('includeSchema',schema);
+            return schemaUtil.includes(schema)
         }
     }
 
@@ -60,7 +65,7 @@ GeneratorPlugin.prototype.routes = function (options) {
             opts.model = appModel.modelFor(type);
             opts.type = type;
             opts.view = req.params.view;
-            opts.urlRoot = opts.model && opts.model.modelName ;
+            opts.urlRoot = opts.model && opts.model.modelName;
             opts.collection = opts.model && opts.model.modelName;
         }
         return opts;
@@ -91,7 +96,7 @@ GeneratorPlugin.prototype.routes = function (options) {
         res.redirect(this.baseUrl + (this.options.index || 'index.html'));
     }.bind(this));
 
-    function finderOpts(req){
+    function finderOpts(req) {
         var options = makeOptions(req);
         var finder = options.model.finder(options.view);
         options = _u.extend(options, {
@@ -102,6 +107,7 @@ GeneratorPlugin.prototype.routes = function (options) {
         });
         return options;
     }
+
     app.get(base + 'js/:super?/views/:type/finder/:view.:format', function (req, res, next) {
         this.generate(res, 'views/finder.' + req.params.format, finderOpts(req), next);
     }.bind(this));

@@ -58,8 +58,8 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                 type:'NestedModel',
                 model:b.Model.extend({
                     createForm:function (args) {
-
-                        var form = new Form({schema:Editors, data:args.pform.data})
+                        args.model.schema = Editors;
+                        var form = new Form(args)
                         return form;
                     }
                 })
@@ -142,7 +142,6 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             });
             form.on("hidden:change", onType);
             function onEditor(c1, field) {
-
                 var newValue = form.fields.type.value;
                 console.log('onEditor', newValue);
                 form.fields.type.editor.setOptions(
@@ -159,8 +158,6 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             form.on("type:change", onType);
             form.on("persistence:render", onType);
             form.on("persistence:schemaType:change", onSchema);
-            //    form.on("persistence:schemaType:change", onEditor);
-
             $('.form-horizontal', form.$el).wiz({stepKey:'_propStep'});
 
             return form;

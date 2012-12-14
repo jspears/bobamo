@@ -1,4 +1,4 @@
-define(['Backbone', 'underscore', 'libs/editors/multi-editor'], function (B, _) {
+define({{html includes(['Backbone', 'underscore'])}}, function (B, _) {
 
     var editors = {{html JSON.stringify(pluginManager.editors)}} || [];
 

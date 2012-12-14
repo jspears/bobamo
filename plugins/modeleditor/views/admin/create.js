@@ -198,6 +198,7 @@ define([
                         });
                     }
 
+                    (v.editor || (v.editor={}))[v.type] = _.omit(v, 'persistence', 'subSchema', 'schema', 'schemaType','title','plural', 'labelAttr','title','help','plural','validators','hidden');
                     if (v.subSchema) {
                         var sub = v.subSchema;
                         v.schemaType = 'Object';
