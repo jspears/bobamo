@@ -11,7 +11,6 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/a
         }),
         filterType:function(type){
            return _.bind(function(cb){
-               this.on(type+':filter', _.bind(function(){
                    cb(_.map(this.filter(function (v, k) {
                        var types = v.get('types');
                        return (types && ~types.indexOf(type) || !types)
@@ -19,8 +18,7 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/a
                    }), function(v){
                        return {val:v.id, label:""+v}
                    }))
-               }, this));
-           },this);
+               }, this);
         }
     })
 

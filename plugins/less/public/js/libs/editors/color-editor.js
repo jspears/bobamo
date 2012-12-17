@@ -56,7 +56,7 @@ define(['Backbone.Form', 'underscore', 'jquery', 'libs/jquery-miniColors/jquery.
 
             //Allow customising text type (email, phone etc.) for HTML5 browsers
             var type = 'color';
-            this.$input = $('<input type="text">')
+            this.$input = $('<input type="text" class="span2">')
             var placeholder = this.schema && this.schema.placeholder;
             this.$el.append(this.$input);
             this.$input.miniColors();

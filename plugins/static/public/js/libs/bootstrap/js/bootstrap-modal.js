@@ -108,11 +108,12 @@
 
         , enforceFocus: function () {
             var that = this
-            $(document).on('focusin.modal', function (e) {
-                if (that.$element[0] !== e.target && !that.$element.has(e.target).length) {
-                    that.$element.focus()
-                }
-            })
+            //Causes infinte loop on focusing, not entirely sure why, when models are nested.
+//            $(document).on('focusin.modal', function (e) {
+//                if (that.$element[0] !== e.target && !that.$element.has(e.target).length) {
+//                    that.$element.focus()
+//                }
+//            })
         }
 
         , escape: function () {

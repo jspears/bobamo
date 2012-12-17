@@ -21,7 +21,24 @@ LessPlugin.prototype.admin = function () {
     };
 }
 LessPlugin.prototype.editors = function () {
-    return ['ColorEditor', 'UnitEditor', 'PlaceholderEditor'];
+    return [
+        {
+            name:'ColorEditor',
+            types:['String'],
+            schema:{
+                placeholder:{ type:'ColorEditor' }
+
+            }
+        },
+        {
+            name:'UnitEditor',
+            types:['String'],
+            schema:{
+                defaultValue:{ type:'Select', options:['px', '%', 'em', 'in', 'cm', 'mm', 'ex', 'pt', 'pc', 'px', '\u0192'] }
+
+            }
+        }
+    ];
 }
 
 LessPlugin.prototype.filters = function () {

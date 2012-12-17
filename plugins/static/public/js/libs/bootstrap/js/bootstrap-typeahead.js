@@ -31,7 +31,7 @@ define(
         this.sorter = this.options.sorter || this.sorter
         this.highlighter = this.options.highlighter || this.highlighter
         this.updater = this.options.updater || this.updater
-        this.$menu = $(this.options.menu).appendTo('body')
+        this.$menu = $('<ul class="dropdown-menu"></ul>')
         this.source = this.options.source
         this.shown = false
         this.listen()
@@ -58,11 +58,11 @@ define(
                 height: this.$element[0].offsetHeight
             })
 
-            this.$menu.css({
-                top: pos.top + pos.height
-                , left: pos.left
-        //        ,  'z-index': 10401 //maximum z-index
-            })
+//            this.$menu.css({
+//                top: pos.top + pos.height
+//                , left: pos.left
+//        //        ,  'z-index': 10401 //maximum z-index
+//            })
 
             this.$menu.show()
             this.shown = true
@@ -132,6 +132,11 @@ define(
         }
 
         , render: function (items) {
+            if (this.$menu[0].parentNode){
+                this.$element.parent().append(this.$menu);
+
+            }
+            this.$element.parent().addClass('dropdown open');
             var that = this
 
             items = $(items).map(function (i, item) {
@@ -141,6 +146,8 @@ define(
             })
 
             items.first().addClass('active')
+            if (!this.$menu)
+                this.$menu = this.$el.parent();
             this.$menu.html(items)
             return this
         }
@@ -291,6 +298,7 @@ define(
         , menu: '<ul class="typeahead dropdown-menu"></ul>'
         , item: '<li><a href="#"></a></li>'
         , minLength: 1
+        , container:$('body')
     }
 
     $.fn.typeahead.Constructor = Typeahead

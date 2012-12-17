@@ -51,7 +51,6 @@ GeneratorPlugin.prototype.routes = function (options) {
             return JSON.stringify(arr.concat(includes));
         },
         includeSchema:function (schema) {
-            console.log('includeSchema',schema);
             return schemaUtil.includes(schema)
         }
     }
@@ -117,7 +116,6 @@ GeneratorPlugin.prototype.routes = function (options) {
     }.bind(this));
 
     app.get(base + 'templates/:type/finder/:view/:tmpl', function (req, res, next) {
-        console.log('here I am')
         this.generate(res, 'templates/' + req.params.tmpl, finderOpts(req), next);
 
     }.bind(this));

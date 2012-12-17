@@ -215,8 +215,7 @@ define([
         },
 
         defaults:{
-            hidden:false,
-            schema:[{'_id':{type:'Hidden', schemaType:'String'}}]
+            hidden:false
         },
         idAttribute:'modelName'
     });

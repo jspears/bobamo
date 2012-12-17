@@ -1,24 +1,24 @@
-define(['Backbone.Form', 'jquery', 'underscore','bootstrap/bootstrap-typeahead'], function (Form, _) {
+define(['Backbone.Form', 'jquery', 'underscore', 'libs/bootstrap/js/bootstrap-typeahead'], function (Form, $, _) {
     "use strict";
     var editors = Form.editors;
     var Select = editors.Select;
     var Item = function (itm) {
-       this.value = itm;
-       if (_.isString(itm)){
-           this.str = itm;
-       }else if (itm.label) {
-           this.str = itm.label;
-       }else if (itm.toString){
-               this.str = itm.toString();
+        this.value = itm;
+        if (_.isString(itm)) {
+            this.str = itm;
+        } else if (itm.label) {
+            this.str = itm.label;
+        } else if (itm.toString) {
+            this.str = itm.toString();
 
-       }else{
-            this.str = (_.isUndefined(itm)) ? "" : ''+itm;
-       }
+        } else {
+            this.str = (_.isUndefined(itm)) ? "" : '' + itm;
+        }
 
     }
 
     _.extend(Item.prototype, {
-        indexOf:function(){
+        indexOf:function () {
             var str = this.toString();
             var idx = str.indexOf.apply(str, _.toArray(arguments));
             return idx;
@@ -40,15 +40,23 @@ define(['Backbone.Form', 'jquery', 'underscore','bootstrap/bootstrap-typeahead']
         dataType:'text',
         // clsNames:'typeahead',
         //events:{},
-        mapOptions:function(opt, cb){
-            var options =_.isFunction(this.schema.options) ? this.schema.options.call(this) : this.schema.options;
-            cb(_.map(options, function(v){return new Item(v) }));
+        mapOptions:function (opt, cb) {
+            var options = _.isFunction(this.schema.options) ? this.schema.options.call(this) : this.schema.options;
+            cb(_.map(options, function (v) {
+                return new Item(v)
+            }));
         },
         render:function () {
             this.$el.attr('type', this.options.dataType || this.dataType);
             this.$el.val(this.options.value);
+            var self = this;
+            var $el = this.$el.parent();
             this.$el.typeahead({
-                source:_.bind(this.mapOptions, this)
+                source:function onSourceMap(opt, cb) {
+                    self.mapOptions(opt, cb);
+                },
+
+                container:$el
             })
             return this;
         },

@@ -126,7 +126,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             }
 
             function onType() {
-                var type = form.fields.type.value;
+                var type = form.fields.type.editor.value;
                 console.log('onType', type);
                 var fields = form.fields.editor.editor.form.fields;
                 _.each(_.omit(fields, type), function (f) {
@@ -138,7 +138,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
 
             form.on("hidden:change", onType);
             function onEditor(c1, field) {
-                var newValue = form.fields.type.value;
+                var newValue = field && field.$el.val() || form.fields.type.value;
                 console.log('onEditor', newValue);
                 form.fields.type.editor.setOptions(
                     function (cb) {
@@ -150,7 +150,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             form.on("render", onEditor);
             form.on("render", onType);
             form.on("type:change", onEditor);
-
+//
             form.on("type:change", onType);
             form.on("persistence:render", onType);
             form.on("persistence:schemaType:change", onSchema);

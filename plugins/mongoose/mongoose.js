@@ -13,10 +13,12 @@ module.exports = MongoosePlugin;
 
 var validFuncs = {};
 MongoosePlugin.prototype.appModel = function (options) {
-    this.pluginManager.requirejs(['mongoose/validators'], function(validators){
+//    this.pluginManager.requirejs(['mongoose/validators'], function(validators){
+//
+//        validators.inject(validFuncs)
+//    })
+    valid = this.pluginManager.requirejs('mongoose/validators');
 
-        validators.inject(validFuncs)
-    })
     var self = this;
     var mongoose = this.options.mongoose;
     return new function () {
@@ -61,8 +63,8 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
     var nSchema = {};
     var pm = this.pluginManager;
     var mongoose = this.options.mongoose;
-
-    function onPath(model, obj) {
+    var validatorPaths = {};
+    function onPath(model, obj, sp) {
         _u.each(model, function (v, k) {
             var path = {};
             if (v.name == '_id' || v.name == 'id')
@@ -70,7 +72,7 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
             obj[v.name] = v.multiple ? [path] : path;
             if (v.ref) path.ref = v.ref;
             if (v.schemaType == 'Object'){
-                return onPath(v.subSchema, (path[v.name] = {}))
+                return onPath(v.subSchema, (path[v.name] = {}), sp ? v.name : [sp, v.name].join('.'))
             }
             path.type = naturalType(mongoose, v.schemaType || 'String');
             _u.each(['unique', 'index', 'expires', 'select'], function (vv, k) {
@@ -85,10 +87,26 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
             }
 
             if (v.validators) {
-                var valid = (path.validate = []);
-                _u.each(v.validators, function (vv, kk) {
-                    valid.push(pm.validator(vv, kk));
-                })
+                var validate = (path.validate = []);
+
+                _u.each(v.validators, function (vv,kk){
+                    validate.push(pm.validator(vv.type || vv.name, vv));
+
+                });
+//                path.validate = function onMongooseValidate(){
+//                    var args = _.toArray(arguments);
+//                    args.push(this);
+//                    var ret = _u.chain(v.validators).map(function (v, kk) {
+//                        var ctx  =  pm.validator(v.type || v.name, v)
+//                        var validator = ctx.validator;
+//                        var validated = validator.apply(ctx, args);
+//                        return validated;
+//                    }).filter(function(r){
+//                           return !!r;
+//                        }).value();
+//
+//                    return ret.length == 0;
+//                }
             }
 
         });
@@ -119,9 +137,10 @@ MongoosePlugin.prototype.validators = function (type) {
     }
     return validall;
 }
-MongoosePlugin.prototype.validator = function (v) {
-   return validFuncs[v.type || v.name || v];
-}
+//MongoosePlugin.prototype.validator = function (v, options) {
+//  var validators = validFuncs.validators;
+//   return validators && (validators[v.type] || validators[v.name]  || validators[v]).call(validators, options);
+//}
 
 MongoosePlugin.prototype.editorFor = function (path, p, Model) {
     var schema = Model.schema || Model;
@@ -299,7 +318,11 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                     } else if (v[1] == 'max' || _u.isNumber(p.options.max)) {
                        util.defaultOrSet(defaults, 'validators', []).push({ type:'max', message:v[1], configure:{min:p.options.min}  });
                     }
-                }else {
+                }else if(v[0].type){
+                    console.log('validator type', v[0].type, v[0]);
+                    util.defaultOrSet(defaults, 'validators', []).push( v[0] );
+
+                }else{
                     console.warn('can only handle client side regex/required/min/max validators for now', v)
                 }
             }

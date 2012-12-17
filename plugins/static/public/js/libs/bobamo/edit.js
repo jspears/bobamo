@@ -75,12 +75,13 @@ define([
                 var fields = this.form.fields;
                 var fField;
                 _.each(errors.error && errors.error.errors || errors, function (v, k) {
-                    var field = fields[v.path];
+                    var path = v.path || k;
+                    var field = fields[path];
                     if (field && field.$el)
                         field.$el.addClass('error');
                     var $e = $(
-                        replacer('<li><span class="alert-heading pointer">"{path}" is in error: </span>{message}</li>',v)).data({'scroll-to':field && field.$el, field:v.path});
-                    fField = v.path
+                        replacer('<li><span class="alert-heading pointer">"{path}" is in error: </span>{message}</li>', _.extend({path:path},v))).data({'scroll-to':field && field.$el, field:path});
+                    fField = path
                     $error.prepend($e);
                 }, this);
                 this.focusStep(fField);
@@ -90,12 +91,13 @@ define([
 
         onSave:function (e) {
             e.preventDefault();
-            $('.error-list').empty().hide();
-            $('.success-list').empty().hide();
+            $('.error-list', this.$el).empty().hide();
+            $('.success-list', this.$el).empty().hide();
             console.log('changed', this.form.model.changed);
-            this.form.validate();
+            //this.form.validate();
+            //TODO - make sure to re-enable client side validation.
             var errors = this.form.commit();
-
+     //       var errors;
             var save = this.form.getValue();
             nullEmptyStr(save);
             //handle nested objects.
@@ -128,9 +130,11 @@ define([
                 this.onError(resp, obj);
             } else {
                 var $success = $('.success-list', this.$el).empty();
+                this.$el.find('.error').removeClass('error');
                 $success.append(
                     replacer('<li class="alert alert-success"><a class="close" data-dismiss="alert">×</a><h4 class="alert-heading">Success!</h4>Successfully Saved {title} [{_id}]</li>', config));
                 $success.show('slow');
+
             }
 
         },

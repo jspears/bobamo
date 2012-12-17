@@ -46,13 +46,13 @@ define(['underscore'], function (_) {
         schema:{
             enums:{type:'List'}
         },
-        validator:function (options) {
+        validator:function onEnumValidator(options) {
             var e = options['enum'] || options['enums'];
             if (!e) throw new Error('Missing required "field" options for "enum" validator');
             var vals = _.isString(e) ? e.split(',') : e;
             options = _.extend({
                 type:'enum',
-                message:this.errMessages['enum']
+                message:validators.errMessages && validators.errMessages['enum'] || validators['enum'].message
             }, options);
             return function onEnum(value) {
                 //Don't check empty values (add a 'required' validator for this)
@@ -75,15 +75,15 @@ define(['underscore'], function (_) {
         schema:{
             minlength:{type:'Number'}
         },
-        validator:function (options) {
+        validator:function onMinLengthValidator(options) {
             check(options, 'minlength');
 
             options = _.extend({
                 type:'minlength',
-                message:this.errMessages.minlength
+                message:this.message
             }, options);
             var val = parseInt(options.minlength);
-            return function match(value, attrs) {
+            return function onMinLength(value, attrs) {
 
                 //Don't check empty values (add a 'required' validator for this)
                 if (empty(value)) return;
@@ -103,7 +103,7 @@ define(['underscore'], function (_) {
             maxlength:{type:'Number'},
             trim:{type:'Checkbox'}
         },
-        validator:function (options) {
+        validator:function onMaxLengthValidator(options) {
             check(options, 'maxlength');
 
             options = _.extend({
@@ -111,7 +111,7 @@ define(['underscore'], function (_) {
                 message:this.errMessages.maxlength
             }, options);
             var val = parseInt(options.maxlength);
-            return function match(value, attrs) {
+            return function onMaxLength(value, attrs) {
 
                 //Don't check empty values (add a 'required' validator for this)
                 if (empty(value))

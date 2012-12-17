@@ -1,13 +1,13 @@
-.miniColors-trigger {
-	height: 16px;
-	width: 16px;
+/*.miniColors-trigger {*/
+	/*height: 16px;*/
+	/*width: 16px;*/
 /*//	background: url(images/trigger.png) center no-repeat;*/
-	vertical-align: middle;
-	margin: 0 .25em;
-	display: inline-block;
-	outline: none;
-    float:left;
-}
+	/*vertical-align: middle;*/
+	/*margin: 0 .25em;*/
+	/*display: inline-block;*/
+	/*outline: none;*/
+    /*float:left;*/
+/*}*/
 
 .miniColors-selector {
 	position: absolute;

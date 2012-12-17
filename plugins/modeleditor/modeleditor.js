@@ -41,10 +41,8 @@ EditPlugin.prototype.routes = function () {
     }.bind(this));
 
     var base = this.pluginUrl;
-    console.log('base', base);
     var jsView = this.baseUrl + 'js/views/' + this.name;
     this.app.get(this.baseUrl + 'js/views/modeleditor/admin/:type?/:view', function (req, res, next) {
-        console.log('here');
         var view = 'admin/' + req.params.view;
 
         var editModel = new EditModel(this.pluginManager.appModel, {
@@ -77,7 +75,6 @@ EditPlugin.prototype.routes = function () {
     }.bind(this))
 
     this.app.get(base + '/admin/backbone/:modelName', function (req, res) {
-        console.log('model', req.params.modelName);
         res.send({
             status:0,
             payload:this.pluginManager.appModel.modelFor(req.params.modelName)
@@ -225,7 +222,6 @@ EditPlugin.prototype.routes = function () {
 
     this.app.post(base + '/admin/editorsFor', function (req, res, next) {
         var body = req.body;
-        console.log('editorsFor', body);
         res.send({
             status:0,
             payload:this.pluginManager.editorsFor(body.path, body.property, this.pluginManager.schemaFor(body.schema))
@@ -369,7 +365,6 @@ EditPlugin.prototype.routes = function () {
         });
         var sobj = {modelPaths:{}};
         sobj.modelPaths[req.params.id] = obj;
-        console.log('edited ', sobj);
         this.save(sobj, function (err, data) {
             if (err)
                 return next(err);
