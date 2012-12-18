@@ -70,9 +70,10 @@
                 that.$element
                     .addClass('in')
                     .attr('aria-hidden', false)
-
-                that.enforceFocus()
-
+             /*TODO- renable - something is creating a enforceFocus loop, disabling until I find out what it is.  My guess it is TypeAhead of LocationEditor
+              * to validate go to modeleditor and create a new object 2 or 3 levels deep.  Causes an exception.
+                 *  that.enforceFocus()
+             */
                 transition ?
                     that.$element.one($.support.transition.end, function () { that.$element.focus().trigger('shown') }) :
                     that.$element.focus().trigger('shown')
