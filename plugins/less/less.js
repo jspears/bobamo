@@ -20,6 +20,20 @@ LessPlugin.prototype.admin = function () {
         title:'Display Settings'
     };
 }
+LessPlugin.prototype.appModel = function () {
+    return {
+        modelPaths:{},
+        header:{
+            'admin-menu':{
+
+                'less':{
+                    href:'#/less/admin/display',
+                    label:'Display Settings'
+                }
+            }
+        }
+    }
+}
 LessPlugin.prototype.editors = function () {
     return [
         {

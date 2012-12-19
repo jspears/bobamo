@@ -16,14 +16,12 @@
                         </a>
                         <ul class="dropdown-menu">
                             <% _.each(l.items, function(j,k){ %>
-                                <%=item(j)%>
+                              <%=item(j)%>
                             <%})%>
-
                         </ul>
                     </li>
                     <% } else {%>
                          <%=item(l)%>
-
                     <%}%>
                     <%})})%>
 
@@ -37,7 +35,7 @@
                         </a>
                         <ul class="dropdown-menu">
                             <% _.each(items['admin-menu'], function(j,k){ %>
-                            <%=item(j)%>
+                                <%=item(j)%>
                             <%})%>
 
                         </ul>
@@ -59,6 +57,30 @@
                         </ul>
                     </li>
                     <%}%>
+
+                </ul>
+                <ul class="nav pull-right">
+                    <% _.each(['passport-menu'], function(t){
+                    _.each(items[t], function(l){ %>
+                    <% if (l.items && l.items.length){ %>
+                    <li class="dropdown <%=l.clsNames%> " id="<%=l.id%>">
+
+                        <a class="dropdown-toggle" data-toggle="dropdown">
+                            <%=l.label%>
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <% _.each(l.items, function(j,k){ %>
+                            <%=item(j)%>
+                            <%})%>
+
+                        </ul>
+                    </li>
+                    <% } else { %>
+                        <%=item(l)%>
+                    <%}%>
+                    <%})})%>
+
                 </ul>
             </div>
 

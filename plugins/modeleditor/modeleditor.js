@@ -14,8 +14,21 @@ EditPlugin.prototype.admin = function () {
     };
 }
 EditPlugin.prototype.appModel = function () {
-    return this._appModel;
+    return _u.extend(this._appModel, {
+        header:{
+            'admin-menu':{
+
+                'modeleditor':{
+                    href:'#/modeleditor/admin/list',
+                    label:'Model Settings'
+                }
+            }
+        }
+    });
 }
+//EditPlugin.prototype.appModel = function () {
+//    return this._appModel;
+//}
 EditPlugin.prototype.configure = function (conf) {
     if (conf && conf.modelPaths)
         _u.each(conf.modelPaths, function onModelConfigure(v, k) {

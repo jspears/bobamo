@@ -1,4 +1,4 @@
-var Plugin = require('../../lib/plugin-api'), util = require('util'), _u = require('underscore'), schemaUtil = require('../../lib/schema-util'), inflection = require('../../lib/inflection');
+var Plugin = require('../../lib/plugin-api'), util = require('util'), _u = require('underscore'), butil=require('../../lib/util'), schemaUtil = require('../../lib/schema-util'), inflection = require('../../lib/inflection');
 
 var GeneratorPlugin = function (options) {
     Plugin.apply(this, arguments);
@@ -35,7 +35,65 @@ GeneratorPlugin.prototype.filters = function (options) {
     }.bind(this));
 
 }
+/*{{each(i,l) appModel.modelPaths}}
+ {{if l.finders && l.finders.length }}
+ <li class="dropdown ${l.modelName}" id="menu${l.modelName}">
 
+ <a    class="dropdown-toggle"  data-toggle="dropdown">
+ ${l.plural}
+ <b class="caret"></b>
+ </a>
+ <ul class="dropdown-menu">
+ <li><a href="#/${l.modelName}/list">All ${l.plural}</a></li>
+ {{each(k, j) l.finders }}
+ <li><a href="#/views/${l.modelName}/finder/${j.name}">${j.title}</a></li>
+ {{/each}}
+
+ </ul>
+ </li>
+ {{else}}
+ <li class="${l.modelName}" id="menu${l.modelName}">
+ <a href="#/${l.modelName}/list">${l.plural}</a>
+ </li>
+
+ {{/if}}
+ {{/each}}*/
+var Items = function(appModel, pluginManager){
+
+    this.__defineGetter__('title-bar', function(){
+        var items = {};
+        _u.each(appModel.modelPaths, function (l,k){
+            var finders = l.finders && l.finders.length && l.finders;
+            var id=['title-bar', k].join('_')
+            var itm = items[k] = {
+                label:l.plural,
+                id:id
+
+            }
+
+            if (l.finders && l.finders.length){
+                var f = (itm.items = []);
+                _u.each(l.finders, function(j,kk){
+                    var href =   ['#/views',k,'finder', j.name].join('/');
+                     f.push({ id:[id,'finder', j.name].join('_'), href:href, label:j.title});
+                });
+                f.push({
+                    id:[id, 'all'].join('_'), href:['#/views', k, 'list'].join('/'), label:'All '+ l.plural
+                })
+            }else{
+                itm.href = ['#/views', k, 'list'].join('/');
+            }
+        })
+        return items;
+    });
+}
+GeneratorPlugin.prototype.appModel = function(){
+
+    return {
+        header:new Items(this.pluginManager.appModel, this.pluginManager)
+    }
+
+}
 var extRe = /\.(js|html|css|htm)$/i;
 GeneratorPlugin.prototype.routes = function (options) {
     var appModel = this.pluginManager.appModel;
@@ -106,6 +164,13 @@ GeneratorPlugin.prototype.routes = function (options) {
         });
         return options;
     }
+    app.get(base + 'js/:super?/appModel/:key?', function (req,res,next){
+        var model = butil.depth(this.pluginManager.appModel, req.params.key)
+        res.send({
+            status:0,
+            payload:model
+        })
+    }.bind(this));
 
     app.get(base + 'js/:super?/views/:type/finder/:view.:format', function (req, res, next) {
         this.generate(res, 'views/finder.' + req.params.format, finderOpts(req), next);

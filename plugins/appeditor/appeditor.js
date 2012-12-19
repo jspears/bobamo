@@ -1,15 +1,19 @@
 var Plugin = require('../../lib/plugin-api'), _u = require('underscore');
 var AppEditorPlugin = function (options, app, name) {
     Plugin.apply(this, arguments);
-    this._appModel = {};
-}
-require('util').inherits(AppEditorPlugin, Plugin);
-AppEditorPlugin.prototype.admin = function(){
-    return {
-        href:'#/appeditor/admin/edit',
-        title:'Application Details'
+    this._appModel = {
+        header:{
+            'admin-menu':{
+                appeditor:{
+                    label:'Application Details',
+                    href:'#/appeditor/admin/edit'
+                }
+            }
+        }
     };
 }
+require('util').inherits(AppEditorPlugin, Plugin);
+
 AppEditorPlugin.prototype.appModel = function(){
     return this._appModel;
 }

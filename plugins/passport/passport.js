@@ -1,4 +1,4 @@
-var PluginApi = require('../../index').PluginApi, util = require('util'), LocalStrategy = require('passport-local').Strategy, passport = require('passport'), crypto = require('crypto');
+var PluginApi = require('../../index').PluginApi, util = require('util'), _u = require('underscore'), LocalStrategy = require('passport-local').Strategy, passport = require('passport'), crypto = require('crypto');
 
 
 var PassportPlugin = function () {
@@ -8,6 +8,7 @@ var PassportPlugin = function () {
     }
     this.usernameField = this.options.usernameField || 'username';
     this.passwordField = this.options.passwordField || 'password';
+
     this.app.use(passport.initialize());
     this.app.use(passport.session());
 
@@ -17,8 +18,8 @@ var PassportPlugin = function () {
             var obj = {};
             obj[this.usernameField] = username;
             obj[this.passwordField] = password;
-            this.options.authModel.findOne(obj, function(err, u){
-                console.log('err',err, 'found', obj,  u != null);
+            this.options.authModel.findOne(obj, function (err, u) {
+                console.log('err', err, 'found', obj, u != null);
                 done(err, u);
             });
         }.bind(this)
@@ -32,8 +33,28 @@ var PassportPlugin = function () {
             done(err, user);
         });
     }.bind(this));
+
+    this._appModel = {  header:{
+        'passport-menu':{
+            'passport':{
+                label:'Login',
+                href:'#/login'
+
+            }
+        },
+        'admin-menu':{
+            'passport':{
+                label:'Configure Passport',
+                href:'#passport/admin/configure'
+            }
+        }
+    }};
 }
+
 util.inherits(PassportPlugin, PluginApi);
+PassportPlugin.prototype.appModel = function () {
+    return  this._appModel;
+}
 
 
 PassportPlugin.prototype.ensureAuthenticated = function (req, res, next) {
@@ -61,13 +82,53 @@ PassportPlugin.prototype.onAuth = function (req, res) {
         payload:req.user
     });
 }
-PassportPlugin.prototype.logOut = function(req,res,next){
+PassportPlugin.prototype.logOut = function (req, res, next) {
     req.logOut();
     res.redirect(this.baseUrl);
 }
 
 PassportPlugin.prototype.filters = function () {
     var app = this.app;
+    var username = this.usernameField;
+    app.get(this.baseUrl + '*', function (req, res, next) {
+        res.locals('appModel', this.pluginManager.appModel)
+        res.locals('user', req.user);
+        var u = req.user;
+        var obj = (u) ?
+            {
+                label:u[username],
+                items:[
+
+                    {
+                        label:'Edit Profile',
+                        href:'#/' + this.options.authModel.modelName + '/edit?id=' + u._id
+                    },
+                    {
+                        clsNames:'divider'
+                    },
+                    {
+                        label:'Logout',
+                        href:'/logout'
+                    }
+                ]
+            }
+                :
+            {
+                label:'Login',
+                href:'#/login'
+            }
+            ;
+        this._appModel.header['passport-menu'].passport = obj
+//        _u.each(_u.keys(this.passportMenu), function(v){
+//              delete this.passportMenu[v];
+//        }, this)
+//        _u.extend(this.passportMenu, obj);
+
+        next();
+    }.bind(this)
+    )
+    ;
+
     app.post(this.pluginUrl, this.authenticate.bind(this), this.ensureAuthenticated.bind(this), this.onAuth.bind(this));
 
     app.get(this.pluginUrl + '/check', this.ensureAuthenticated.bind(this), this.onAuth.bind(this));
@@ -76,7 +137,7 @@ PassportPlugin.prototype.filters = function () {
 
     app.post(this.baseUrl + '*', function (req, res, next) {
         if (req.authrequired) {
-            return this.authenticate(req,res,next);
+            return this.authenticate(req, res, next);
         }
         next();
     }.bind(this), function (req, res, next) {
@@ -91,7 +152,14 @@ PassportPlugin.prototype.filters = function () {
 //    }, this);
     PluginApi.prototype.filters.apply(this, arguments);
 }
-PassportPlugin.prototype.authenticate = function(req,res,next){
+PassportPlugin.prototype.routes = function () {
+
+    this.app.get(this.baseUrl + 'js/views/header.js', function (req, res, next) {
+        this.generate(res, 'header.js', {}, next);
+    }.bind(this));
+    PluginApi.prototype.routes.apply(this, arguments);
+}
+PassportPlugin.prototype.authenticate = function (req, res, next) {
     var passfield = this.options.passwordField || 'password';
     var authenticate = passport.authenticate('local', { failureRedirect:this.pluginUrl + '/check' });
     if (req.body[passfield]) {
