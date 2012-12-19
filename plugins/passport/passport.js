@@ -1,4 +1,4 @@
-var PluginApi = require('../../index').PluginApi, util = require('util'), _u = require('underscore'), LocalStrategy = require('passport-local').Strategy, passport = require('passport'), crypto = require('crypto');
+var PluginApi = require('../../index').PluginApi, util = require('util'), _u = require('underscore'), LocalStrategy = require('passport-local').Strategy, passport = require('passport'), crypto = require('crypto'), Model = require('../../lib/display-model');
 
 
 var PassportPlugin = function () {
@@ -45,7 +45,7 @@ var PassportPlugin = function () {
         'admin-menu':{
             'passport':{
                 label:'Configure Passport',
-                href:'#passport/admin/configure'
+                href:'#views/configure/passport'
             }
         }
     }};
@@ -55,7 +55,44 @@ util.inherits(PassportPlugin, PluginApi);
 PassportPlugin.prototype.appModel = function () {
     return  this._appModel;
 }
+PassportPlugin.prototype.admin = function(){
+    return new Model('passport', [{
+        schema:{
+            usernameField:{
+                type:'Text',
+                placeholder:this.usernameField || 'username',
+                help:'The Field in the model to use as the unique identifier'
+            },
+            passwordField:{
+                type:'Text',
+                placeholder:this.passwordField || 'password',
+                help:'The field to use as a the password'
+            },
+            hash:{
+                type:'Select',
+                options:['sha1', 'md5', 'none'],
+                help:'Encode the hashed passsword (none) is not recommended'
+            },
+            encoding:{
+                type:'Select',
+                options:['base64', 'hex'],
+                help:'Encoding of the password base64 works just fine'
+            },
+            model:{
+                type:'MultiEditor',
+                single:true,
+                collection:'views/modeleditor/admin/schema-collection',
+                help:'Which Schema to use as the user model'
+            }
+        },
+        fieldsets:[{legend:"Passport Plugin", fields:['usernameField', 'passwordField','hash','encoding', 'model']}],
+        defaults:_u.extend({model:this.options.authModel.modelName}, this.config),
+        plural:'Passport',
+        title:'Passort Plugin',
+        modelName:'passport'
+    }]);
 
+}
 
 PassportPlugin.prototype.ensureAuthenticated = function (req, res, next) {
 //    next();

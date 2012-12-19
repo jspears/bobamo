@@ -86,6 +86,43 @@ var Items = function(appModel, pluginManager){
         })
         return items;
     });
+    this.__defineGetter__('user-menu', function(){
+
+        return
+    });
+    /*  <li class="dropdown">
+
+     <a href="#"
+     class="dropdown-toggle"
+     data-toggle="dropdown">
+     Admin
+     <b class="caret"></b>
+     </a>
+     <ul class="dropdown-menu">
+     {{each(k, j) pluginManager.admin }}
+     <li><a href="${j.href}">${j.title}</a></li>
+     {{/each}}
+     </ul>
+     </li>
+     {{/if}}*/
+//    this.__defineGetter__('admin-menu', function(){
+//        var itms = [];
+//        var items = {Admin:{label:'Admin', id:'admin-menu', items:itms}};
+//
+//         _u.each(appModel.header['admin-menu'], function(v,k){
+//                itms.push(_u.extend({}, v, {
+//                    id:['admin-menu',k].join('_')
+//                }));
+//        });
+////        _u.each(pluginManager.admin, function(v,k){
+////            itms.push({
+////                  id:['admin-menu',k].join('_'),
+////                  label:v.title,
+////                  href:v.href
+////              })
+////        });
+//        return items;
+//    });
 }
 GeneratorPlugin.prototype.appModel = function(){
 
@@ -171,7 +208,11 @@ GeneratorPlugin.prototype.routes = function (options) {
             payload:model
         })
     }.bind(this));
-
+    app.get(base + 'js/:super?/views/configure/:view.:format', function (req, res, next) {
+        this.generate(res, 'views/configure.js', _u.extend({
+            plugin:this.pluginManager.loadedPlugins[req.params.view]
+        },req.params), next);
+    }.bind(this));
     app.get(base + 'js/:super?/views/:type/finder/:view.:format', function (req, res, next) {
         this.generate(res, 'views/finder.' + req.params.format, finderOpts(req), next);
     }.bind(this));
