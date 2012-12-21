@@ -5,6 +5,7 @@
 var bobamo    = require('bobamo')
     , User      = require('bobamo/examples/model/user')
     , Employee  = require('bobamo/examples/model/employee')
+    , Group  = require('bobamo/examples/model/group')
     ;
 var mongoose = bobamo.mongoose;
 var app = bobamo.app({mongoose:mongoose, plugin:'passport', authModel:User});

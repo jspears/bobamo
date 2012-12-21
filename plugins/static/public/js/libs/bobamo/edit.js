@@ -168,12 +168,12 @@ define([
             var config = _.extend({id:id}, this.config);
             var form = this.form = this.createForm({
                 model:model,
-                fieldsets:this.fieldsets || [
+                fieldsets:this.fieldsets || model.fieldsets || [
                     {legend:replacer(title, config), fields:this.fields}
                 ]
             });
             var $fm = $('.form-container', this.$el);
-            var isWiz = _.isUndefined(this.isWizard) ? this.fieldsets.length > 1 : this.isWizard;
+            var isWiz = _.isUndefined(this.isWizard) ? this.fieldsets && this.fieldsets.length > 1 : this.isWizard;
             var $del = this.$el;
             var wizOptions = _.extend({replace:$('.save', $del)}, this.wizOptions);
 
