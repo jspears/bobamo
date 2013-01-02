@@ -201,22 +201,34 @@ GeneratorPlugin.prototype.routes = function (options) {
         });
         return options;
     }
-    app.get(base + 'js/:super?/appModel/:key?', function (req,res,next){
+    var superUrl = function(req,res,next){
+        req.url = req.url.replace(/.*\/super/, '');
+        next();
+    }
+    _u.each(['js','tpl','templates'], function(v){
+       app.get(base+v+'/super/*', superUrl);
+       app.post(base+v+'/super/*', superUrl);
+    });
+
+    app.get(base + 'js/appModel/:key?', function (req,res,next){
         var model = butil.depth(this.pluginManager.appModel, req.params.key)
         res.send({
             status:0,
             payload:model
         })
     }.bind(this));
-    app.get(base + 'js/:super?/views/configure/:view.:format', function (req, res, next) {
+
+    app.get(base + 'js/views/configure/:view.:format', function (req, res, next) {
         this.generate(res, 'views/configure.js', _u.extend({
             plugin:this.pluginManager.loadedPlugins[req.params.view]
         },req.params), next);
     }.bind(this));
-    app.get(base + 'js/:super?/views/:type/finder/:view.:format', function (req, res, next) {
+
+    app.get(base + 'js/views/:type/finder/:view.:format', function (req, res, next) {
         this.generate(res, 'views/finder.' + req.params.format, finderOpts(req), next);
     }.bind(this));
-    app.get(base + 'js/:super?/:clz/:type/finder/:view.:format', function (req, res, next) {
+
+    app.get(base + 'js/:clz/:type/finder/:view.:format', function (req, res, next) {
 
         this.generate(res, req.params.clz + '.' + req.params.format, finderOpts(req), next);
     }.bind(this));
@@ -232,27 +244,27 @@ GeneratorPlugin.prototype.routes = function (options) {
     app.get(base + 'js/:view', function (req, res, next) {
         this.generate(res, req.params.view, makeOptions(req), next);
     }.bind(this));
-    app.get(base + 'js/:super?/views/:view', function (req, res, next) {
+    app.get(base + 'js/views/:view', function (req, res, next) {
         this.generate(res, req.params.view, makeOptions(req), next);
     }.bind(this));
 
-    app.get(base + 'js/:super?/views/:type/:view', function (req, res, next) {
+    app.get(base + 'js/views/:type/:view', function (req, res, next) {
         this.generate(res, 'views/' + req.params.view, makeOptions(req), next);
     }.bind(this));
 
-    app.get(base + 'js/:super?/:view/:type.:format', function (req, res, next) {
+    app.get(base + 'js/:view/:type.:format', function (req, res, next) {
         this.generate(res, req.params.view + '.' + req.params.format, makeOptions(req), next);
     }.bind(this));
 
-    app.get(base + 'js/:super?/:view', function (req, res, next) {
+    app.get(base + 'js/:view', function (req, res, next) {
         this.generate(res, req.params.view, makeOptions(req), next);
 
     }.bind(this));
-    app.get(base + 'templates/:super?/:type/:view', function (req, res, next) {
+    app.get(base + 'templates/:type/:view', function (req, res, next) {
         this.generate(res, 'templates/' + req.params.view, makeOptions(req), next);
 
     }.bind(this));
-    app.get(base + 'tpl/:super?/:view', function (req, res, next) {
+    app.get(base + 'tpl/:view', function (req, res, next) {
         this.generate(res, 'templates/' + req.params.view, makeOptions(req), next);
 
     }.bind(this));
@@ -261,7 +273,7 @@ GeneratorPlugin.prototype.routes = function (options) {
         res.redirect(this.baseUrl + (this.options.index || 'index.html'));
     }.bind(this));
 
-    app.post(base + 'js/:super?/views/:type/finder/:view.:format', function (req, res, next) {
+    app.post(base + 'js/views/:type/finder/:view.:format', function (req, res, next) {
         this.generate(res, 'views/finder.' + req.params.format, makePostOptions(req), next);
     }.bind(this));
 
@@ -271,27 +283,23 @@ GeneratorPlugin.prototype.routes = function (options) {
     app.post(base + 'js/:view', function (req, res, next) {
         this.generate(res, req.params.view, makePostOptions(req), next);
     }.bind(this));
-    app.post(base + 'js/:super?/views/:view', function (req, res, next) {
+    app.post(base + 'js/views/:view', function (req, res, next) {
         this.generate(res, req.params.view, makePostOptions(req), next);
     }.bind(this));
 
-    app.post(base + 'js/:super?/views/:type/:view', function (req, res, next) {
+    app.post(base + 'js/views/:type/:view', function (req, res, next) {
         this.generate(res, 'views/' + req.params.view, makePostOptions(req), next);
     }.bind(this));
 
-    app.post(base + 'js/:super?/:view/:type.:format', function (req, res, next) {
+    app.post(base + 'js/:view/:type.:format', function (req, res, next) {
         this.generate(res, req.params.view + '.' + req.params.format, makePostOptions(req), next);
     }.bind(this));
 
-    app.post(base + 'js/:super?/:view', function (req, res, next) {
-        this.generate(res, req.params.view, makePostOptions(req), next);
-
-    }.bind(this));
-    app.post(base + 'templates/:super?/:type/:view', function (req, res, next) {
+    app.post(base + 'templates/:type/:view', function (req, res, next) {
         this.generate(res, 'templates/' + req.params.view, makePostOptions(req), next);
 
     }.bind(this));
-    app.post(base + 'tpl/:super?/:view', function (req, res, next) {
+    app.post(base + 'tpl/:view', function (req, res, next) {
         this.generate(res, 'templates/' + req.params.view, makePostOptions(req), next);
 
     }.bind(this));

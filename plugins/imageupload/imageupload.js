@@ -8,8 +8,27 @@ var Plugin = require('../../lib/plugin-api'),
     imageMagick = require('imagemagick'),
     mongoose = require('mongoose')
     ;
+var options = {
+    safeFileTypes:/\.(gif|jpe?g|png)$/i,
+    imageTypes:/\.(gif|jpe?g|png)$/i,
+    imageVersions:{
+        'thumbnail':{
+            width:80,
+            height:80
+        }
+    },
+    sizes:[
+        {
+            name:'thumbnail',
+            width:80,
+            height:80,
+            scale:'Fit'
+        }
+    ]
+};
 var ImageUploadPlugin = module.exports = function () {
     Plugin.apply(this, arguments);
+    this.defaults = options;
 }
 util.inherits(ImageUploadPlugin, Plugin);
 ImageUploadPlugin.prototype.editorFor = function (p, property, Model) {
@@ -21,11 +40,11 @@ ImageUploadPlugin.prototype.editorFor = function (p, property, Model) {
     }
 
     var ref = isArray ? property.length ? property[0] : null : property;
-    if (ref.ref && mongoose.modelSchemas[ref.ref] == ImageInfo){
-        ret.url = apiPath+ref.ref;
+    if (ref.ref && mongoose.modelSchemas[ref.ref] == ImageInfo) {
+        ret.url = apiPath + ref.ref;
         return ret;
     }
-    if (ref == ImageInfo){
+    if (ref == ImageInfo) {
         return ret;
     }
 
@@ -33,19 +52,55 @@ ImageUploadPlugin.prototype.editorFor = function (p, property, Model) {
 
 
 ImageUploadPlugin.prototype.editors = function () {
-    return ['ImageUpload']
-}
-var options = {
-    safeFileTypes:/\.(gif|jpe?g|png)$/i,
-    imageTypes:/\.(gif|jpe?g|png)$/i,
-    imageVersions:{
-        'thumbnail':{
-            width:80,
-            height:80
+    return [
+        {
+            types:['Buffer', 'Image', 'File'],
+            name:'ImageUpload',
+            schema:{
+                directory:{
+                    type:'Text'
+                },
+                safeFileTypes:{
+                    type:'Text',
+                    title:'Safe File Types',
+                    help:'Allowable file types'
+                },
+                sizes:{
+                    type:'List',
+                    subSchema:{
+                        name:{
+                            type:'Text',
+                            help:'The name of the size ie. thumbnail, profile, portrait'
+                        },
+                        width:{
+                            type:'Number',
+                            help:'Maximum width',
+                            min:1
+                        },
+                        height:{
+                            type:'Number',
+                            help:'Maximum height',
+                            min:1
+                        },
+                        scale:{
+                            type:'Select',
+                            options:['Fit', 'Crop', 'Scale X', 'Scale Y']
+                        }
+                    }
+                }
+            }
         }
+    ]
+}
+
+ImageUploadPlugin.prototype.configure = function (conf) {
+    _u.extend(this.defaults, conf);
+    if (!this.defaults.directory) {
+        this.defaults.directory = path.join(path.dirname(module.filename), 'images','full');
     }
-};
-ImageUploadPlugin.prototype.routes = function () {
+
+}
+ImageUploadPlugin.routes = function () {
 
     var dir = path.dirname(module.filename);
 

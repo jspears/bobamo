@@ -4,16 +4,14 @@
   "version": "0.8.0",
   "private": false,
   "dependencies": {
-    "jqtpl": ">= 0.0.1",
+    "jqtpl": "latest",
     "mongoose": "latest",
     "mers": ">= 0.4.1",
     "underscore": "latest",
     "less": "latest",
     "connect": "latest",
-    "consolidate": "latest",
     "express": ">=3",
-    "requirejs":"latest",
-    "jquery":"latest"
+    "requirejs":"latest"
   },
   "devDependencies": {
     "should": "latest",

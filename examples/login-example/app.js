@@ -8,7 +8,7 @@ var bobamo    = require('bobamo')
     , Group  = require('bobamo/examples/model/group')
     ;
 var mongoose = bobamo.mongoose;
-var app = bobamo.app({mongoose:mongoose, plugin:'passport', authModel:User});
+var app = bobamo.app({mongoose:mongoose, plugin:['passport','imageupload'], authModel:User});
 
 
 app.configure('development', function () {
