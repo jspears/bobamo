@@ -1,12 +1,14 @@
-var Plugin = require('../../lib/plugin-api'),
+var bobamo = require('bobamo'),
+    mongoose = bobamo.mongoose,
+    Plugin = bobamo.PluginApi,
     static = require('connect/lib/middleware/static'),
     ImageInfo = require('./ImageInfo'),
     fs = require('fs-extra'),
     path = require('path'),
     util = require('util'),
     _u = require('underscore'),
-    imageMagick = require('imagemagick'),
-    mongoose = require('mongoose')
+    imageMagick = require('imagemagick')
+
     ;
 var options = {
     safeFileTypes:/\.(gif|jpe?g|png)$/i,
@@ -29,6 +31,9 @@ var options = {
 var ImageUploadPlugin = module.exports = function () {
     Plugin.apply(this, arguments);
     this.defaults = options;
+    var dir = path.dirname(module.filename);
+    if (!options.directory)
+        options.directory = dir + '/public/images/';
 }
 util.inherits(ImageUploadPlugin, Plugin);
 ImageUploadPlugin.prototype.editorFor = function (p, property, Model) {
@@ -56,17 +61,24 @@ ImageUploadPlugin.prototype.editors = function () {
         {
             types:['Buffer', 'Image', 'File'],
             name:'ImageUpload',
+            defaults:{
+              sizes:[{name:'thumbnail', width:80, height:80, scale:'Fit'}]
+            },
             schema:{
                 directory:{
-                    type:'Text'
+                    type:'Text',
+                    placeholder:options.directory
                 },
                 safeFileTypes:{
                     type:'Text',
                     title:'Safe File Types',
-                    help:'Allowable file types'
+                    help:'Allowable file types',
+                    placeholder:options.safeFileTypes+''
+
                 },
                 sizes:{
                     type:'List',
+                    itemType:'Object',
                     subSchema:{
                         name:{
                             type:'Text',
@@ -82,9 +94,9 @@ ImageUploadPlugin.prototype.editors = function () {
                             help:'Maximum height',
                             min:1
                         },
-                        scale:{
+                        gravity:{
                             type:'Select',
-                            options:['Fit', 'Crop', 'Scale X', 'Scale Y']
+                            options:'Center, NorthWest, North, NorthEast, West, East, SouthWest, South, SouthEast'.split(/\s*,\s*/)
                         }
                     }
                 }
@@ -167,6 +179,14 @@ ImageUploadPlugin.routes = function () {
 //           });
 //    }, this);
     var pluginUrl = this.pluginUrl;
+    //change this to use a hash of the original file, so that we can
+    // safely reference it from other places.
+
+    //TODO - change this so that when we read the current models
+    //settings for all of the options.   This is a bit tricky.  We
+    // will need to change the url to contain both the Model and property to
+    // look that up in the model so that we can create the right images for this
+    //particular instance.
     this.app.post(this.pluginUrl, function (req, res, next) {
         var counter = 0;
         var infos = [];

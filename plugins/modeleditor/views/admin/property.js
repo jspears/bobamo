@@ -121,8 +121,9 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                     function (cb) {
                         editor.value = first || second || third || 'Text';
                         cb(editorsFor(val));
+                        onType();
                     });
-                //onType();
+
             }
 
             function onType() {
