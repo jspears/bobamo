@@ -1,4 +1,4 @@
-var geocoder = require('geocoder'), bobamo = require('bobamo'), mongoose = bobamo.mongoose, _u = require('underscore'), Query = require('bobamo/node_modules/mers/lib/callback-query');
+var bobamo = require('bobamo'), mongoose = bobamo.mongoose, _u = require('underscore'), Query = require('bobamo/node_modules/mers/lib/callback-query');
 
 var AddressSchema = new mongoose.Schema({
     name:{type:String, default:''},

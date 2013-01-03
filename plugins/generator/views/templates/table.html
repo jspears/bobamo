@@ -1,10 +1,10 @@
 <div>
-<h4 class="pull-left title">${model.plural}</h4><a href="#/${modelName}/edit" class="btn btn-mini pull-right"><b class="icon-edit"></b>Create ${model.title} </a>
+<h4 class="pull-left title">${model.plural}</h4><a href="#/views/${modelName}/edit" class="btn btn-mini pull-right"><b class="icon-edit"></b>Create ${model.title} </a>
 <table class="table table-striped top-line">
     <thead style="white-space: nowrap">
         <tr>
             {{each(i,l) model.list_fields}}
-                <th data-field="${l}" class="elementActivate sortable">${model.pathFor(l).title}</th>
+                <th data-field="${l}" class="elementActivate sortable">${model.pathFor(i).title}</th>
             {{/each}}
         </tr>
         <tr>&nbsp;

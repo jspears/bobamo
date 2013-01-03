@@ -35,33 +35,12 @@ GeneratorPlugin.prototype.filters = function (options) {
     }.bind(this));
 
 }
-/*{{each(i,l) appModel.modelPaths}}
- {{if l.finders && l.finders.length }}
- <li class="dropdown ${l.modelName}" id="menu${l.modelName}">
 
- <a    class="dropdown-toggle"  data-toggle="dropdown">
- ${l.plural}
- <b class="caret"></b>
- </a>
- <ul class="dropdown-menu">
- <li><a href="#/${l.modelName}/list">All ${l.plural}</a></li>
- {{each(k, j) l.finders }}
- <li><a href="#/views/${l.modelName}/finder/${j.name}">${j.title}</a></li>
- {{/each}}
-
- </ul>
- </li>
- {{else}}
- <li class="${l.modelName}" id="menu${l.modelName}">
- <a href="#/${l.modelName}/list">${l.plural}</a>
- </li>
-
- {{/if}}
- {{/each}}*/
 var Items = function(appModel, pluginManager){
 
-    this.__defineGetter__('title-bar', function(){
+    this.__defineGetter__('title-bar', function onItemTitleBarGetter(){
         var items = {};
+        var paths = appModel.modelPaths;
         _u.each(appModel.modelPaths, function (l,k){
             var finders = l.finders && l.finders.length && l.finders;
             var id=['title-bar', k].join('_')
@@ -90,39 +69,7 @@ var Items = function(appModel, pluginManager){
 
         return
     });
-    /*  <li class="dropdown">
 
-     <a href="#"
-     class="dropdown-toggle"
-     data-toggle="dropdown">
-     Admin
-     <b class="caret"></b>
-     </a>
-     <ul class="dropdown-menu">
-     {{each(k, j) pluginManager.admin }}
-     <li><a href="${j.href}">${j.title}</a></li>
-     {{/each}}
-     </ul>
-     </li>
-     {{/if}}*/
-//    this.__defineGetter__('admin-menu', function(){
-//        var itms = [];
-//        var items = {Admin:{label:'Admin', id:'admin-menu', items:itms}};
-//
-//         _u.each(appModel.header['admin-menu'], function(v,k){
-//                itms.push(_u.extend({}, v, {
-//                    id:['admin-menu',k].join('_')
-//                }));
-//        });
-////        _u.each(pluginManager.admin, function(v,k){
-////            itms.push({
-////                  id:['admin-menu',k].join('_'),
-////                  label:v.title,
-////                  href:v.href
-////              })
-////        });
-//        return items;
-//    });
 }
 GeneratorPlugin.prototype.appModel = function(){
 
@@ -136,7 +83,7 @@ GeneratorPlugin.prototype.routes = function (options) {
     var appModel = this.pluginManager.appModel;
     var baseOpts = {
         includes:function (arr) {
-            var data = this.data;
+            var data = this;
             arr = arr || [];
             arr = _u.map(arr, function (v) {
                 return  _u.template(v, data);
@@ -202,7 +149,7 @@ GeneratorPlugin.prototype.routes = function (options) {
         return options;
     }
     var superUrl = function(req,res,next){
-        req.url = req.url.replace(/.*\/super/, '');
+        req.url = req.url.replace('/super/', '/');
         next();
     }
     _u.each(['js','tpl','templates'], function(v){
@@ -211,6 +158,7 @@ GeneratorPlugin.prototype.routes = function (options) {
     });
 
     app.get(base + 'js/appModel/:key?', function (req,res,next){
+
         var model = butil.depth(this.pluginManager.appModel, req.params.key)
         res.send({
             status:0,

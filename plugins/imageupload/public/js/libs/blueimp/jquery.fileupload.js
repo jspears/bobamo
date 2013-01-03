@@ -732,6 +732,8 @@
                 paramNameSet = paramName;
             }
             data.originalFiles = data.files;
+//            if (data.preventSubmit)
+//                return result;
             $.each(fileSet || data.files, function (index, element) {
                 var newData = $.extend({}, data);
                 newData.files = fileSet ? element : [element];

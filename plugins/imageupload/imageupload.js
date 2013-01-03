@@ -1,4 +1,4 @@
-var bobamo = require('bobamo'),
+var bobamo = require('../../index'),
     mongoose = bobamo.mongoose,
     Plugin = bobamo.PluginApi,
     static = require('connect/lib/middleware/static'),
@@ -7,9 +7,12 @@ var bobamo = require('bobamo'),
     path = require('path'),
     util = require('util'),
     _u = require('underscore'),
-    imageMagick = require('imagemagick')
-
+    im = require('imagemagick')
+    File = require('./mongoose-file'),
+    Model = bobamo.DisplayModel
     ;
+
+
 var options = {
     safeFileTypes:/\.(gif|jpe?g|png)$/i,
     imageTypes:/\.(gif|jpe?g|png)$/i,
@@ -26,7 +29,11 @@ var options = {
             height:80,
             scale:'Fit'
         }
-    ]
+    ],
+    paths:{
+        convert:'/usr/local/bin/convert',
+        identify:'/usr/local/bin/identity'
+    }
 };
 var ImageUploadPlugin = module.exports = function () {
     Plugin.apply(this, arguments);
@@ -34,6 +41,7 @@ var ImageUploadPlugin = module.exports = function () {
     var dir = path.dirname(module.filename);
     if (!options.directory)
         options.directory = dir + '/public/images/';
+
 }
 util.inherits(ImageUploadPlugin, Plugin);
 ImageUploadPlugin.prototype.editorFor = function (p, property, Model) {
@@ -104,15 +112,60 @@ ImageUploadPlugin.prototype.editors = function () {
         }
     ]
 }
+//I really want to configure the executable via the GUI but it is so full
+//of security issues, I can't.
+ImageUploadPlugin.prototype.appModel = function () {
+    return {
+        modelPaths:{},
+        header:{
+            'admin-menu':{
+                'imageupload':{
+                    label:'Configure Image Upload',
+                    href:'#views/configure/imageupload'
+                }
+            }
+        }
+    }
+}
+ImageUploadPlugin.prototype.admin = function () {
+    return new Model('imageupload', [
+        {
+            schema:{
+                convert:{
+                    type:'Text',
+                    help:'Path to imagemagick\'s convert, this value can only be changed by editing the bobamo.conf',
+                    placeholder:this.defaults.paths.convert
+                },
+                identify:{
+                    type:'Text',
+                    help:'Path to imagemagick\'s identify, this value can only be changed by editing the bobamo.conf',
+                    placeholder:this.defaults.paths.identify
+                }
+            },
+            url:this.pluginUrl + '/admin/configure',
+            fieldsets:[
+                {legend:"ImageUpload Plugin", fields:['convert', 'identify']}
+            ],
+            plural:'ImageUpload',
+            title:'ImageUpload Plugin',
+            modelName:'imageupload'
+        }
+    ]);
 
+}
 ImageUploadPlugin.prototype.configure = function (conf) {
     _u.extend(this.defaults, conf);
     if (!this.defaults.directory) {
         this.defaults.directory = path.join(path.dirname(module.filename), 'images','full');
     }
+    _u.each(this.defaults.paths, function(v,k){
+          if (im[k] && im[k].path){
+              im[k].path = v;
+          }
+    });
 
 }
-ImageUploadPlugin.routes = function () {
+ImageUploadPlugin.prototype.routes = function () {
 
     var dir = path.dirname(module.filename);
 
@@ -161,7 +214,7 @@ ImageUploadPlugin.routes = function () {
         if (!fs.existsSync(destDir)) {
             fs.mkdirSync(destDir);
         }
-        imageMagick.resize({
+        im.resize({
             width:opts.width,
             height:opts.height,
             srcPath:fullDir + id,
@@ -170,7 +223,7 @@ ImageUploadPlugin.routes = function () {
 
 
     }.bind(this),
-        static(dir + '/public')
+            static(dir + '/public')
     );
     //, static(dir+'/public'));
 //    _u.each(options.imageVersions, function(v,k){

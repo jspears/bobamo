@@ -10,10 +10,10 @@
     <a href="<%=item.get('url')%>" target="_blank"><%= item.get('url') %></a>
     <% if (item.get('managed')){%>
     <div class="pull-right">
-        <a class="btn active" href="#/modeleditor/admin/create?id=<%=item.id%>"><i class="icon-wrench"></i>Configure</a>
-        <a class="btn" href="#/modeleditor/admin/delete?id=<%=item.id%>"><i class="icon-trash"></i>Delete</a>
+        <a class="btn active" href="#/views/modeleditor/admin/create?id=<%=item.id%>"><i class="icon-wrench"></i>Configure</a>
+        <a class="btn" href="#/views/modeleditor/admin/delete?id=<%=item.id%>"><i class="icon-trash"></i>Delete</a>
     </div>
     <% }else{ %>
-    <a href="#/modeleditor/admin/create?id=<%=item.id%>" class="btn btn-primary pull-right"><i class="icon-wrench"></i> Configure</a>
+    <a href="#/views/modeleditor/admin/create?id=<%=item.id%>" class="btn btn-primary pull-right"><i class="icon-wrench"></i> Configure</a>
     <% } %>
 </td>

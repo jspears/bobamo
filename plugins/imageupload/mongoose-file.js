@@ -17,23 +17,15 @@ var mongoose = require('../../index').mongoose,
 var File = function File(path, options) {
     options = _u.extend({type:Object, index:true, select:true, strict:true}, options);
 
-    this.path = String;
-    this.hash = String;
+    this.name = String;
+    this.size = Number;
     this.type = String;
-
-//    this.size = Number;
-//    this.lastModified = Date;
+    this.fileId = String;
     File.super_.call(this, path, options);
-//    SchemaType.call(this, path, options);
-
 };
 util.inherits(File, Schema.Types.Object);
-//File.prototype.__proto__ = SchemaType.prototype;
-//util.inherits(File, mongoose.Schema.Types.Object);
 File.prototype.checkRequired = function (val) {
-    console.log('checkrequired', val);
     return null != val;
-
 }
 File.prototype.cast = function (test, obj, init) {
     console.log('cast', arguments, 'this', this);
@@ -41,17 +33,14 @@ File.prototype.cast = function (test, obj, init) {
     if (init){
         return test;
     }else{
-      var stat = fs.statSync(test.path);
-      ['ctime','size'].forEach(function(v){
-          test[v] = stat[v];
-      });
-      this.hash(test);
-      return test;
+      var ret = {};
+      ['_id','__v','type','name','path', 'fileId', 'size'].forEach(function(v){
+          ret[v] = test[v];
+      })
+      return ret;
     }
 }
-File.prototype.hash = function(test){
 
-}
 
 Schema.Types.File = File;
 Types.File = File;

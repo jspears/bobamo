@@ -9,7 +9,7 @@ util.inherits(EditPlugin, Plugin);
 var extRe = /\.(js|html|css|htm)$/i;
 EditPlugin.prototype.admin = function () {
     return {
-        href:'#/modeleditor/admin/list',
+        href:'#/views/modeleditor/admin/list',
         title:'Model Settings'
     };
 }
@@ -19,7 +19,7 @@ EditPlugin.prototype.appModel = function () {
             'admin-menu':{
 
                 'modeleditor':{
-                    href:'#/modeleditor/admin/list',
+                    href:'#/views/modeleditor/admin/list',
                     label:'Model Settings'
                 }
             }
@@ -70,7 +70,7 @@ EditPlugin.prototype.routes = function () {
             return _u.map(mongoose.SchemaTypes, function (v, k) {
                 var disp = v.prototype.display
 
-                return _u.isUndefined(disp) ? {} : _u.extend({schemaType:k}, disp);
+                return _u.extend({schemaType:k}, disp);
             });
         });
         var pm = this.pluginManager;
@@ -341,17 +341,17 @@ EditPlugin.prototype.routes = function () {
     }.bind(this));
     var appModel = this.pluginManager.appModel;
     this.app.put(base + '/admin/backbone/:modelName?', function (req, res) {
+        var model = req.body;
+        var persistPlugin = this.pluginManager.loadedPlugins[model.dbType || 'mongoose'];
 
-        var persistPlugin = this.pluginManager.loadedPlugins[req.body.dbType || 'mongoose'];
-
-        var modelName = req.body.modelName;
+        var modelName = model.modelName;
 
 
         if (!persistPlugin.modelFor(modelName) || (this._appModel && this._appModel.models && this._appModel.models[modelName] && this._appModel.models[modelName].configurable)) {
             req.body.configurable = true;
-            persistPlugin.updateSchema(modelName, req.body.schema);
+            persistPlugin.updateSchema(modelName, model.schema);
         }
-        this._appModel.modelPaths[modelName] = req.body;
+        this._appModel.modelPaths[modelName] = model;
         this.save(this._appModel, function () {
             res.send({
                 status:0,

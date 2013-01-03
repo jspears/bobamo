@@ -59,7 +59,7 @@ define([
                 obj = query.parse(parts[1]);
             }
             this.activeHeader(paths[0]);
-            var path = ['views'];
+            var path = paths[0] == 'views' ? [] : ['views'];
             if (paths.length == 1) {
                 path.push(paths[0])
                 path.push('list');

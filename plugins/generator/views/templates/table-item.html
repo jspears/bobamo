@@ -1,8 +1,8 @@
 {{each(i,l) model.list_fields}}
-<td><%= format('${l}') %></td>
+<td><%= format('${i}') %></td>
 {{/each}}
 <td>
-    <a href="#/${modelName}/edit?id=<%=item.id%>"><i class="icon-edit"></i>Edit</a>
-    <a href="#/${modelName}/delete?id=<%=item.id%>"><i class="icon-remove"></i>Delete</a>
+    <a href="#/views/${modelName}/edit?id=<%=item.id%>"><i class="icon-edit"></i>Edit</a>
+    <a href="#/views/${modelName}/delete?id=<%=item.id%>"><i class="icon-remove"></i>Delete</a>
 
 </td>

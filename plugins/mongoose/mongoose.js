@@ -25,6 +25,11 @@ MongoosePlugin.prototype.appModel = function (options) {
         this.__defineGetter__('modelPaths', function () {
             var ret = {};
             _u.each(mongoose.models, function (v, k) {
+                //This tells us that it was externally configured. If this is the
+                // case all the configuration will come from there. Otherwise it goes
+                // this should be fixed someday.   Not entirely sure how.
+                if (v._configured)
+                    return; //skip configured to prevent a nasty loop.
                 ret[v.modelName] = new MModel(v, self.pluginManager);
             }, this);
             return ret;
@@ -119,6 +124,7 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
 MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
     var mschema = this.schemaFor(schema);
     var model = this.options.mongoose.model(modelName, mschema);
+    model._configured = true;
     console.log('loading schema', modelName);
     if (callback)
         callback(model);

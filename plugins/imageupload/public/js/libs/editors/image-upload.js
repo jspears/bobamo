@@ -1,11 +1,11 @@
 define(['jquery', 'underscore',
     'Backbone.Form',
-
+    'imageupload/editor_conf.js',
     'imageupload/js/libs/blueimp/tmpl.min',
-    'text!imageupload/tpl/form.html',
-    'text!imageupload/tpl/upload.html',
+    'text!../../../imageupload/tpl/form.html',
+    'text!../../../imageupload/tpl/upload.html',
 
-    'text!imageupload/tpl/download.html',
+    'text!../../../imageupload/tpl/download.html',
 
     'imageupload/js/libs/blueimp/canvas-to-blob.min',
     'imageupload/js/libs/blueimp/jquery.fileupload-fp',
@@ -14,11 +14,12 @@ define(['jquery', 'underscore',
     'imageupload/js/libs/blueimp/jquery.iframe-transport',
     'imageupload/js/libs/blueimp/locale',
     'imageupload/js/libs/blueimp/load-image.min' ,
-    'libs/bootstrap/js/bootstrap-modal'
+    'backbone-modal'
 
 
-], function ($, _, Form, tmpl, formTmpl, uploadTmpl, downloadTmpl) {
+], function ($, _, Form, conf, tmpl, formTmpl, uploadTmpl, downloadTmpl) {
     "use strict;"
+    var imageUrl = conf.imageBaseUrl;
     var filterNull = function (v) {
         return !!v;
     }
@@ -113,9 +114,17 @@ define(['jquery', 'underscore',
             return this;
         },
         addFiles:function (values) {
-            if (!this.schema.url)
-                this.$fileupload.fileupload('add', {files:this.value});
-            else {
+
+            if (!this.schema.url)                {
+                if (this.value && this.value.length){
+                    this.value = _.map(this.value, function(val){
+                       return _.extend({url:imageUrl+'/images/full/'+val.fileId, delete_url:imageUrl+'/'+val.fileId, delete_type:'DELETE', 'thumbnail_url':imageUrl+'/images/thumbnail/'+val.fileId+'.jpeg'},val );
+                    });
+                    this.$fileupload.fileupload('option', 'done').call( this.$fileupload, null, {result: this.value});
+                }
+
+
+            }else {
                 var self = this;
                 $.get([this.model.urlRoot, this.model.id, this.key].join('/'), function (result) {
                     self.value = result.payload;
