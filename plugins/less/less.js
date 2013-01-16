@@ -1,17 +1,24 @@
 var Plugin = require('../../lib/plugin-api'), path = require('path'), _u = require('underscore'), sutil = require('util'), LessFactory = require('./less-factory');
 var LessPlugin = function (options, app, name) {
     Plugin.apply(this, arguments);
-    var dirPath = path.join(this.path, 'less');
-    if (!this.options.lessFactory)
-        this.lessFactory = this.options.lessFactory = new LessFactory({
-            paths:[dirPath]
-        });
+
     this._variables = {};
 
 }
 sutil.inherits(LessPlugin, Plugin);
 LessPlugin.prototype.configure = function (conf) {
     _u.extend(this._variables, conf);
+    var dirPath = path.join(this.path, 'less');
+    var paths = [];
+    _u.each(this.pluginManager.plugins, function(v){
+        if (v !== this)
+            paths.push(path.join(v.path, 'less'));
+    }, this);
+    paths.push(dirPath);
+    if (!this.options.lessFactory)
+        this.lessFactory = this.options.lessFactory = new LessFactory({
+            paths:paths
+        });
 }
 
 LessPlugin.prototype.admin = function () {
@@ -69,17 +76,16 @@ LessPlugin.prototype.filters = function () {
 
 LessPlugin.prototype.routes = function () {
     var base = this.pluginUrl;
-    var lessFactory = this.lessFactory;
     var app = this.app;
     app.get(base + '/:id?', function (req, res, next) {
         res.contentType('text/css');
-        lessFactory.current(function onCss(err, obj) {
+        this.lessFactory.current(function onCss(err, obj) {
             if (err) return next(err);
             res.send(obj.payload);
         }, req.params.id);
     }.bind(this));
     app.get(base + '/admin/:id?', function (req, res, next) {
-        var obj = _u.extend({}, lessFactory.getCache(req.params.id || req.body.id) || this._variables);
+        var obj = _u.extend({}, this.lessFactory.getCache(req.params.id || req.body.id) || this._variables);
         delete obj.payload;
 
         res.send({
@@ -95,12 +101,12 @@ LessPlugin.prototype.routes = function () {
         var install = req.body.install;
         delete req.body.install;
         var pm = this.pluginManager;
-        lessFactory.createCache(function (err, obj) {
+        this.lessFactory.createCache(function (err, obj) {
             if (err)
                 return next(err);
             var payload = _u.extend({}, obj);
             if (install)
-                lessFactory.checksum = obj.id;
+                this.lessFactory.checksum = obj.id;
 
             this.save(payload, function (err, resp) {
                 if (err)
@@ -122,13 +128,13 @@ LessPlugin.prototype.routes = function () {
         var install = req.body.install;
         var pm = this.pluginManager;
 
-        lessFactory.createCache(function (err, obj) {
+        this.lessFactory.createCache(function (err, obj) {
             if (err)
                 return next(err);
             var payload = _u.extend({}, obj);
 
             if (install)
-                lessFactory.checksum = obj.id;
+                this.lessFactory.checksum = obj.id;
             this.save(payload, function (err, resp) {
                 if (err)
                     return next(err);

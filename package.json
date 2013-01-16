@@ -13,6 +13,9 @@
     "express": ">=3",
     "requirejs":"latest"
   },
+  "bin":{
+      "bobamo":"bin/bobamo"
+  },
   "devDependencies": {
     "should": "latest",
     "csv": "latest"

@@ -47,7 +47,7 @@ define([
 
         defaultAction:function (actions, params) {
             // We have no matching route, lets display the home page
-            var parts = (actions || 'home' ).replace(/^\/*/, '').split('?', 2);
+            var parts = (actions || 'home' ).replace(/^(!)?\/*/, '').split('?', 2);
             var self = this;
             if (window.useAuthentication & !window.isAuthenticated) {
                 return this.navigate('#login/' + actions, {trigger:true, replace:true});

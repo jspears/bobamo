@@ -1,0 +1,356 @@
+var Finder = require('../../index').FinderModel, _u = require('underscore');
+var swagger = require("swagger-node-express/Common/node/swagger");
+var util = require('../../lib/util');
+var param = require("swagger-node-express/Common/node/paramTypes");
+var url = require("url");
+var swe = swagger.errors;
+"use strict";
+
+Finder.prototype.__defineGetter__('spec', function () {
+
+    return new Spec([this.display.spec], this)
+});
+
+//var defSpec = {
+//    "description":"Operations about pets",
+//    "path":"/pet.{format}/{petId}",
+//    "notes":"Returns a pet based on ID",
+//    "summary":"Find pet by ID",
+//    "method":"GET",
+//    "params":[param.path("petId", "ID of pet that needs to be fetched", "string")],
+//    "responseClass":"Pet",
+//    "errorResponses":[swe.invalid('id'), swe.notFound('pet')],
+//    "nickname":"getPetById"
+//};
+
+var Spec = function (args, finder, path) {
+    this.__defineGetter__('errorResponses', function () {
+        var errorResponses = util.find(errorResponses, args);
+        if (errorResponses && errorResponses.length) {
+            return errorResponses;
+        } else {
+            return [swe.invalid('path')]
+        }
+    })
+    this.__defineGetter__('params', function () {
+        var method = this.method || 'GET';
+        var parameters = [];
+        var v = finder;
+        if (v.display && v.display.hidden)
+            return;
+        if (v.display && v.display.schema) {
+            var paramType = method == 'GET' ? 'query' : 'body';
+            if (finder.model)
+                _u.each(finder.model.schemaFor(), function (vv, kk) {
+                    var required = _.first(_.where(v.validators, {type:'required'})) || false;
+                    parameters.push({
+                        allowMultiple:false,
+                        dataType:(!vv.type || vv.type == 'Text') ? "string" : vv.type && vv.type.toLowerCase(),
+                        description:vv.help || vv.description,
+                        name:kk,
+                        paramType:paramType,
+                        required:required})
+                });
+        }
+        return parameters;
+    })
+
+
+    this.__defineGetter__('description', function () {
+        var description = util.find('description', args);
+        if (description)
+            return description;
+        return 'Operations about ' + finder.title;
+
+    });
+    this.__defineGetter__('path', function () {
+        var path = util.find('path', args);
+        if (path)
+            return path;
+        return '/' + finder.model.modelName + '/finder/' + util.find('name', [finder]);
+    });
+    this.__defineGetter__('notes', function () {
+        return util.find('notes', args) || util.find('title', [finder])
+    });
+
+//    ['summary', 'method'].forEach(util.easyget(args), this);
+
+    this.__defineGetter__('responseClass', function () {
+        return util.find('responseClass', args) || "List('" + finder.model.modelName + "')";
+    });
+
+    this.__defineGetter__('nickname', function () {
+        return util.find('nickname', args) || finder.name;
+
+    });
+    this.__defineGetter__('method', function () {
+        if (finder && finder.display && finder.display.method)
+            return finder.display.method;
+        return 'GET';
+
+    });
+    this.__defineGetter__('summary', function () {
+        if (finder && finder.display && finder.display.summary)
+            return finder.display.summary;
+        return finder.help || finder.description || 'About ' + finder.title;
+
+    });
+}
+/**
+ * Takes a schema calls function on each path.
+ * @param schema
+ * @param func
+ * @param path
+ */
+function walkSchema(schema, func, path) {
+    path = path || [];
+    _u.each(schema, function (v, k) {
+        var p = path.concat(k);
+        if (func(v, k, p) === true)
+            return;
+        if (v.subSchema)
+            walkSchema(v.subSchema, func, p);
+    });
+}
+
+function fix(arr, str) {
+    if (!arr.length) return [];
+    var ret = [];
+    for (var i = 0, l = arr.length; i < l; i++) {
+        ret.push(str);
+        ret.push(arr[i]);
+    }
+
+    return ret;
+
+}
+
+function specify(appModel, app) {
+    swagger.configureSwaggerPaths("", "/api-docs", "");
+    swagger.setAppHandler(app);
+    var models = {}, deps = [];
+    _u.each(appModel.modelPaths, function (model, v) {
+        if (models[v]) //prevent (infinite) recursion
+            return;
+        //    var model = appModel.modelFor(v);
+        (models[v] = this.modelToSchema(model.schemaFor(), deps)).id = v;
+
+    }, this);
+    var sw = swagger.addModels({models:models});
+    _u.each(appModel.modelPaths, function (v, k) {
+        sw.addGet(this.all(v, k))
+            .addGet(this.one(v, k))
+            .addPost(this.post(v, k))
+            .addPut(this.put(v, k))
+            .addDelete(this.del(v, k))
+        ;
+
+        var action = this.action;
+        _u.each(v.finders, function (vv) {
+            if (!vv.spec)
+                return;
+            var type = vv.spec && vv.spec.method && vv.spec.method.toLowerCase() || 'get';
+            var spec = { spec:vv.spec, action:action}
+            switch (type) {
+                case 'get':
+                    sw.addGet(spec);
+                    break;
+                    ;
+                case 'post':
+                    sw.addPost(spec);
+                    break;
+                    ;
+                case 'put':
+                    sw.addPut(spec);
+                    break;
+                    ;
+                case 'delete':
+                    sw.addDelete(spec);
+                    break;
+                    ;
+                case 'del':
+                    sw.addDelete(spec);
+                    break;
+                    ;
+
+            }
+        })
+
+    }, this);
+
+    return sw;
+}
+module.exports = {
+    modelToSchema:function (model, depends, pluginManager) {
+        depends = depends || [];
+        if (_u.isString(model))
+            model = pluginManager.schemaFor(model);
+        var jsonSchema = {
+            "id":"http://some.site.somewhere/entry-schema#",
+            "$schema":"http://json-schema.org/draft-04/schema#",
+            type:"object",
+            required:[],
+            properties:{}
+        };
+        var description = model.title;
+        var depth = jsonSchema;
+        var i = 0;
+
+        walkSchema(model, function (v, k, path) {
+            var properties = fix(path, 'properties');
+            var subJson = {};
+            //    u.depth(jsonSchema, fix(path,'properties', subJson, true));
+            //(depth.properties || (depth.properties = {}))[k] = {};
+            subJson.type = v.schemaType && v.schemaType.toLowerCase()
+            subJson.description = v.description || v.help || v.title;
+            if (subJson.type == 'object') {
+                subJson.properties = {};
+                depth = subJson.properties;
+            }
+            if (v.schemaType == 'ObjectId') {
+                subJson.type = 'object'
+                subJson.oneOf = [
+                    {$ref:this.pluginUrl + '/' + v.ref}
+                ];
+                depends.push(v.ref);
+            }
+            if (v.multiple) {
+                subJson.type = 'array';
+                if (v.ref)
+                    subJson.items = {
+                        "$ref":v.ref
+                    }
+                depends.push(v.ref);
+            }
+            if (v.type == 'List') {
+                subJson.items = {
+                    type:subJson.type
+                }
+                subJson.type = 'array';
+            }
+            _u.each(v.validators, function (vv, kk) {
+                if (vv.type == 'required') {
+                    //subJson.required = true;
+                    if (path.length == 1) {
+                        jsonSchema.required.push(k);
+                    } else {
+                        var pt = util.depth(jsonSchema, fix(path.slice(0, path.length - 1), 'properties'), {});
+                        (pt.required || (pt.required = [])).push(k);
+                    }
+                }
+                else if (vv.type == 'enum') {
+                    delete subJson.type;
+                    subJson.enum = vv.enums;
+                } else if (vv.type == 'min') {
+                    subJson.minimum = vv.min;
+                } else if (vv.type == "regexp") {
+                    subJson.pattern = vv.regexp;
+                } else if (vv.type == 'max') {
+                    subJson.maximum = vv.max;
+                }
+            });
+            if (!( subJson.type || subJson.enum))subJson.type = 'object';
+
+
+            util.depth(jsonSchema, properties, subJson, true);
+        }.bind(this));
+        return jsonSchema;
+    },
+    put:function (v, k) {
+        return {
+            action:this.action,
+            spec:{
+                "path":"/" + k,
+                "notes":"updates a " + v.title + " in the store",
+                "method":"PUT",
+                "summary":"Update an existing " + v.title.toLowerCase(),
+                "params":[param.post(v.title + " object that needs to be added to the store", k)],
+                "errorResponses":[swe.invalid('id'), swe.notFound(k), swe.invalid('input')],
+                "nickname":"update" + k
+            }}
+    },
+    post:function (v, k) {
+        return {
+            action:this.action,
+
+            spec:{
+                "path":"/" + k,
+                "notes":"adds a " + v.title + " to the store",
+                "summary":"Add a new " + v.title + " to the store",
+                "method":"POST",
+                "params":[param.post(v.title + " object that needs to be added to the store", k)],
+                "errorResponses":[swe.invalid('input')],
+                "nickname":"add" + k
+            }}
+    },
+    action:function (req, res, next) {
+        console.log('not doing action')
+        res.send({
+            message:'Just a placeholder'
+        })
+    },
+    params:function (v) {
+        var p = [
+            param.q('skip', 'number of records to skip', 'integer', false, false, 0),
+            param.q('limit', 'limit the number of records', 'integer', false, false, 10)
+        ]
+        _u.each(v.schema, function (vv) {
+
+            var k = vv.path;
+            if (k == 'id')
+                return;
+            var type = vv.schemaType;
+            if (type == 'Date' || type == 'Number' || type == 'String') {
+                p.push(param.q('filter[' + k + ']', 'filter text fields on ' + k, type == 'Number' ? 'float' : type.toLowerCase(), false, true));
+                p.push(param.q('sort[' + k + ']', 'sort on ' + k + ' direction ascending 1, descending -1', 'integer', false, true, [1, -1]));
+            }
+
+        })
+
+        return p;
+    },
+    all:function (v, k) {
+        return  {
+            action:this.action,
+            spec:{
+                "description":"Operations about " + v.plural,
+                "path":"/" + k,
+                "notes":"All values with typical sorting/filtering",
+                "summary":"Find all " + v.plural,
+                "method":"GET",
+                "params":this.params(v),
+                "responseClass":"List[" + k + "]",
+                "errorResponses":[],
+                "nickname":"findAll" + k
+            }
+        }
+    },
+    one:function (v, k) {
+        return  {
+            action:this.action,
+            spec:{
+                "path":"/" + k + "/{id}",
+                "notes":"updates a " + v.title + " in the store",
+                "method":"GET",
+                "summary":"Return an existing " + v.title,
+                "params":[param.path("id", "ID of " + v.modelName, "string")],
+                "errorResponses":[swe.invalid('id'), swe.notFound(v)],
+                "nickname":"get" + k + "byId"
+            }}
+    },
+    del:function (v, k) {
+        return {
+            action:this.action,
+            spec:{
+                "path":"/" + k + "/{id}",
+                "notes":"removes a " + v.modelName + " from the store",
+                "method":"DELETE",
+                "summary":"Remove an existing " + v.modelName,
+                "params":[param.path("id", "ID of " + v.modelName + " that needs to be removed", "string")],
+                "errorResponses":[swe.invalid('id'), swe.notFound(v.modelName)],
+                "nickname":"delete" + v.modelName
+            }};
+    },
+    Spec:Spec,
+    swagger:specify
+}

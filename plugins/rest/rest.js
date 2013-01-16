@@ -6,6 +6,7 @@ var RestPlugin = function () {
 }
 util.inherits(RestPlugin, Plugin);
 RestPlugin.prototype.filters = function(){
+    this.app.locals.apiUrl = this.options.apiUrl;
     this.app.all(this.options.apiUrl+'/*', function (req, res, next) {
         req.query.transform = mutil.split(req.query.transform, ',', ['_idToId']);
         next();

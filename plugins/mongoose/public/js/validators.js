@@ -151,6 +151,33 @@ define(['underscore'], function (_) {
             };
         }
     }
+    validators.regexp = {
+        types:['String'],
+        name:'RegExp',
+        message:'Not a valid value',
+        schema:{
+            regexp:{type:'String'}
+        },
+        validator:function(options){
+            check(options, 'regexp');
+            options = _.extend({
+                type:'regexp',
+                message:this.errMessages && this.errMessages.regexp
+            }, options);
+            var re = new RegExp(options.regexp);
+            return function regexp(value, attrs) {
+
+                //Don't check empty values (add a 'required' validator for this)
+                if (empty(value)) return;
+                if (re.text(value)) return {
+                    type:options.type,
+                    message:helpers.createTemplate(options.message, _.extend({value:value}, options))
+                };
+
+            };
+
+        }
+    }
     validators.max = {
         types:['Number'],
         name:'Maximum',
@@ -186,7 +213,7 @@ define(['underscore'], function (_) {
 
             options = _.extend({
                 type:'required',
-                message:this.errMessages.required
+                message:this.errMessages && this.errMessages.required
             }, options);
 
             return function (value) {

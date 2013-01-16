@@ -25,9 +25,9 @@ define([
 
                 var p = _.omit(v, 'persistence', 'editor');
                 var schemaType = v.persistence.schemaType;
-                var editor = v.editor && v.editor[v.type];
+                var editor = _.omit(v.editor && v.editor[v.type], 'editor');
                 var persistence = _.omit(v.persistence[schemaType], 'persistence', 'editor');
-                var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, _.omit(persistence, 'validators'), editor);
+                var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, editor, _.omit(persistence, 'validators'));
 
                 var paths = nobj.schema;
                 delete nobj.schema;

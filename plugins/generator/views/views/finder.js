@@ -15,7 +15,7 @@ define(
     ])}}
     , function (_,B, Form,Modal,View, collection, tableTemplate, tableItemTemplate) {
     "use strict";
-
+     var finder = {{html JSON.stringify(finder)}}
      var qform = {{html JSON.stringify(model) || 'null' }};
  //    var qform = _.extend({schema:_qform.paths}, _.omit(_qform, 'paths'));
     var Model = B.Model.extend(qform);
@@ -41,7 +41,10 @@ define(
         onFormSubmit:function(e){
             if (e && e.preventDefault)
              e.preventDefault();
-            console.log('onFormSubmit',this.form.getValue());
+             console.log('onFormSubmit',this.form.getValue());
+            if (finder.display.method !== 'GET'){
+                console.log('method is ', finder.display.method, 'Not implemented');
+            }
             this.$paginate.paginate('update', {skip:0}); //reset the skip.
             this.update(null, {skip:0});
         },

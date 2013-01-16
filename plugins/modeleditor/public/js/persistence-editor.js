@@ -47,7 +47,7 @@ define([ 'views/modeleditor/admin/mongoose-types','Backbone', 'modeleditor/js/fo
             this.value = value;
 
             this.render();
-        },
+        }
 
     });
 

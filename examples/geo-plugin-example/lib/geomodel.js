@@ -23,7 +23,7 @@ var AddressSchema = new mongoose.Schema({
 //            }
 //        ]
 //    }
-});
+}, {display:{list_fields:['name','location.formatted_address', 'location.dis']}});
 
 var config = {};
 

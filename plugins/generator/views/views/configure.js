@@ -1,5 +1,5 @@
 define(['Backbone', 'libs/bobamo/edit', 'text!tpl/edit.html', 'libs/editors/multi-editor'], function(B, Edit, template){
-    var model = {{html JSON.stringify(plugin.admin())}};
+    var model = {{json plugin.admin()}}
     console.log('configure', model);
     return Edit.extend({
         model:B.Model.extend(model),

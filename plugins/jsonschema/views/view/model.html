@@ -1,0 +1,18 @@
+<div id="content">
+    <div class="page-header">
+        <a href="#jsonschema/view/doc"><i class="icon-arrow-left"></i>All Docs</a>
+        <h1>${model.modelName}</h1>
+            <small>${model.description}</small>
+    </div>
+
+    {{each(v,k) model.finders}}
+    <div class="page-header"><h2>${v.name}</h2>
+        <small>/rest/${model.modelName}/finder/${v.name}</small>
+    </div>
+    {{/each}}
+    </ul>
+    <h2>Schema for ${model.modelName}</h2>
+    <div>
+        {{html json}}
+    </div>
+</div>

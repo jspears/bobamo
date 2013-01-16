@@ -15,16 +15,17 @@ function CssFactory(options) {
         return vars;
     });
     var _default_imports = [];
-    this.__defineGetter__('default_imports', function(){
+    this.__defineGetter__('default_imports', function () {
         if (_default_imports.length)
             return _default_imports;
-        options.paths.forEach(function(dir){
-        fs.readdirSync(dir).forEach(function(f){
-            console.log('readdir', dir, f);
-           if (/\.less$/.test(f)){
-               _default_imports.push(f);
-           }
-        });
+        options.paths.forEach(function (dir) {
+            if (fs.existsSync(dir))
+                fs.readdirSync(dir).forEach(function (f) {
+                    console.log('readdir', dir, f);
+                    if (/\.less$/.test(f)) {
+                        _default_imports.push(f);
+                    }
+                });
         })
         return _default_imports;
     });

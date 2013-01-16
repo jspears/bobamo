@@ -51,7 +51,21 @@ UserSchema.statics.findQ_thru_Z = function onFindQZ(){
 UserSchema.statics.findI_thru_P.display = {
     title:'Find I thru P'
 }
-
+UserSchema.statics.search = function(q, v){
+    console.log('searching for', q.search);
+    return this.find().regex('username', new RegExp(".*"+ q.search+'.*', 'i'));
+}
+UserSchema.statics.search.display = {
+    title:'Search',
+    schema:{
+        search:{
+            type:'Text',
+            help:'Search users by username'
+        }
+    },
+    method:'POST'
+    ,list_fields:['username','twitter']
+}
 function sha1b64(password) {
     return crypto.createHash('sha1').update(password).digest('base64');
 }

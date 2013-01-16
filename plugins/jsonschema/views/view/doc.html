@@ -1,0 +1,12 @@
+<div id="content">
+    <div class="page-header">
+        <h1>API documentation<small>something interesting</small></h1>
+    </div>
+
+    <ul>
+        {{each(v,k) appModel.modelPaths}}
+        <li><a href="#${pluginUrl}/view/doc?type=${k}">${k}</a></li>
+        {{/each}}
+    </ul>
+ </div>
+

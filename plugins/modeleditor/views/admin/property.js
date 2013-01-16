@@ -133,8 +133,11 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                 _.each(_.omit(fields, type), function (f) {
                     f.$el.hide();
                 })
-                if (type)
+                if (type&& fields[type])
                     fields[type].$el.show();
+                else{
+                    console.log('no fields for type', type, 'fields', fields);
+                }
             }
 
             form.on("hidden:change", onType);
