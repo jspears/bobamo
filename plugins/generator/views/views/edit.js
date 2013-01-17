@@ -11,7 +11,7 @@ define({{html includes(
     , function (_,EditView, collection, Model, template) {
     "use strict";
 
-    var fieldsets = eval('({{html JSON.stringify(model.fieldsets) }})');
+    var fieldsets = {{json model.fieldsets }};
     return EditView.extend({
         fieldsets:fieldsets,
         template:_.template(template),

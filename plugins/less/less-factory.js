@@ -9,7 +9,9 @@ function CssFactory(options) {
         var readp = this.options.paths;
         var vars = {};
         readp.forEach(function (v, k) {
-            this.readVariables(fs.readFileSync(path.join(v, 'variables.less'), 'utf-8').split('\n'), vars, v);
+            var varFile = path.join(v, 'variables.less')
+            if (fs.existsSync(varFile))
+                this.readVariables(fs.readFileSync(varFile, 'utf-8').split('\n'), vars, v);
         }, this);
 
         return vars;

@@ -1,4 +1,7 @@
-var Finder = require('../../index').FinderModel, _u = require('underscore');
+var bobamo = require('../../index'), Finder = bobamo.FinderModel,
+    _u = require('underscore'),
+    inflection = bobamo.inflection
+    ;
 var swagger = require("swagger-node-express/Common/node/swagger");
 var util = require('../../lib/util');
 var param = require("swagger-node-express/Common/node/paramTypes");
@@ -40,7 +43,7 @@ var Spec = function (args, finder, path) {
             return;
         if (v.display && v.display.schema) {
             var paramType = method == 'GET' ? 'query' : 'body';
-            if (finder.model)
+            if (finder.model){
                 _u.each(finder.model.schemaFor(), function (vv, kk) {
                     var required = _.first(_.where(v.validators, {type:'required'})) || false;
                     parameters.push({
@@ -51,6 +54,11 @@ var Spec = function (args, finder, path) {
                         paramType:paramType,
                         required:required})
                 });
+                if (method == 'GET'){
+                    parameters = parameters.concat(Swag.params(finder.model.modelName))
+                }
+            }
+
         }
         return parameters;
     })
@@ -67,7 +75,7 @@ var Spec = function (args, finder, path) {
         var path = util.find('path', args);
         if (path)
             return path;
-        return '/' + finder.model.modelName + '/finder/' + util.find('name', [finder]);
+        return '/' + finder.model.modelName + '/' + util.find('name', [finder]);
     });
     this.__defineGetter__('notes', function () {
         return util.find('notes', args) || util.find('title', [finder])
@@ -76,7 +84,7 @@ var Spec = function (args, finder, path) {
 //    ['summary', 'method'].forEach(util.easyget(args), this);
 
     this.__defineGetter__('responseClass', function () {
-        return util.find('responseClass', args) || "List('" + finder.model.modelName + "')";
+        return util.find('responseClass', args) || "List[" + finder.model.modelName + "]";
     });
 
     this.__defineGetter__('nickname', function () {
@@ -133,7 +141,7 @@ function specify(appModel, app) {
         if (models[v]) //prevent (infinite) recursion
             return;
         //    var model = appModel.modelFor(v);
-        (models[v] = this.modelToSchema(model.schemaFor(), deps)).id = v;
+        (models[v] = this.modelToSchema(model, deps)).id = v;
 
     }, this);
     var sw = swagger.addModels({models:models});
@@ -155,23 +163,18 @@ function specify(appModel, app) {
                 case 'get':
                     sw.addGet(spec);
                     break;
-                    ;
                 case 'post':
                     sw.addPost(spec);
                     break;
-                    ;
                 case 'put':
                     sw.addPut(spec);
                     break;
-                    ;
                 case 'delete':
                     sw.addDelete(spec);
                     break;
-                    ;
                 case 'del':
                     sw.addDelete(spec);
                     break;
-                    ;
 
             }
         })
@@ -180,19 +183,26 @@ function specify(appModel, app) {
 
     return sw;
 }
-module.exports = {
-    modelToSchema:function (model, depends, pluginManager) {
+var Swag = module.exports = {
+    modelToSchema:function (m, depends, pluginManager) {
         depends = depends || [];
-        if (_u.isString(model))
-            model = pluginManager.schemaFor(model);
+
+        if (_u.isString(m))
+            m = pluginManager.modelFor(m);
+        var model = m.schemaFor();
         var jsonSchema = {
             "id":"http://some.site.somewhere/entry-schema#",
             "$schema":"http://json-schema.org/draft-04/schema#",
             type:"object",
             required:[],
-            properties:{}
+            properties:{
+                _id:{
+                    type:'string',
+                    description:'Identifier for "'+ m.modelName+'"'
+                }
+            }
         };
-        var description = model.title;
+        var description = m.description || m.help || m.title;
         var depth = jsonSchema;
         var i = 0;
 
@@ -215,7 +225,7 @@ module.exports = {
                 depends.push(v.ref);
             }
             if (v.multiple) {
-                subJson.type = 'array';
+                subJson.type = 'List';
                 if (v.ref)
                     subJson.items = {
                         "$ref":v.ref
@@ -226,16 +236,19 @@ module.exports = {
                 subJson.items = {
                     type:subJson.type
                 }
-                subJson.type = 'array';
+                subJson.type = 'List';
             }
             _u.each(v.validators, function (vv, kk) {
                 if (vv.type == 'required') {
                     //subJson.required = true;
                     if (path.length == 1) {
-                        jsonSchema.required.push(k);
+                        if (!~jsonSchema.required.indexOf(k))
+                            jsonSchema.required.push(k);
                     } else {
                         var pt = util.depth(jsonSchema, fix(path.slice(0, path.length - 1), 'properties'), {});
-                        (pt.required || (pt.required = [])).push(k);
+                        var arr =  pt.required || (pt.required = []);
+                        if (!~arr.indexOf(k))
+                               arr.push(k);
                     }
                 }
                 else if (vv.type == 'enum') {
@@ -257,30 +270,32 @@ module.exports = {
         return jsonSchema;
     },
     put:function (v, k) {
+        var K = inflection.capitalize(k);
         return {
             action:this.action,
             spec:{
                 "path":"/" + k,
-                "notes":"updates a " + v.title + " in the store",
+                "notes":"updates a " + K + " in the store",
                 "method":"PUT",
                 "summary":"Update an existing " + v.title.toLowerCase(),
                 "params":[param.post(v.title + " object that needs to be added to the store", k)],
                 "errorResponses":[swe.invalid('id'), swe.notFound(k), swe.invalid('input')],
-                "nickname":"update" + k
+                "nickname":"update" +K
             }}
     },
     post:function (v, k) {
+        var K = inflection.capitalize(k);
         return {
             action:this.action,
 
             spec:{
                 "path":"/" + k,
-                "notes":"adds a " + v.title + " to the store",
-                "summary":"Add a new " + v.title + " to the store",
+                "notes":"adds a " + K + " to the store",
+                "summary":"Add a new " +K + " to the store",
                 "method":"POST",
                 "params":[param.post(v.title + " object that needs to be added to the store", k)],
                 "errorResponses":[swe.invalid('input')],
-                "nickname":"add" + k
+                "nickname":"add" + K
             }}
     },
     action:function (req, res, next) {
@@ -291,9 +306,10 @@ module.exports = {
     },
     params:function (v) {
         var p = [
-            param.q('skip', 'number of records to skip', 'integer', false, false, 0),
-            param.q('limit', 'limit the number of records', 'integer', false, false, 10)
+            param.q('skip', 'number of records to skip', 'int', false, false, 0),
+            param.q('limit', 'limit the number of records', 'int', false, false, 10)
         ]
+        var filters = [], sort = [], populate = [];
         _u.each(v.schema, function (vv) {
 
             var k = vv.path;
@@ -301,13 +317,17 @@ module.exports = {
                 return;
             var type = vv.schemaType;
             if (type == 'Date' || type == 'Number' || type == 'String') {
-                p.push(param.q('filter[' + k + ']', 'filter text fields on ' + k, type == 'Number' ? 'float' : type.toLowerCase(), false, true));
-                p.push(param.q('sort[' + k + ']', 'sort on ' + k + ' direction ascending 1, descending -1', 'integer', false, true, [1, -1]));
+                filters.push(param.q('filter[' + k + ']', 'filter text fields on ' + k, 'string', false, true));
+                sort.push(param.q('sort[' + k + ']', 'sort on ' + k + ' direction ascending 1, descending -1', 'int', false, true, [1, -1]));
+            }else{
+                populate.push(k)
             }
 
         })
-
-        return p;
+        if (populate.length){
+            p = p.concat(param.q('populate', 'populate field', 'string', false,true, populate))
+        }
+        return  p.concat(filters, sort);
     },
     all:function (v, k) {
         return  {
@@ -321,11 +341,13 @@ module.exports = {
                 "params":this.params(v),
                 "responseClass":"List[" + k + "]",
                 "errorResponses":[],
-                "nickname":"findAll" + k
+                "nickname":"findAll" + inflection.capitalize(inflection.camelTo(v.plural))
             }
         }
     },
     one:function (v, k) {
+
+        var K = inflection.capitalize(k);
         return  {
             action:this.action,
             spec:{
@@ -335,10 +357,11 @@ module.exports = {
                 "summary":"Return an existing " + v.title,
                 "params":[param.path("id", "ID of " + v.modelName, "string")],
                 "errorResponses":[swe.invalid('id'), swe.notFound(v)],
-                "nickname":"get" + k + "byId"
+                "nickname":"get" + K + "ById"
             }}
     },
     del:function (v, k) {
+        var K = inflection.capitalize(k);
         return {
             action:this.action,
             spec:{
@@ -348,7 +371,7 @@ module.exports = {
                 "summary":"Remove an existing " + v.modelName,
                 "params":[param.path("id", "ID of " + v.modelName + " that needs to be removed", "string")],
                 "errorResponses":[swe.invalid('id'), swe.notFound(v.modelName)],
-                "nickname":"delete" + v.modelName
+                "nickname":"delete" + K
             }};
     },
     Spec:Spec,

@@ -24,7 +24,7 @@ GroupSchema.statics.search = function(q, search){
 GroupSchema.statics.search.display = {
                            data:{search:''},
                            schema:{
-                               search:{type:'Text', title:'Search'}
+                               search:{type:'Text', title:'Search', help:'Search for groups'}
                            },
                            method:'GET',
                            fieldsets:[{"legend":"Search Group","fields":["search"]}]

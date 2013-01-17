@@ -1,6 +1,6 @@
 define({{html includes(['Backbone', 'underscore'])}}, function (B, _) {
 
-    var editors = {{html JSON.stringify(pluginManager.editors)}} || [];
+    var editors = {{json pluginManager.editors}}|| [];
 
 var schema = {};
 _.each(editors, function(v,k){

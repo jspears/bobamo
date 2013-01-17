@@ -14,7 +14,7 @@ define([
         models:{
             type:'MultiEditor',
             help:'Which Models to allow users to view',
-            options:eval('({{html JSON.stringify(Object.keys(appModel.modelPaths))}})')
+            options:{{json Object.keys(appModel.modelPaths)}}
         },
         plugins:{
             type:'List',
@@ -61,8 +61,9 @@ define([
                 title:'${appModel.title}',
                 description:'${appModel.description}',
                 version:'${appModel.version}',
-                models:eval('({{html JSON.stringify(Object.keys(appModel.modelPaths))}})'),
-                plugins:eval('({{html JSON.stringify(pluginManager.pluginNames())}})')
+                build:'${appModel.build}',
+                models:{{json Object.keys(appModel.modelPaths) }},
+                plugins:{{json pluginManager.pluginNames()}}
             });
         }
     });

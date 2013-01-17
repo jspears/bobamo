@@ -2,9 +2,9 @@
  * Module dependencies.
  */
 
-require('bobamo/examples/model/User');
+//require('bobamo/examples/model/User');
 require('bobamo/examples/model/Group');
-require('bobamo/examples/model/Employee');
+//require('bobamo/examples/model/Employee');
 
 var bobamo    = require('bobamo'), mongoose= bobamo.mongoose;
 

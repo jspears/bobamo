@@ -15,8 +15,8 @@ define(
     ])}}
     , function (_,B, Form,Modal,View, collection, tableTemplate, tableItemTemplate) {
     "use strict";
-     var finder = {{html JSON.stringify(finder)}}
-     var qform = {{html JSON.stringify(model) || 'null' }};
+     var finder = {{json finder}}
+     var qform = {{json model }};
  //    var qform = _.extend({schema:_qform.paths}, _.omit(_qform, 'paths'));
     var Model = B.Model.extend(qform);
     var FinderModel = new Model;

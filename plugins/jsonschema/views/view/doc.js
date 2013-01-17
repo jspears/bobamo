@@ -11,12 +11,24 @@ define(['Backbone', 'jsonschema/js/SwaggerUi', 'underscore', 'jquery',
 
 
 ], function (B, sui, _, $, hljs, template) {
-
+    var exportRe =  /(.*\s)?export-([^\s]*)/i;
     var DocView = B.View.extend({
         el:'#content',
         template:_.template(template),
         events:{
-            'click a':'onLink'
+            'click a':'onLink',
+            'click .exports button':'onExport'
+        },
+        onExport:function(e){
+            e.preventDefault();
+            var $e = $(e.target);
+            if (!$e.hasClass('btn')) $e = $e.parent();
+            var re = exportRe.exec($e.attr('class'));
+            if (re && re.length){
+                var type = re[2];
+                console.log('downloading ', type);
+                this.$el.find('.downloadFrame').attr('src', "${pluginUrl}/export/"+type);
+            }
         },
         onLink:function (e) {
             if (!$(e.target).hasClass('go'))
