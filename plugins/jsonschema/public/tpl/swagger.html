@@ -1,19 +1,26 @@
 <div>
-    <h4 class="pull-left title">API Documentation</h4>
+    <h4 class="pull-left title">API Documentation&nbsp;</h4>
+    <button class="printBtn btn btn-mini"><i class="icon-print"/></button>
     <iframe class="downloadFrame" style="display:none"></iframe>
     <div class="pull-right">
-        <div class="btn-group exports">
-            <button class="btn export-PDF"><i class="icon-pdf"></i>PDF</button>
-            <button class="btn export-HTML"><i class="icon-html"></i>HTML</button>
-            <button class='btn export-Flash'><i class='icon-flash'/>flash</button>
-            <button class='btn export-Java'><i class='icon-java'/>java</button>
-            <button class='btn export-Objc'><i class='icon-objc'/>objc</button>
-            <button class='btn export-PHP'><i class='icon-php'/>php</button>
-            <button class='btn export-Python'><i class='icon-python'/>python</button>
-            <button class='btn export-Python3'><i class='icon-python3'/>python3</button>
-            <button class='btn export-Ruby'><i class='icon-ruby'/>ruby</button>
-            <button class='btn export-Scala'><i class='icon-scala'/>scala</button>
-        </div>
+        <form class="exportForm form-horizontal">
+            <select name="export">
+                <optgroup label="export" selected>
+                    <option value="">Export To:</option>
+                </optgroup>
+                <optgroup label="language">
+                    <option value=Java>Java</option>
+                    <option value=Objc>Objc</option>
+                    <option value=PHP>PHP</option>
+                    <option value=Python3>Python3</option>
+                    <option value=Python>Python</option>
+                    <option value=Ruby>Ruby</option>
+                    <option value=Scala>Scala</option>
+                </optgroup>
+            </select>
+        </form>
+        <div class="exportStatus"></div>
+
     </div>
 </div>
 

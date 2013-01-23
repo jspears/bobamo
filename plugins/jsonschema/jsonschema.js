@@ -89,6 +89,13 @@ JsonSchemaPlugin.prototype.admin = function () {
 }
 
 JsonSchemaPlugin.prototype.filters = function () {
+    /**ugly hack to get the print screen to load **/
+    this.app.get(this.pluginUrl+'/js/main.js*', function(req,res,next){
+        req.query.app = this.pluginUrl+'/js/print.js';
+        req.url = this.baseUrl+'js/main.js';
+        next();
+    }.bind(this));
+
     this.app.get(this.pluginUrl + "/export/:type", function (req, res, next) {
         var type = req.params.type || 'Java';
         //make it safe since we use it to generate files and is potential a security hole.
@@ -105,17 +112,14 @@ JsonSchemaPlugin.prototype.filters = function () {
             res.setHeader("Content-Transfer-Encoding", "binary");
             res.setHeader("Content-Disposition", 'attachment; filename="' + base + '"');//fileName);
             res.setHeader("Content-Length", stat.size);
+            res.cookie('download', type)
             require('util').pump(fs.createReadStream(filename), res);
             console.log('sent '+base+' '+stat.size);
         }.bind(this))
     }.bind(this));
     // var docs_handler = express.static(__dirname + '/../../../swagger-ui/dist/');
     var re = new RegExp(this.pluginUrl + '/docs(\/.*)?$');
-    var resourceRe = new RegExp(this.pluginUrl + '/swagger(/resources\.json|/)?$')
-    this.app.get(resourceRe, function (req, res, next) {
-        req.url = this.pluginUrl + '/swagger/api-docs';
-        next();
-    }.bind(this));
+
     this.app.get(re, function (req, res, next) {
         if (req.url === this.pluginUrl + '/docs') { // express static barfs on root url w/o trailing slash
             res.writeHead(302, { 'Location':req.url + '/' });
@@ -126,28 +130,6 @@ JsonSchemaPlugin.prototype.filters = function () {
         req.url = this.baseUrl + 'js/' + this.name + '/swagger-ui' + req.params;
         next(req, res, next);
     }.bind(this));
-    var app = this.app;
-    var swagUrl = this.pluginUrl + '/swagger';
-    var doMethod = function (type) {
-        return function (path, cb) {
-            var args = _.toArray(arguments);
-            path = [swagUrl, path].join('');
-            app[type].apply(app, [path, function (req, res, next) {
-                req.url = req.url.substring(swagUrl.length);
-                cb.call(this, req, res, next)
-            }]);
-        }
-    }
-    var swagApp = {
-        get:doMethod('get'),
-        put:doMethod('put'),
-        post:doMethod('post'),
-        delete:doMethod('del'),
-        del:doMethod('del')
-    };
-    var setup = this.setup = swagger.swagger(this.pluginManager.appModel, swagApp);
-    this.setup.configure("http://localhost:3001" + swagUrl, this.pluginManager.appModel.version);
-    console.log('using swagger at "http://localhost:3001' + swagUrl + '"');
 
     this.app.get(this.baseUrl + 'images/throbber.gif', function (req, res, next) {
         req.url = this.pluginUrl + '/js/swagger-ui/images/throbber.gif'
@@ -155,24 +137,91 @@ JsonSchemaPlugin.prototype.filters = function () {
     }.bind(this));
     PluginApi.prototype.filters.call(this);
 }
+JsonSchemaPlugin.prototype.swaggerUrl = function(){
+    var url = this.conf.url.replace(/(\/)?$/, '');
+    var swagUrl = url + (this.pluginUrl + '/api');
+    console.log('using swagger at "'+swagUrl+'"');
+    return swagUrl;
+}
 JsonSchemaPlugin.prototype.configure = function (conf) {
     _u.extend(this.conf, conf);
-    var url = this.conf.url.replace(/(\/)?$/, '');
-
-    var swagUrl = url + (this.pluginUrl + '/swagger');
-    this.setup.configure(swagUrl, this.pluginManager.appModel.version);
-
-    console.log('using swagger at "' + swagUrl + '"');
-
+    this.swaggerUrl();
 }
 
 JsonSchemaPlugin.prototype.routes = function () {
+    var swagUrl = this.swaggerUrl();
 
-    this.app.get(this.pluginUrl + '/doc/:type', function (req, res, next) {
-        var type = req.params.type;
-        var jsonSchema = this.modelToSchema(type);
-        this.generate(res, 'view/model.html', {jsonSchema:jsonSchema, model:this.pluginManager.modelPaths[type]});
+    var resource = function(req,res, next){
+        var doc = {
+            apiVersion: this.pluginManager.appModel.version,
+            swaggerVersion: "1.1",
+            basePath:swagUrl ,
+            apis:[]
+        }
+        if (!req.params.type){
+            doc.apis = _u.map(this.pluginManager.appModel.modelPaths, function(v,k){
+                return {
+                    path: "/api-docs/"+k,
+                    description:v.description || v.help || ''
+                }
+            });
+        }else{
+            var modelName = req.params.type;
+            var model = this.pluginManager.appModel.modelPaths[modelName];
+            if (!model){
+                return res.err('Could not locate model')
+            }
+            var ops = {};
+            _u.each(_u.flatten([
+                swagger.all(model, modelName),
+                swagger.one(model, modelName),
+                swagger.post(model, modelName),
+                swagger.put(model, modelName),
+                swagger.del(model, modelName),
+                swagger.finders(model,modelName)
+
+            ]), function(ret){
+                _u.extend( {
+                    httpMethod:'GET'
+                }, ret)
+                var path = '/'+modelName+(ret.path ? '/'+ret.path : '')
+                _u.each(ret.parameters, function(v){
+                    if (v.paramType == 'path'){
+                       path+='/{'+ v.name+'}'
+                    }
+                });
+
+                (ops[path] || (ops[path] = [])).push(ret);
+
+            });
+            doc.apis =  _u.map(ops, function(v,k){
+                return {
+                    path:k,
+                    operations:v,
+                    description:'Operations about '+modelName
+                };
+            });
+
+            doc.models = {};
+            doc.resourcePath = '/'+modelName;
+            doc.models[modelName] = this.modelToSchema(model);
+            doc.models[modelName].id = modelName;
+        }
+        res.send(doc);
+    }.bind(this);
+    this.app.get(this.pluginUrl+'/api/resources.:format', resource);
+    this.app.get(this.pluginUrl+'/api-docs.:format?/:type?', resource);
+    this.app.get(this.pluginUrl+'/api/api-docs.:format?/:type?', resource);
+    this.app.all(this.pluginUrl+'/api/*', function(req,res,next){
+       req.url = req.url.replace(this.pluginUrl+'/api', this.baseUrl+'rest');
+        console.log('rest', req.url);
+       next();
     }.bind(this));
+//    this.app.get(this.pluginUrl + '/doc/:type', function (req, res, next) {
+//        var type = req.params.type;
+//        var jsonSchema = this.modelToSchema(type);
+//        this.generate(res, 'view/model.html', {jsonSchema:jsonSchema, model:this.pluginManager.modelPaths[type]});
+//    }.bind(this));
     PluginApi.prototype.routes.apply(this, arguments);
 }
 ;

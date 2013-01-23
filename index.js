@@ -1,3 +1,4 @@
+module.exports.bus = require('./lib/bus')
 module.exports.express = require('./lib/bobamo-express.js');
 module.exports.expressApi = require('express');
 module.exports.PluginApi = require('./lib/plugin-api.js');

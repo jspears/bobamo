@@ -156,7 +156,7 @@ define(['underscore'], function (_) {
         name:'RegExp',
         message:'Not a valid value',
         schema:{
-            regexp:{type:'String'}
+            regexp:{type:'Text'}
         },
         validator:function(options){
             check(options, 'regexp');

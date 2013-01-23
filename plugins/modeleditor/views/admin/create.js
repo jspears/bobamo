@@ -117,6 +117,11 @@ define([
                 filter:/^[a-zA-Z_]([a-zA-Z0-9,_,-,$])*$/,
                 validators:['required']
             },
+            description:{
+                title:'Description',
+                help:'A description of the model for documentation',
+                type:'TextArea'
+            },
 
             display:{
                 type:'NestedModel',
@@ -236,7 +241,7 @@ define([
             'click .previewSchema':'onPreviewSchema'
         }, EditView.prototype.events),
         fieldsets:[
-            {legend:'Model Info', fields:['modelName']},
+            {legend:'Model Info', fields:['modelName', 'description']},
             {legend:'Properties', fields:['schema']},
             {legend:'Display', fields:['display']},
             {legend:'Views', fields:['fieldsets', 'list_fields']}

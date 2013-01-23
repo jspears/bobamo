@@ -1,0 +1,25 @@
+<!html>
+<html>
+<head>
+    <title>API Documentation for ${appModel.title}</title>
+    <link href="${baseUrl}less/${query.checksum || lessFactory && lessFactory.checksum || ''}" rel="stylesheet">
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="${baseUrl}/favicon.ico">
+    <style>
+        input,select, textarea  {
+            border: none !important;
+            background-color: transparent !important;
+            -webkit-box-shadow: none !important;
+            -webkit-appearance: none !important;
+        }
+
+    </style>
+
+</head>
+<body>
+<h2>Documentation for ${appModel.title}</h2>
+<div id="content"></div>
+
+<script data-main="js/main" src="${baseUrl}js/libs/require/require-jquery.js"></script>
+</body>
+</html>

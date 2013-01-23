@@ -134,7 +134,7 @@ function fix(arr, str) {
 }
 
 function specify(appModel, app) {
-    swagger.configureSwaggerPaths("", "/api-docs", "");
+    swagger.configureSwaggerPaths('', "/api-docs", "");
     swagger.setAppHandler(app);
     var models = {}, deps = [];
     _u.each(appModel.modelPaths, function (model, v) {
@@ -272,37 +272,34 @@ var Swag = module.exports = {
     put:function (v, k) {
         var K = inflection.capitalize(k);
         return {
-            action:this.action,
-            spec:{
-                "path":"/" + k,
+//                "path":"/" + k,
                 "notes":"updates a " + K + " in the store",
-                "method":"PUT",
+                "httpMethod":"PUT",
                 "summary":"Update an existing " + v.title.toLowerCase(),
-                "params":[param.post(v.title + " object that needs to be added to the store", k)],
+                "parameters":[param.post(v.title + " object that needs to be added to the store", k)],
                 "errorResponses":[swe.invalid('id'), swe.notFound(k), swe.invalid('input')],
+                "responseClass":'void',
                 "nickname":"update" +K
-            }}
+            }
     },
     post:function (v, k) {
         var K = inflection.capitalize(k);
         return {
-            action:this.action,
-
-            spec:{
-                "path":"/" + k,
                 "notes":"adds a " + K + " to the store",
                 "summary":"Add a new " +K + " to the store",
-                "method":"POST",
-                "params":[param.post(v.title + " object that needs to be added to the store", k)],
+                "httpMethod":"POST",
+                "parameters":[param.post(v.title + " object that needs to be added to the store", k)],
                 "errorResponses":[swe.invalid('input')],
-                "nickname":"add" + K
-            }}
+                "nickname":"add" + K,
+                "dataType":k,
+                responseClass:"void"
+            }
     },
     action:function (req, res, next) {
-        console.log('not doing action')
-        res.send({
-            message:'Just a placeholder'
-        })
+        var newUrl = '/rest'+req.url;
+
+        req.url = newUrl;
+        next();
     },
     params:function (v) {
         var p = [
@@ -329,50 +326,56 @@ var Swag = module.exports = {
         }
         return  p.concat(filters, sort);
     },
+    finders:function(v,k){
+        return _u.map(v.finders, function (vv,kk) {
+            if (!vv.spec)
+                return;
+            var type = vv.spec && vv.spec.method && vv.spec.method.toLowerCase() || 'get';
+            var ret = _u.extend(_u.omit(vv.spec, 'method', 'params'), {path:'finder/'+vv.name, parameters:vv.params, httpMethod:type})
+
+            return ret;
+        })
+
+    },
     all:function (v, k) {
         return  {
-            action:this.action,
-            spec:{
-                "description":"Operations about " + v.plural,
-                "path":"/" + k,
+                "description":"Returning all " + v.plural,
                 "notes":"All values with typical sorting/filtering",
                 "summary":"Find all " + v.plural,
-                "method":"GET",
-                "params":this.params(v),
+                "httpMethod":"GET",
+                "parameters":this.params(v),
                 "responseClass":"List[" + k + "]",
                 "errorResponses":[],
                 "nickname":"findAll" + inflection.capitalize(inflection.camelTo(v.plural))
             }
-        }
+
     },
     one:function (v, k) {
 
         var K = inflection.capitalize(k);
         return  {
-            action:this.action,
-            spec:{
-                "path":"/" + k + "/{id}",
+             //   "path":"/{id}",
                 "notes":"updates a " + v.title + " in the store",
-                "method":"GET",
+                "httpMethod":"GET",
                 "summary":"Return an existing " + v.title,
-                "params":[param.path("id", "ID of " + v.modelName, "string")],
-                "errorResponses":[swe.invalid('id'), swe.notFound(v)],
-                "nickname":"get" + K + "ById"
-            }}
+                "parameters":[param.path("id", "ID of " + v.modelName, "string")],
+                "errorResponses":[swe.invalid('id'), swe.notFound(v.modelName)],
+                "nickname":"get" + K + "ById",
+                "responseClass":'List['+k+']'
+            }
     },
     del:function (v, k) {
         var K = inflection.capitalize(k);
         return {
-            action:this.action,
-            spec:{
-                "path":"/" + k + "/{id}",
+                //"path":"/" + k + "/{id}",
                 "notes":"removes a " + v.modelName + " from the store",
-                "method":"DELETE",
+                "httpMethod":"DELETE",
                 "summary":"Remove an existing " + v.modelName,
-                "params":[param.path("id", "ID of " + v.modelName + " that needs to be removed", "string")],
+                "parameters":[param.path("id", "ID of " + v.modelName + " that needs to be removed", "string")],
                 "errorResponses":[swe.invalid('id'), swe.notFound(v.modelName)],
-                "nickname":"delete" + K
-            }};
+                "nickname":"delete" + K,
+                "responseClass":"void"
+            };
     },
     Spec:Spec,
     swagger:specify

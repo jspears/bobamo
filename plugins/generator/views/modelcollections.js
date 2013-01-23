@@ -7,7 +7,7 @@ define([
     //we define these together because they often link together and if they are in seperate callbacks bad things happen.
 
     var schema = {{json model.schemaFor(model.fieldsets || model.edit_fields)}};
-    var defaults = {{json model.defaults || {}}};
+    var defaults = {{json model.defaults || {} }}
 
     var Model = Backbone.Model.extend({
         urlRoot:'${api}/${urlRoot}',

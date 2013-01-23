@@ -32,13 +32,17 @@ EditPlugin.prototype.appModel = function () {
 EditPlugin.prototype.configure = function (conf) {
     if (conf && conf.modelPaths)
         _u.each(conf.modelPaths, function onModelConfigure(v, k) {
-            if (v.configurable) {
-                var plugin = this.pluginManager.loadedPlugins[v.dbType || 'mongoose'];
-                if (plugin && plugin.updateSchema)
-                    plugin.updateSchema(k, v);
-            }
+
+            // if (v.configurable) {
+                this.pluginManager.forEach(function(plugin, name){
+                    if (plugin && plugin.updateSchema && !v._configured){
+                        console.log('updateSchema by', plugin.name, k);
+                        plugin.updateSchema(k, v);
+                    }
+                });
+            //}
         }, this);
-    new App(conf);
+//    new App(conf);
     return _u.extend(this._appModel, conf);
 }
 EditPlugin.prototype.routes = function () {
@@ -211,7 +215,7 @@ EditPlugin.prototype.routes = function () {
         var editors = [];
         var type = req.params.type;
         var ReName = new RegExp(type);
-        _u.each(this.pluginManager.plugins, function (plugin) {
+        this.pluginManager.forEach( function (plugin) {
             _u.each(plugin.editors(), function (edit, k) {
                 var name = edit.name || k;
                 if (edit.types) {
@@ -352,7 +356,9 @@ EditPlugin.prototype.routes = function () {
             persistPlugin.updateSchema(modelName, model.schema);
         }
         this._appModel.modelPaths[modelName] = model;
-        this.save(this._appModel, function () {
+        this.save({
+            modelPaths:this._appModel.modelPaths
+        }, function () {
             res.send({
                 status:0,
                 payload:{modelName:modelName}

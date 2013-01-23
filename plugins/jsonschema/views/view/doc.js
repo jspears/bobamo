@@ -11,33 +11,61 @@ define(['Backbone', 'jsonschema/js/SwaggerUi', 'underscore', 'jquery',
 
 
 ], function (B, sui, _, $, hljs, template) {
-    var exportRe =  /(.*\s)?export-([^\s]*)/i;
+    function readCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    }
+
     var DocView = B.View.extend({
         el:'#content',
         template:_.template(template),
         events:{
             'click a':'onLink',
-            'click .exports button':'onExport'
+            'change .exportForm select':'onExport',
+            'click .printBtn':'onPrint'
         },
-        onExport:function(e){
+        onPrint:function(){
+            window.open("${pluginUrl}/print.html", "${appModel.title}", "status=0,toolbar=0,height=600,width=800,menubar=0");
+        },
+        onExport:function (e) {
             e.preventDefault();
-            var $e = $(e.target);
-            if (!$e.hasClass('btn')) $e = $e.parent();
-            var re = exportRe.exec($e.attr('class'));
-            if (re && re.length){
-                var type = re[2];
-                console.log('downloading ', type);
-                this.$el.find('.downloadFrame').attr('src', "${pluginUrl}/export/"+type);
+            var type = $(e.target).val();
+
+            if (type) {
+                $(e.target).attr('disabled', 'true');
+                var $status = this.$el.find('.exportStatus');
+                var finishDownload = function(){
+                    $status.html('finished generating client').hide(10000);
+                    $(e.target).removeAttr('disabled');
+                    clearInterval(fileDownloadCheckTimer);
+                }
+                var fileDownloadCheckTimer = window.setInterval(function () {
+                    if (readCookie('download') == type)
+                        finishDownload();
+                }, 100);
+                $status.html('generating "'+type+'" client...').addClass('label label-success').show();
+                this.$el.find('.downloadFrame').attr('src', "${pluginUrl}/export/" + type);
+
             }
+
         },
         onLink:function (e) {
             if (!$(e.target).hasClass('go'))
                 e.preventDefault();
         },
+        discoveryUrl:"${pluginUrl}/api-docs/",
         onInit:function () {
             var $el = this.$el;
+            var self = this;
+            console.log('discoveryUrl', this.discoveryUrl);
             this.swaggerUi = new SwaggerUi({
-                discoveryUrl:"http://localhost:3001${pluginUrl}/swagger/api-docs",
+                discoveryUrl:this.discoveryUrl,
                 // apiKey:"special-key",
                 dom_id:"swagger-ui-container",
                 supportHeaderParams:false,
@@ -52,6 +80,7 @@ define(['Backbone', 'jsonschema/js/SwaggerUi', 'underscore', 'jquery',
                     $('pre code', this.$el).each(function (i, e) {
                         hljs.highlightBlock(e)
                     });
+                    self.trigger('doc-swagger-complete', this);
                 },
                 onFailure:function (data) {
                     if (console) {
@@ -59,7 +88,7 @@ define(['Backbone', 'jsonschema/js/SwaggerUi', 'underscore', 'jquery',
                         console.log(data);
                     }
                 },
-                docExpansion:"none"
+                docExpansion:"full"
             });
 
             this.swaggerUi.load();
@@ -77,10 +106,16 @@ define(['Backbone', 'jsonschema/js/SwaggerUi', 'underscore', 'jquery',
 
             }
         },
-        render:function () {
+        render:function (opts) {
             this._load = 0;
             this.$el.html(this.template());
             this.$el.find('ul').addClass('unstyled');
+            if (opts.mode == "print"){
+                this.docExpansion = "full";
+                this.mode = "print"
+            }else{
+                this.docExpansion = "none"
+            }
             this.tryLoad();
             return this;
         }
