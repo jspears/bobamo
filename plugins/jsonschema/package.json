@@ -4,7 +4,8 @@
     , "version": "0.6.0"
     , "private": false
     , "dependencies":{
-    "swagger-node-express":"latest"
+    "swagger-node-express":"latest",
+    "swagger-to-markdown":"latest"
 }
 
 }

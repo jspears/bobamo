@@ -29,5 +29,23 @@ GroupSchema.statics.search.display = {
                            method:'GET',
                            fieldsets:[{"legend":"Search Group","fields":["search"]}]
 }                       ;
+var summary = GroupSchema.statics.summary = function(q){
+  //todo implement query that counts users in groups
+    return this.find(q);
+
+}
+summary.display = {
+    schema:{
+        search:{type:'Text', title:'Summary', help:'Summary of groups'}
+    },
+    responseModel:{
+        modelName:'GroupSummary',
+        schema:{
+            user_count:{ type:'Number'},
+            group:{type:'Text'}
+        }
+    }
+
+}
 var Group = mongoose.model('group', GroupSchema);
 module.exports = Group;

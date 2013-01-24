@@ -7,7 +7,36 @@ var util = require('../../lib/util');
 var param = require("swagger-node-express/Common/node/paramTypes");
 var url = require("url");
 var swe = swagger.errors;
+var Model = bobamo.DisplayModel;
 "use strict";
+//byte boolean int long float double string Date void'
+function fromType(type) {
+    for (var i = 0, l = arguments.length; i < l; i++) {
+        var t = arguments[i];
+        if (!t)
+            continue;
+        t = t.toLowerCase();
+
+        if (t == 'string' || t == 'boolean' || t == 'int' || t == 'double' || t == 'Date' || t == 'void')
+            return t;
+
+        if (t == 'number')
+            return 'float'
+
+        if (t == 'Text' || t == 'TextArea')
+            return 'string'
+
+        if (t == 'DateTime')
+            return 'date'
+        if (t == 'Number')
+            return 'float';
+        if (t == 'integer')
+            return 'int';
+
+        if (t == 'object' || t == 'objectId')
+            return 'object'
+    }
+}
 
 Finder.prototype.__defineGetter__('spec', function () {
 
@@ -25,8 +54,20 @@ Finder.prototype.__defineGetter__('spec', function () {
 //    "errorResponses":[swe.invalid('id'), swe.notFound('pet')],
 //    "nickname":"getPetById"
 //};
-
+//args == specs;
 var Spec = function (args, finder, path) {
+    var display = finder.display || {};
+    var _responseModel;
+    this.responseModel = function () {
+        if (_responseModel)
+            return _responseModel;
+
+        if (!display.responseModel)
+            return (_responseModel = finder.parent());
+        var modelName = display.responseModel.modelName || inflection.className(this.parent().modelName, finder.name);
+        _responseModel = new Model(modelName, [display.responseModel])
+        return  _responseModel;
+    }
     this.__defineGetter__('errorResponses', function () {
         var errorResponses = util.find(errorResponses, args);
         if (errorResponses && errorResponses.length) {
@@ -38,26 +79,34 @@ var Spec = function (args, finder, path) {
     this.__defineGetter__('params', function () {
         var method = this.method || 'GET';
         var parameters = [];
-        var v = finder;
-        if (v.display && v.display.hidden)
+        if (display.hidden)
             return;
-        if (v.display && v.display.schema) {
+        var defP = util.find('params', args) || util.find('parameters', args)
+        if (defP) {
+            return defP;
+        }
+        parameters = parameters.concat(Swag.params(finder.display, finder.modelName));
+        if (method == 'GET') {
+            var parent = this.responseModel();
+//            if (parent && finder.spec.responseClass.replace(/List\[([^\]]*)\]/, "$1") == parent.modelName){
+            parameters = parameters.concat(Swag.params(parent, parent.modelName));
+//            }
+//            var schema = finder && finder.display && finder.display.schema;
+        }
+
+
+        if (display.schema) {
             var paramType = method == 'GET' ? 'query' : 'body';
-            if (finder.model){
-                _u.each(finder.model.schemaFor(), function (vv, kk) {
-                    var required = _.first(_.where(v.validators, {type:'required'})) || false;
-                    parameters.push({
-                        allowMultiple:false,
-                        dataType:(!vv.type || vv.type == 'Text') ? "string" : vv.type && vv.type.toLowerCase(),
-                        description:vv.help || vv.description,
-                        name:kk,
-                        paramType:paramType,
-                        required:required})
-                });
-                if (method == 'GET'){
-                    parameters = parameters.concat(Swag.params(finder.model.modelName))
-                }
-            }
+            _u.each(display.schema, function (vv, kk) {
+                var required = _.first(_.where(vv.validators, {type:'required'})) || false;
+                parameters.push({
+                    allowMultiple:false,
+                    dataType:fromType(vv.schemaType || vv.type) || 'string',
+                    description:vv.help || vv.description,
+                    name:kk,
+                    paramType:paramType,
+                    required:required});
+            });
 
         }
         return parameters;
@@ -75,7 +124,7 @@ var Spec = function (args, finder, path) {
         var path = util.find('path', args);
         if (path)
             return path;
-        return '/' + finder.model.modelName + '/' + util.find('name', [finder]);
+        return 'finder/' + util.find('name', [finder]);
     });
     this.__defineGetter__('notes', function () {
         return util.find('notes', args) || util.find('title', [finder])
@@ -84,7 +133,12 @@ var Spec = function (args, finder, path) {
 //    ['summary', 'method'].forEach(util.easyget(args), this);
 
     this.__defineGetter__('responseClass', function () {
-        return util.find('responseClass', args) || "List[" + finder.model.modelName + "]";
+        var rc = util.find('responseClass', [ display].concat(args));
+        if (rc) {
+            return rc;
+        }
+        rc = this.responseModel().modelName;
+        return display.single ? rc : "List[" + rc + "]";
     });
 
     this.__defineGetter__('nickname', function () {
@@ -133,75 +187,30 @@ function fix(arr, str) {
 
 }
 
-function specify(appModel, app) {
-    swagger.configureSwaggerPaths('', "/api-docs", "");
-    swagger.setAppHandler(app);
-    var models = {}, deps = [];
-    _u.each(appModel.modelPaths, function (model, v) {
-        if (models[v]) //prevent (infinite) recursion
-            return;
-        //    var model = appModel.modelFor(v);
-        (models[v] = this.modelToSchema(model, deps)).id = v;
 
-    }, this);
-    var sw = swagger.addModels({models:models});
-    _u.each(appModel.modelPaths, function (v, k) {
-        sw.addGet(this.all(v, k))
-            .addGet(this.one(v, k))
-            .addPost(this.post(v, k))
-            .addPut(this.put(v, k))
-            .addDelete(this.del(v, k))
-        ;
-
-        var action = this.action;
-        _u.each(v.finders, function (vv) {
-            if (!vv.spec)
-                return;
-            var type = vv.spec && vv.spec.method && vv.spec.method.toLowerCase() || 'get';
-            var spec = { spec:vv.spec, action:action}
-            switch (type) {
-                case 'get':
-                    sw.addGet(spec);
-                    break;
-                case 'post':
-                    sw.addPost(spec);
-                    break;
-                case 'put':
-                    sw.addPut(spec);
-                    break;
-                case 'delete':
-                    sw.addDelete(spec);
-                    break;
-                case 'del':
-                    sw.addDelete(spec);
-                    break;
-
-            }
-        })
-
-    }, this);
-
-    return sw;
-}
 var Swag = module.exports = {
     modelToSchema:function (m, depends, pluginManager) {
+        var noId = !(pluginManager.appModel.modelPaths[m.modelName || m]);
         depends = depends || [];
 
         if (_u.isString(m))
             m = pluginManager.modelFor(m);
         var model = m.schemaFor();
         var jsonSchema = {
-            "id":"http://some.site.somewhere/entry-schema#",
+        //    "id":"http://some.site.somewhere/entry-schema#",
             "$schema":"http://json-schema.org/draft-04/schema#",
             type:"object",
             required:[],
-            properties:{
-                _id:{
-                    type:'string',
-                    description:'Identifier for "'+ m.modelName+'"'
-                }
-            }
-        };
+            properties:(function(){
+                return noId ? {} : {
+                        _id:{
+                            type:'string',
+                            description:'Identifier for "' + m.modelName + '"'
+                        }
+                    }
+                })()
+            };
+
         var description = m.description || m.help || m.title;
         var depth = jsonSchema;
         var i = 0;
@@ -211,14 +220,13 @@ var Swag = module.exports = {
             var subJson = {};
             //    u.depth(jsonSchema, fix(path,'properties', subJson, true));
             //(depth.properties || (depth.properties = {}))[k] = {};
-            subJson.type = v.schemaType && v.schemaType.toLowerCase()
+            subJson.type = fromType(v.schemaType, v.type);
             subJson.description = v.description || v.help || v.title;
             if (subJson.type == 'object') {
                 subJson.properties = {};
                 depth = subJson.properties;
             }
             if (v.schemaType == 'ObjectId') {
-                subJson.type = 'object'
                 subJson.oneOf = [
                     {$ref:this.pluginUrl + '/' + v.ref}
                 ];
@@ -246,9 +254,9 @@ var Swag = module.exports = {
                             jsonSchema.required.push(k);
                     } else {
                         var pt = util.depth(jsonSchema, fix(path.slice(0, path.length - 1), 'properties'), {});
-                        var arr =  pt.required || (pt.required = []);
+                        var arr = pt.required || (pt.required = []);
                         if (!~arr.indexOf(k))
-                               arr.push(k);
+                            arr.push(k);
                     }
                 }
                 else if (vv.type == 'enum') {
@@ -273,30 +281,30 @@ var Swag = module.exports = {
         var K = inflection.capitalize(k);
         return {
 //                "path":"/" + k,
-                "notes":"updates a " + K + " in the store",
-                "httpMethod":"PUT",
-                "summary":"Update an existing " + v.title.toLowerCase(),
-                "parameters":[param.post(v.title + " object that needs to be added to the store", k)],
-                "errorResponses":[swe.invalid('id'), swe.notFound(k), swe.invalid('input')],
-                "responseClass":'void',
-                "nickname":"update" +K
-            }
+            "notes":"updates a " + K + " in the store",
+            "httpMethod":"PUT",
+            "summary":"Update an existing " + v.title.toLowerCase(),
+            "parameters":[param.post(v.title + " object that needs to be added to the store", k)],
+            "errorResponses":[swe.invalid('id'), swe.notFound(k), swe.invalid('input')],
+            "responseClass":'void',
+            "nickname":"update" + K
+        }
     },
     post:function (v, k) {
         var K = inflection.capitalize(k);
         return {
-                "notes":"adds a " + K + " to the store",
-                "summary":"Add a new " +K + " to the store",
-                "httpMethod":"POST",
-                "parameters":[param.post(v.title + " object that needs to be added to the store", k)],
-                "errorResponses":[swe.invalid('input')],
-                "nickname":"add" + K,
-                "dataType":k,
-                responseClass:"void"
-            }
+            "notes":"adds a " + K + " to the store",
+            "summary":"Add a new " + K + " to the store",
+            "httpMethod":"POST",
+            "parameters":[param.post(v.title + " object that needs to be added to the store", k)],
+            "errorResponses":[swe.invalid('input')],
+            "nickname":"add" + K,
+            "dataType":k,
+            responseClass:"void"
+        }
     },
     action:function (req, res, next) {
-        var newUrl = '/rest'+req.url;
+        var newUrl = '/rest' + req.url;
 
         req.url = newUrl;
         next();
@@ -316,22 +324,30 @@ var Swag = module.exports = {
             if (type == 'Date' || type == 'Number' || type == 'String') {
                 filters.push(param.q('filter[' + k + ']', 'filter text fields on ' + k, 'string', false, true));
                 sort.push(param.q('sort[' + k + ']', 'sort on ' + k + ' direction ascending 1, descending -1', 'int', false, true, [1, -1]));
-            }else{
+            } else {
                 populate.push(k)
             }
 
         })
-        if (populate.length){
-            p = p.concat(param.q('populate', 'populate field', 'string', false,true, populate))
+        if (populate.length) {
+            p = p.concat(param.q('populate', 'populate field', 'string', false, true, populate))
         }
         return  p.concat(filters, sort);
     },
-    finders:function(v,k){
-        return _u.map(v.finders, function (vv,kk) {
+    finders:function (v, k) {
+        return _u.map(v.finders, function (vv, kk) {
             if (!vv.spec)
                 return;
             var type = vv.spec && vv.spec.method && vv.spec.method.toLowerCase() || 'get';
-            var ret = _u.extend(_u.omit(vv.spec, 'method', 'params'), {path:'finder/'+vv.name, parameters:vv.params, httpMethod:type})
+            var responseClass = vv.spec.responseClass || 'List[' + k + ']'
+            var ret = _u.extend({
+                    path:'finder/' + vv.name,
+                    parameters:vv.spec.params,
+                    httpMethod:type,
+                    responseClass:responseClass,
+                    responseModel:vv.spec.responseModel()
+                },
+                _u.omit(vv.spec, 'method', 'params', 'path', 'responseModel'))
 
             return ret;
         })
@@ -339,44 +355,43 @@ var Swag = module.exports = {
     },
     all:function (v, k) {
         return  {
-                "description":"Returning all " + v.plural,
-                "notes":"All values with typical sorting/filtering",
-                "summary":"Find all " + v.plural,
-                "httpMethod":"GET",
-                "parameters":this.params(v),
-                "responseClass":"List[" + k + "]",
-                "errorResponses":[],
-                "nickname":"findAll" + inflection.capitalize(inflection.camelTo(v.plural))
-            }
+            "description":"Returning all " + v.plural,
+            "notes":"All values with typical sorting/filtering",
+            "summary":"Find all " + v.plural,
+            "httpMethod":"GET",
+            "parameters":this.params(v),
+            "responseClass":"List[" + k + "]",
+            "errorResponses":[],
+            "nickname":"findAll" + inflection.capitalize(inflection.camelTo(v.plural))
+        }
 
     },
     one:function (v, k) {
 
         var K = inflection.capitalize(k);
         return  {
-             //   "path":"/{id}",
-                "notes":"updates a " + v.title + " in the store",
-                "httpMethod":"GET",
-                "summary":"Return an existing " + v.title,
-                "parameters":[param.path("id", "ID of " + v.modelName, "string")],
-                "errorResponses":[swe.invalid('id'), swe.notFound(v.modelName)],
-                "nickname":"get" + K + "ById",
-                "responseClass":'List['+k+']'
-            }
+            //   "path":"/{id}",
+            "notes":"updates a " + v.title + " in the store",
+            "httpMethod":"GET",
+            "summary":"Return an existing " + v.title,
+            "parameters":[param.path("id", "ID of " + v.modelName, "string")],
+            "errorResponses":[swe.invalid('id'), swe.notFound(v.modelName)],
+            "nickname":"get" + K + "ById",
+            "responseClass":'List[' + k + ']'
+        }
     },
     del:function (v, k) {
         var K = inflection.capitalize(k);
         return {
-                //"path":"/" + k + "/{id}",
-                "notes":"removes a " + v.modelName + " from the store",
-                "httpMethod":"DELETE",
-                "summary":"Remove an existing " + v.modelName,
-                "parameters":[param.path("id", "ID of " + v.modelName + " that needs to be removed", "string")],
-                "errorResponses":[swe.invalid('id'), swe.notFound(v.modelName)],
-                "nickname":"delete" + K,
-                "responseClass":"void"
-            };
+            //"path":"/" + k + "/{id}",
+            "notes":"removes a " + v.modelName + " from the store",
+            "httpMethod":"DELETE",
+            "summary":"Remove an existing " + v.modelName,
+            "parameters":[param.path("id", "ID of " + v.modelName + " that needs to be removed", "string")],
+            "errorResponses":[swe.invalid('id'), swe.notFound(v.modelName)],
+            "nickname":"delete" + K,
+            "responseClass":"void"
+        };
     },
-    Spec:Spec,
-    swagger:specify
+    Spec:Spec
 }

@@ -1,9 +1,10 @@
 var bobamo = require('../../index'),
-    swagger = require('./swagger'),
+    swagger = require('./genschema'),
     express = bobamo.expressApi,
     Model = bobamo.DisplayModel,
     path = require('path'),
     fs = require('fs'),
+    SwaggerToMarkdown = require('swagger-to-markdown'),
     generateClient = require('./generate-client'),
     u = require('../../lib/util'), _u = require('underscore'), PluginApi = bobamo.PluginApi, util = require('util');
 
@@ -21,6 +22,11 @@ util.inherits(JsonSchemaPlugin, PluginApi);
 
 
 JsonSchemaPlugin.prototype.modelToSchema = function (model, depends) {
+     model = _u.isString(model) ? this.pluginManager.appModel.modelFor(model) : model;
+    if (!model){
+        console.log('could not model '+model);
+        return {};
+    }
     return    swagger.modelToSchema(model, depends, this.pluginManager);
 
 }
@@ -53,7 +59,7 @@ JsonSchemaPlugin.prototype.admin = function () {
                 },
                 codegen:{
                     type:'Text',
-                    placeholder:this.conf.codgen,
+                    placeholder:this.conf.codegen,
                     title:'swagger-codegen',
                     help:'The path to swagger codegen'
                 },
@@ -79,7 +85,7 @@ JsonSchemaPlugin.prototype.admin = function () {
             },
             url:this.pluginUrl + '/admin/configure',
             fieldsets:[
-                {legend:"JsonSchema Plugin", fields:['url', 'codegen', 'scala']}
+                {legend:"JsonSchema Plugin", fields:['url', 'codegen', 'scala', 'java_opts', 'java']}
             ],
             plural:'JsonSchema',
             title:'JsonSchema Plugin',
@@ -147,68 +153,95 @@ JsonSchemaPlugin.prototype.configure = function (conf) {
     _u.extend(this.conf, conf);
     this.swaggerUrl();
 }
-
-JsonSchemaPlugin.prototype.routes = function () {
+var builtin_types = 'byte boolean int long float double string Date void'.split(' ');
+JsonSchemaPlugin.prototype.resource = function(modelName){
     var swagUrl = this.swaggerUrl();
+    var doc = {
+        apiVersion: this.pluginManager.appModel.version,
+        swaggerVersion: "1.1",
+        basePath:swagUrl ,
+        apis:[]
+    }
+    console.log('swagUrl',swagUrl)
+    if (!modelName){
+        doc.apis = _u.map(this.pluginManager.appModel.modelPaths, function(v,k){
+            return {
+                path: "/api-docs/"+k,
+                description:v.description || v.help || ''
+            }
+        });
+    }else{
+        var model = this.pluginManager.appModel.modelPaths[modelName];
+        if (!model){
+            console.log('modelPaths', this.pluginManager.appModel.modelPaths)
+            return res.send({status:1, message:'Could not locate model '+modelName})
 
-    var resource = function(req,res, next){
-        var doc = {
-            apiVersion: this.pluginManager.appModel.version,
-            swaggerVersion: "1.1",
-            basePath:swagUrl ,
-            apis:[]
         }
-        if (!req.params.type){
-            doc.apis = _u.map(this.pluginManager.appModel.modelPaths, function(v,k){
-                return {
-                    path: "/api-docs/"+k,
-                    description:v.description || v.help || ''
+        var self = this;
+        var ops = {};
+        doc.models = {};
+        _u.each(_u.flatten([
+            swagger.all(model, modelName),
+            swagger.one(model, modelName),
+            swagger.post(model, modelName),
+            swagger.put(model, modelName),
+            swagger.del(model, modelName),
+            swagger.finders(model,modelName)
+
+        ]), function forEachOperation(ret){
+            _u.extend( {
+                httpMethod:'GET'
+            }, ret)
+            var restPath = ['/', modelName, (ret.path ? '/'+ret.path : '')].join('');
+            _u.each(ret.parameters, function(v){
+                if (v.paramType == 'path'){
+                    restPath+='/{'+ v.name+'}'
                 }
             });
-        }else{
-            var modelName = req.params.type;
-            var model = this.pluginManager.appModel.modelPaths[modelName];
-            if (!model){
-                return res.err('Could not locate model')
+            var rName = ret.responseClass.replace(/List\[([^\]]*)\]/, "$1");
+            if (!~builtin_types.indexOf(rName) ){
+//                   rc[rClass] = ret.responseModel;
+                if (!doc.models[rName]){
+                    doc.models[rName] = self.modelToSchema(ret.responseModel|| rName);
+                    doc.models[rName].id = rName;
+                }
             }
-            var ops = {};
-            _u.each(_u.flatten([
-                swagger.all(model, modelName),
-                swagger.one(model, modelName),
-                swagger.post(model, modelName),
-                swagger.put(model, modelName),
-                swagger.del(model, modelName),
-                swagger.finders(model,modelName)
 
-            ]), function(ret){
-                _u.extend( {
-                    httpMethod:'GET'
-                }, ret)
-                var path = '/'+modelName+(ret.path ? '/'+ret.path : '')
-                _u.each(ret.parameters, function(v){
-                    if (v.paramType == 'path'){
-                       path+='/{'+ v.name+'}'
-                    }
-                });
+            (ops[restPath] || (ops[restPath] = [])).push(_u.omit(ret, 'responseModel'));
 
-                (ops[path] || (ops[path] = [])).push(ret);
+        });
 
-            });
-            doc.apis =  _u.map(ops, function(v,k){
-                return {
-                    path:k,
-                    operations:v,
-                    description:'Operations about '+modelName
-                };
-            });
+        doc.apis =  _u.map(ops, function(v,k){
+            return {
+                path:k,
+                operations:v,
+                description:'Operations about '+modelName
+            };
+        });
 
-            doc.models = {};
-            doc.resourcePath = '/'+modelName;
-            doc.models[modelName] = this.modelToSchema(model);
-            doc.models[modelName].id = modelName;
-        }
-        res.send(doc);
+        doc.resourcePath = '/'+modelName;
+    }
+//        res.send(doc);
+    return doc;
+}
+JsonSchemaPlugin.prototype.markdown = function(){
+    return new SwaggerToMarkdown().$enhance({
+        apiname:this.pluginManager.appModel.title,
+        basePath:this.swaggerUrl(),
+        resourcefile:this.resource(),
+        specifications:Object.keys(this.pluginManager.appModel.modelPaths).map(this.resource, this)
+    }).print();
+}
+JsonSchemaPlugin.prototype.routes = function () {
+
+
+    var resource = function(req,res,next){
+        res.send(this.resource(req.params.type));
     }.bind(this);
+    this.app.get(this.pluginUrl+'/markdown', function(req,res,next){
+       res.setHeader('Content-Type', 'application/markdown');
+       res.send(this.markdown());
+    }.bind(this));
     this.app.get(this.pluginUrl+'/api/resources.:format', resource);
     this.app.get(this.pluginUrl+'/api-docs.:format?/:type?', resource);
     this.app.get(this.pluginUrl+'/api/api-docs.:format?/:type?', resource);
