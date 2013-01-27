@@ -32,12 +32,14 @@ EditPlugin.prototype.appModel = function () {
 EditPlugin.prototype.configure = function (conf) {
     if (conf && conf.modelPaths)
         _u.each(conf.modelPaths, function onModelConfigure(v, k) {
-
+                var _configured = false
             // if (v.configurable) {
                 this.pluginManager.forEach(function(plugin, name){
-                    if (plugin && plugin.updateSchema && !v._configured){
+                    if (_configured) return;
+                    if (plugin && plugin.updateSchema ){
+                        _configured = ( plugin.updateSchema(k, v) == true)
+
                         console.log('updateSchema by', plugin.name, k);
-                        plugin.updateSchema(k, v);
                     }
                 });
             //}

@@ -28,8 +28,10 @@ MongoosePlugin.prototype.appModel = function (options) {
                 //This tells us that it was externally configured. If this is the
                 // case all the configuration will come from there. Otherwise it goes
                 // this should be fixed someday.   Not entirely sure how.
-                if (v._configured)
+                if (v._configured){
+                  //  ret[v.modelName] = new MModel(v, self.pluginManager)
                     return; //skip configured to prevent a nasty loop.
+                }
                 ret[v.modelName] = new MModel(v, self.pluginManager);
             }, this);
             return ret;
@@ -118,17 +120,23 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
     }
 
     onPath(schema, nSchema);
-    console.log('schema', nSchema);
     return new this.options.mongoose.Schema(nSchema);
 }
 MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
-    var mschema = this.schemaFor(schema);
-    var model = this.options.mongoose.model(modelName, mschema);
-    model._configured = true;
+    var model;
+   try {
+       model = this.options.mongoose.model(modelName);
+
+   }catch(e){
+
+       var mschema = this.schemaFor(schema);
+       model = this.options.mongoose.model(modelName, mschema);
+   }
+
     console.log('loading schema', modelName);
     if (callback)
         callback(model);
-    return model;
+    return true;
 }
 function onValid(v,k){
     return _u.extend({type:k}, v);

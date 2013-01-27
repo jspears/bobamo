@@ -1,4 +1,4 @@
-var bobamo = require('../../index'), Finder = bobamo.FinderModel,
+var bobamo = require('../../index'),
     _u = require('underscore'),
     inflection = bobamo.inflection
     ;
@@ -10,7 +10,7 @@ var swe = swagger.errors;
 var Model = bobamo.DisplayModel;
 "use strict";
 //byte boolean int long float double string Date void'
-function fromType(type) {
+function fromType(type, obj) {
     for (var i = 0, l = arguments.length; i < l; i++) {
         var t = arguments[i];
         if (!t)
@@ -21,27 +21,28 @@ function fromType(type) {
             return t;
 
         if (t == 'number')
-            return 'float'
+            return 'number'
 
-        if (t == 'Text' || t == 'TextArea')
+        if (t == 'text' || t == 'textarea')
             return 'string'
 
-        if (t == 'DateTime')
-            return 'date'
-        if (t == 'Number')
-            return 'float';
-        if (t == 'integer')
+        if (t == 'datetime' || t == 'date')
+            return 'Date'
+
+
+        if (t == 'integer' || t == 'int')
             return 'int';
 
-        if (t == 'object' || t == 'objectId')
+        if ( t == 'list' || t == 'array')
+            return 'array';
+
+        if (t == 'object' || t == 'objectid')
             return 'object'
-    }
+
+        }
+    return null;
 }
 
-Finder.prototype.__defineGetter__('spec', function () {
-
-    return new Spec([this.display.spec], this)
-});
 
 //var defSpec = {
 //    "description":"Operations about pets",
@@ -55,109 +56,6 @@ Finder.prototype.__defineGetter__('spec', function () {
 //    "nickname":"getPetById"
 //};
 //args == specs;
-var Spec = function (args, finder, path) {
-    var display = finder.display || {};
-    var _responseModel;
-    this.responseModel = function () {
-        if (_responseModel)
-            return _responseModel;
-
-        if (!display.responseModel)
-            return (_responseModel = finder.parent());
-        var modelName = display.responseModel.modelName || inflection.className(this.parent().modelName, finder.name);
-        _responseModel = new Model(modelName, [display.responseModel])
-        return  _responseModel;
-    }
-    this.__defineGetter__('errorResponses', function () {
-        var errorResponses = util.find(errorResponses, args);
-        if (errorResponses && errorResponses.length) {
-            return errorResponses;
-        } else {
-            return [swe.invalid('path')]
-        }
-    })
-    this.__defineGetter__('params', function () {
-        var method = this.method || 'GET';
-        var parameters = [];
-        if (display.hidden)
-            return;
-        var defP = util.find('params', args) || util.find('parameters', args)
-        if (defP) {
-            return defP;
-        }
-        parameters = parameters.concat(Swag.params(finder.display, finder.modelName));
-        if (method == 'GET') {
-            var parent = this.responseModel();
-//            if (parent && finder.spec.responseClass.replace(/List\[([^\]]*)\]/, "$1") == parent.modelName){
-            parameters = parameters.concat(Swag.params(parent, parent.modelName));
-//            }
-//            var schema = finder && finder.display && finder.display.schema;
-        }
-
-
-        if (display.schema) {
-            var paramType = method == 'GET' ? 'query' : 'body';
-            _u.each(display.schema, function (vv, kk) {
-                var required = _.first(_.where(vv.validators, {type:'required'})) || false;
-                parameters.push({
-                    allowMultiple:false,
-                    dataType:fromType(vv.schemaType || vv.type) || 'string',
-                    description:vv.help || vv.description,
-                    name:kk,
-                    paramType:paramType,
-                    required:required});
-            });
-
-        }
-        return parameters;
-    })
-
-
-    this.__defineGetter__('description', function () {
-        var description = util.find('description', args);
-        if (description)
-            return description;
-        return 'Operations about ' + finder.title;
-
-    });
-    this.__defineGetter__('path', function () {
-        var path = util.find('path', args);
-        if (path)
-            return path;
-        return 'finder/' + util.find('name', [finder]);
-    });
-    this.__defineGetter__('notes', function () {
-        return util.find('notes', args) || util.find('title', [finder])
-    });
-
-//    ['summary', 'method'].forEach(util.easyget(args), this);
-
-    this.__defineGetter__('responseClass', function () {
-        var rc = util.find('responseClass', [ display].concat(args));
-        if (rc) {
-            return rc;
-        }
-        rc = this.responseModel().modelName;
-        return display.single ? rc : "List[" + rc + "]";
-    });
-
-    this.__defineGetter__('nickname', function () {
-        return util.find('nickname', args) || finder.name;
-
-    });
-    this.__defineGetter__('method', function () {
-        if (finder && finder.display && finder.display.method)
-            return finder.display.method;
-        return 'GET';
-
-    });
-    this.__defineGetter__('summary', function () {
-        if (finder && finder.display && finder.display.summary)
-            return finder.display.summary;
-        return finder.help || finder.description || 'About ' + finder.title;
-
-    });
-}
 /**
  * Takes a schema calls function on each path.
  * @param schema
@@ -186,21 +84,23 @@ function fix(arr, str) {
     return ret;
 
 }
+module.exports = {
+    modelToSchema:function doModelToSchema(m, depends, pluginManager, models, hasIdCallback) {
+        if (!models) models = {};
+        var noId = true;//hasIdCallback && hasIdCallback(m); // !(pluginManager.appModel.modelPaths[m.modelName || m]);
+//        depends = depends || [];
 
-
-var Swag = module.exports = {
-    modelToSchema:function (m, depends, pluginManager) {
-        var noId = !(pluginManager.appModel.modelPaths[m.modelName || m]);
-        depends = depends || [];
-
-        if (_u.isString(m))
-            m = pluginManager.modelFor(m);
+//        if (_u.isString(m))
+//            m = pluginManager.modelFor(m);
         var model = m.schemaFor();
+        var description = m.description || m.help || m.title;
         var jsonSchema = {
         //    "id":"http://some.site.somewhere/entry-schema#",
             "$schema":"http://json-schema.org/draft-04/schema#",
             type:"object",
+            id:m.modelName,
             required:[],
+            description:description,
             properties:(function(){
                 return noId ? {} : {
                         _id:{
@@ -210,42 +110,32 @@ var Swag = module.exports = {
                     }
                 })()
             };
-
-        var description = m.description || m.help || m.title;
         var depth = jsonSchema;
-        var i = 0;
-
         walkSchema(model, function (v, k, path) {
-            var properties = fix(path, 'properties');
+            if (v == null ){
+                console.log('walkSchema', k, path);
+                return true;
+            }
+            var ret;
+            var properties = fix(path, 'properties').join('.');
             var subJson = {};
-            //    u.depth(jsonSchema, fix(path,'properties', subJson, true));
-            //(depth.properties || (depth.properties = {}))[k] = {};
-            subJson.type = fromType(v.schemaType, v.type);
+
+            var type = fromType(v.schemaType, v.type);
             subJson.description = v.description || v.help || v.title;
-            if (subJson.type == 'object') {
-                subJson.properties = {};
-                depth = subJson.properties;
-            }
-            if (v.schemaType == 'ObjectId') {
-                subJson.oneOf = [
-                    {$ref:this.pluginUrl + '/' + v.ref}
-                ];
-                depends.push(v.ref);
-            }
-            if (v.multiple) {
-                subJson.type = 'List';
-                if (v.ref)
-                    subJson.items = {
-                        "$ref":v.ref
-                    }
-                depends.push(v.ref);
-            }
-            if (v.type == 'List') {
-                subJson.items = {
-                    type:subJson.type
+
+            var ref = v.modelName || v.ref;
+            if (ref && !models[ref])
+                models[ref] = false;
+
+            if (v.subSchema){
+                if (!ref && v.multiple ) ref = inflection.classJoin([m.modelName].concat(path).join(' '));
+                if (ref && !models[ref]){
+                    var subModel = _u.extend({schema:v.subSchema}, _u.omit(v, 'subSchema'));
+                    models[ref] = this.modelToSchema(new Model(ref, [subModel]), depends, pluginManager, models, hasIdCallback);
+                    ret = true;
                 }
-                subJson.type = 'List';
             }
+
             _u.each(v.validators, function (vv, kk) {
                 if (vv.type == 'required') {
                     //subJson.required = true;
@@ -260,20 +150,57 @@ var Swag = module.exports = {
                     }
                 }
                 else if (vv.type == 'enum') {
-                    delete subJson.type;
                     subJson.enum = vv.enums;
-                } else if (vv.type == 'min') {
-                    subJson.minimum = vv.min;
                 } else if (vv.type == "regexp") {
+                    subJson.type = type;
                     subJson.pattern = vv.regexp;
+                } else if (vv.type == 'min') {
+                    subJson.type = type;
+                    subJson.minimum = vv.min;
                 } else if (vv.type == 'max') {
+                    subJson.type = type;
                     subJson.maximum = vv.max;
+                } else if (vv.type == 'minLength'){
+                    subJson.type = type;
+                    subJson.minLength = vv.minLength;
+                } else if (vv.type == 'maxLength'){
+                    subJson.type = type;
+                    subJson.maxLength = vv.maxLength;
+                } else if (vv.type == 'minItems'){
+                    subJson.type = 'array';
+                    subJson.minItems = vv.minItems;
+                } else if (vv.type == 'maxItems'){
+                    subJson.type = 'array';
+                    subJson.maxItems = vv.maxItems;
                 }
             });
-            if (!( subJson.type || subJson.enum))subJson.type = 'object';
-
+            if (v.unique){
+                subJson.uniqueItems = true;
+            }
+            if (v.type == 'Select' && v.options){
+                subJson.type = 'String'
+                subJson.enum = v.options.map(function(v){
+                    return v && v.val || v;
+                });
+            }
+            if (v.multiple || type == 'array') {
+                var items = subJson.items = {}
+                if (ref) items.$ref = ref;
+                else
+                    items.type = 'string';
+                subJson.type = 'array';
+            }else if (type || ref) {
+                subJson.type = type || ref;
+            }else {
+                subJson.properties = {};
+                depth = subJson.properties;
+                return true;
+            }
+            if (!subJson.type)
+                console.log('No type for ',[m.modelName].concat(path).join('.'), JSON.stringify(v,null,3));
 
             util.depth(jsonSchema, properties, subJson, true);
+            return ret;
         }.bind(this));
         return jsonSchema;
     },
@@ -284,9 +211,11 @@ var Swag = module.exports = {
             "notes":"updates a " + K + " in the store",
             "httpMethod":"PUT",
             "summary":"Update an existing " + v.title.toLowerCase(),
-            "parameters":[param.post(v.title + " object that needs to be added to the store", k)],
+            "parameters":[param.post(k, v.title + " object that needs to be added to the store")],
             "errorResponses":[swe.invalid('id'), swe.notFound(k), swe.invalid('input')],
-            "responseClass":'void',
+            "allowMultiple":false,
+            "paramType":"body",
+            responseClass:"void",
             "nickname":"update" + K
         }
     },
@@ -296,11 +225,13 @@ var Swag = module.exports = {
             "notes":"adds a " + K + " to the store",
             "summary":"Add a new " + K + " to the store",
             "httpMethod":"POST",
-            "parameters":[param.post(v.title + " object that needs to be added to the store", k)],
+            "parameters":[param.post(k, v.title + " object that needs to be added to the store")],
             "errorResponses":[swe.invalid('input')],
             "nickname":"add" + K,
             "dataType":k,
-            responseClass:"void"
+            "allowMultiple":false,
+            "paramType":"body",
+             responseClass:"void"
         }
     },
     action:function (req, res, next) {
@@ -311,19 +242,19 @@ var Swag = module.exports = {
     },
     params:function (v) {
         var p = [
-            param.q('skip', 'number of records to skip', 'int', false, false, 0),
-            param.q('limit', 'limit the number of records', 'int', false, false, 10)
+            param.q('skip', 'number of records to skip', 'int', false, false, null, 0),
+            param.q('limit', 'limit the number of records', 'int', false, false, null, 10)
         ]
         var filters = [], sort = [], populate = [];
-        _u.each(v.schema, function (vv) {
+        _u.each(v.schema, function (vv, k) {
 
-            var k = vv.path;
+//            var k = vv.path;
             if (k == 'id')
                 return;
             var type = vv.schemaType;
             if (type == 'Date' || type == 'Number' || type == 'String') {
-                filters.push(param.q('filter[' + k + ']', 'filter text fields on ' + k, 'string', false, true));
-                sort.push(param.q('sort[' + k + ']', 'sort on ' + k + ' direction ascending 1, descending -1', 'int', false, true, [1, -1]));
+                filters.push(param.q('filter[' + k + ']', 'filter text fields on ' + k, 'string', false, false));
+                sort.push(param.q('sort[' + k + ']', 'sort on ' + k + ' direction ascending 1, descending -1', 'int', false, false, [1, -1], 1));
             } else {
                 populate.push(k)
             }
@@ -341,7 +272,7 @@ var Swag = module.exports = {
             var type = vv.spec && vv.spec.method && vv.spec.method.toLowerCase() || 'get';
             var responseClass = vv.spec.responseClass || 'List[' + k + ']'
             var ret = _u.extend({
-                    path:'finder/' + vv.name,
+                    path:vv.name,
                     parameters:vv.spec.params,
                     httpMethod:type,
                     responseClass:responseClass,
@@ -377,7 +308,7 @@ var Swag = module.exports = {
             "parameters":[param.path("id", "ID of " + v.modelName, "string")],
             "errorResponses":[swe.invalid('id'), swe.notFound(v.modelName)],
             "nickname":"get" + K + "ById",
-            "responseClass":'List[' + k + ']'
+            "responseClass":k
         }
     },
     del:function (v, k) {
@@ -393,5 +324,5 @@ var Swag = module.exports = {
             "responseClass":"void"
         };
     },
-    Spec:Spec
+    fromType:fromType
 }

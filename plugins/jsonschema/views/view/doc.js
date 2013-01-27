@@ -21,7 +21,7 @@ define(['Backbone', 'jsonschema/js/SwaggerUi', 'underscore', 'jquery',
         }
         return null;
     }
-
+    var extensionMap = {{json plugin.extensionMap}};
     var DocView = B.View.extend({
         el:'#content',
         template:_.template(template),
@@ -50,8 +50,15 @@ define(['Backbone', 'jsonschema/js/SwaggerUi', 'underscore', 'jquery',
                         finishDownload();
                 }, 100);
                 $status.html('generating "'+type+'" client...').addClass('label label-success').show();
-                this.$el.find('.downloadFrame').attr('src', "${pluginUrl}/export/" + type);
+                var docRe = /^document-(.*)/;
+                var docType = extensionMap[type.replace(docRe, '$1')];
+                if (docType && docType.ext == 'html' ){
+                    finishDownload();
+                    window.open("${pluginUrl}/export/" + type, "${appModel.title} api v${appModel.version} as "+type, "menubar=no,status=yes");
 
+                }else{
+                 this.$el.find('.downloadFrame').attr('src', "${pluginUrl}/export/" + type);
+                }
             }
 
         },

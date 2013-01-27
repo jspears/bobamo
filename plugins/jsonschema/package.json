@@ -5,7 +5,8 @@
     , "private": false
     , "dependencies":{
     "swagger-node-express":"latest",
-    "swagger-to-markdown":"latest"
+    "swagger-to-markdown":"latest",
+    "node-pandoc":"latest"
 }
 
 }
