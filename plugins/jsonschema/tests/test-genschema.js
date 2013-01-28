@@ -5,9 +5,6 @@ var model = new Model("Exception", [m]);
 //console.log('model', JSON.stringify(model,null,3));
 var models = {};
 var json = gen.modelToSchema(model, null, null, models);
-console.log('models', JSON.stringify(models, null, 3));
-console.log('json', JSON.stringify(json, null, 3));
-
 models.should.have.property('Note')
 models.Note.properties.should.have.property('addDt').obj.should.have.property('type', 'Date');
 
@@ -47,6 +44,64 @@ var valid = {
 var validSchema = gen.modelToSchema(new Model('Valid', [valid]));
 validSchema.properties.valid.should.have.property('minimum', 1);
 validSchema.properties.valid.should.have.property('maximum', 10);
-console.log('validSchema', validSchema);
 validSchema.required.should.include('valid');
+
+
+var LoanPoolSummary = {
+    loan:{
+        modelName:'LoadStat',
+        subSchema:{
+            amount:'Number',
+            count:'Number'
+        }
+    },
+    pool:{
+        modelName:"PoolStat",
+        subSchema:{
+            amount:'Number',
+            count:'Number'
+        }
+    }
+
+}
+var LoanPoolStateSummary = {
+    requested:{
+        subSchema:LoanPoolSummary
+    },
+    ready:{
+        subSchema:LoanPoolSummary
+    },
+    approved:{
+        subSchema:LoanPoolSummary
+    },
+    funded:{
+        subSchema:LoanPoolSummary
+    }
+}
+var m = {};
+var dashSchema = gen.modelToSchema(new Model('Dashboard', [{
+    modelName:'LenderStatusSummary',
+    schema:{
+        loans:{
+            type:'List',
+            subSchema:{
+                lenderName:'Text',
+                lenderId:'Text',
+                wireId:'Text',
+                status:{
+                    type:'NestedModel',
+//                            modelName:"LoanPoolStateSummary",
+                    subSchema:LoanPoolStateSummary
+                }
+            }
+        }
+
+    }
+}]), null, null, m);
+dashSchema.properties.loans.should.have.property('type', 'array')
+dashSchema.properties.loans.items.should.have.property('$ref', 'DashboardLoans');
+m.should.have.property('DashboardLoans');
+
+console.log('m', JSON.stringify(m,null, 3));
+
 process.exit(0);

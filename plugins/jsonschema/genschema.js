@@ -122,17 +122,19 @@ module.exports = {
 
             var type = fromType(v.schemaType, v.type);
             subJson.description = v.description || v.help || v.title;
-
+            var multiple = v.multiple || type == 'array' || type == 'list' || type == 'set';
             var ref = v.modelName || v.ref;
-            if (ref && !models[ref])
-                models[ref] = false;
 
             if (v.subSchema){
-                if (!ref && v.multiple ) ref = inflection.classJoin([m.modelName].concat(path).join(' '));
+                if (!ref && multiple ) ref = inflection.classJoin([m.modelName].concat(path).join(' '));
+
+                if (ref && !models[ref])
+                    models[ref] = false;
+
                 if (ref && !models[ref]){
                     var subModel = _u.extend({schema:v.subSchema}, _u.omit(v, 'subSchema'));
                     models[ref] = this.modelToSchema(new Model(ref, [subModel]), depends, pluginManager, models, hasIdCallback);
-                    ret = true;
+                   return true;
                 }
             }
 
@@ -183,12 +185,13 @@ module.exports = {
                     return v && v.val || v;
                 });
             }
-            if (v.multiple || type == 'array') {
+            if (multiple) {
                 var items = subJson.items = {}
                 if (ref) items.$ref = ref;
                 else
                     items.type = 'string';
                 subJson.type = 'array';
+             //   ret = true;
             }else if (type || ref) {
                 subJson.type = type || ref;
             }else {
@@ -207,11 +210,13 @@ module.exports = {
     put:function (v, k) {
         var K = inflection.capitalize(k);
         return {
-//                "path":"/" + k,
+//                "path":"/" + k,            "parameters":[param.path("id", "ID of " + v.modelName, "string")],
+
+
             "notes":"updates a " + K + " in the store",
             "httpMethod":"PUT",
             "summary":"Update an existing " + v.title.toLowerCase(),
-            "parameters":[param.post(k, v.title + " object that needs to be added to the store")],
+            "parameters":[param.path("id", "ID of " + v.modelName, "string"),param.post(k, v.title + " object that needs to be added to the store")],
             "errorResponses":[swe.invalid('id'), swe.notFound(k), swe.invalid('input')],
             "allowMultiple":false,
             "paramType":"body",
@@ -304,7 +309,7 @@ module.exports = {
             //   "path":"/{id}",
             "notes":"updates a " + v.title + " in the store",
             "httpMethod":"GET",
-            "summary":"Return an existing " + v.title,
+            "summary":"Return an exitsting " + v.title,
             "parameters":[param.path("id", "ID of " + v.modelName, "string")],
             "errorResponses":[swe.invalid('id'), swe.notFound(v.modelName)],
             "nickname":"get" + K + "ById",

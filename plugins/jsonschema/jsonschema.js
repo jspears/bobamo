@@ -5,7 +5,7 @@ var bobamo = require('../../index'),
     Model = bobamo.DisplayModel,
     path = require('path'),
     fs = require('fs'),
-    SwaggerToMarkdown = require('swagger-to-markdown'),
+    SwaggerToMarkdown = require('./genmarkdown'),
     generateClient = require('./generate-client'),
     u = require('../../lib/util'), _u = require('underscore'),
     Spec = require('./Spec'),
@@ -191,11 +191,11 @@ JsonSchemaPlugin.prototype.filters = function () {
             var docType = type.replace(docRe, "$1");
             // console.log('markdown', md);
             var opts = []
-            var conf = _u.extend({title:appModel.title + ' ' + appModel.version}, this.conf, req.query, req.body);
+            var conf = _u.extend({title:appModel.title}, this.conf, req.query, req.body);
             if (conf.pandoc_template)
                 opts.push('--template=' + conf.pandoc_template);
             if (conf.title)
-                opts.push('--variable=title:"' + conf.title + '"');
+                opts.push('--variable=title:' + conf.title + '');
             if (conf.toc !== false)
                 opts.push('--toc');
             var md = req.body && req.body && req.body.markdown || this.markdown();
@@ -381,10 +381,12 @@ JsonSchemaPlugin.prototype.resource = function (modelName) {
     return doc;
 }
 JsonSchemaPlugin.prototype.markdown = function () {
-    return new SwaggerToMarkdown().$enhance({
+    return new SwaggerToMarkdown({
         apiname:this.pluginManager.appModel.title,
         basePath:this.swaggerUrl(),
         resourcefile:this.resource(),
+        authors:this.pluginManager.appModel.authors,
+        modified:this.pluginManager.appModel.modified? new Date(this.pluginManager.appModel.modified) : new Date(),
         specifications:Object.keys(this.pluginManager.appModel.modelPaths).map(this.resource, this)
     }).print();
 }

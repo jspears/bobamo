@@ -11,15 +11,22 @@ define([
         title:{help:'Application Title'},
         version:{help:'Version of application'},
         description:{},
-        models:{
-            type:'MultiEditor',
-            help:'Which Models to allow users to view',
-            options:{{json Object.keys(appModel.modelPaths)}}
-        },
-        plugins:{
+//        models:{
+//            type:'MultiEditor',
+//            help:'Which Models to allow users to view',
+//            options:{{json Object.keys(appModel.modelPaths)}}
+//        },
+//        plugins:{
+//            type:'List',
+//            help:'The order in which to process plugins'
+//        },
+        authors:{
             type:'List',
-            help:'The order in which to process plugins'
+            help:'People who have contributed, email "Justin Spears" &lt;speajus@gmail.com&gt;'
         }
+
+
+
     }
     var Model = Backbone.Model.extend({
         schema:schema,
@@ -45,8 +52,9 @@ define([
     return EditView.extend({
         fieldsets:[
             {legend:'Application', fields:['title', 'version', 'description']},
-            {'legend':'Models', fields:['models']},
-            {'legend': 'Plugins', fields:['plugins']}
+//            {'legend':'Models', fields:['models']},
+//            {'legend': 'Plugins', fields:['plugins']},
+            {'legend': 'Authors', fields:['authors']}
         ],
         template:_.template(template),
         model:Model,
@@ -62,8 +70,9 @@ define([
                 description:'${appModel.description}',
                 version:'${appModel.version}',
                 build:'${appModel.build}',
-                models:{{json Object.keys(appModel.modelPaths) }},
-                plugins:{{json pluginManager.pluginNames()}}
+//                models:{{json Object.keys(appModel.modelPaths) }},
+//                plugins:{{json pluginManager.pluginNames()}},
+                authors:{{json appModel.authors}}
             });
         }
     });
