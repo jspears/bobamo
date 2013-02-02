@@ -258,7 +258,7 @@ module.exports = {
                 return;
             var type = vv.schemaType;
             if (type == 'Date' || type == 'Number' || type == 'String') {
-                filters.push(param.q('filter[' + k + ']', 'filter text fields on ' + k, 'string', false, false));
+                filters.push(param.q('filter[' + k + ']', 'filter text fields on ' + k+' supports &gt;, &lt;, = modifiers', 'string', false, false));
                 sort.push(param.q('sort[' + k + ']', 'sort on ' + k + ' direction ascending 1, descending -1', 'int', false, false, [1, -1], 1));
             } else {
                 populate.push(k)
