@@ -82,19 +82,19 @@ var extRe = /\.(js|html|css|htm)$/i;
 GeneratorPlugin.prototype.routes = function (options) {
     var appModel = this.pluginManager.appModel;
     var baseOpts = {
-        includes:function (arr) {
-            var data = this;
-            arr = arr || [];
-            arr = _u.map(arr, function (v) {
-                return  _u.template(v, data);
-            });
-            var includes = data.model.includes || [];
-
-            return JSON.stringify(arr.concat(includes));
-        },
-        includeSchema:function (schema) {
-            return schemaUtil.includes(schema)
-        }
+//        includes:function (arr) {
+//            var data = this;
+//            arr = arr || [];
+//            arr = _u.map(arr, function (v) {
+//                return  _u.template(v, data);
+//            });
+//            var includes = data.model.includes || [];
+//
+//            return JSON.stringify(arr.concat(includes));
+//        },
+//        includeSchema:function (schema) {
+//            return schemaUtil.includes(schema)
+//        }
     }
 
     function makeOptions(req) {

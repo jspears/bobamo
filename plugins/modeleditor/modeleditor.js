@@ -80,16 +80,6 @@ EditPlugin.prototype.routes = function () {
             });
         });
         var pm = this.pluginManager;
-        this.local(res, 'includes', function (arr) {
-            var data = this.data || {};
-            arr = arr || [];
-            arr = _u.map(arr, function (v) {
-                return  _u.template(v, data);
-            });
-            var includes = schemautil.includes(pm.editors);
-
-            return JSON.stringify(arr.concat(includes));
-        });
         this.generate(res, view);
     }.bind(this))
 

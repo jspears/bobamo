@@ -10,31 +10,32 @@ define([
 ], function ($, _, Backbone, Form, replacer) {
     "use strict";
 
-    function nullEmptyStr(obj){
-        _(obj).each(function(v,k){
-           if (k == '_id' && _.isEmpty(v) ){
-               delete obj[k];
-           }else if (_.isString(v) ){
+    function nullEmptyStr(obj) {
+        _(obj).each(function (v, k) {
+            if (k == '_id' && _.isEmpty(v)) {
+                delete obj[k];
+            } else if (_.isString(v)) {
 
-               obj[k] = _.isEmpty(v) ? null : v;
-           }
-           else if (_.isArray(v)){
-               obj[k] = _(v).filter(function(vv){
-                  if(_.isString(vv)){
-                     return !(_.isEmpty(vv));
-                  }else if (vv){
-                    nullEmptyStr(vv);
-                  }
-                  return true;
-               });
+                obj[k] = _.isEmpty(v) ? null : v;
+            }
+            else if (_.isArray(v)) {
+                obj[k] = _(v).filter(function (vv) {
+                    if (_.isString(vv)) {
+                        return !(_.isEmpty(vv));
+                    } else if (vv) {
+                        nullEmptyStr(vv);
+                    }
+                    return true;
+                });
 
-           }
-           else if (_.isObject(v) &! _.isFunction(v)){
-               nullEmptyStr(v);
-           }
+            }
+            else if (_.isObject(v) & !_.isFunction(v)) {
+                nullEmptyStr(v);
+            }
         });
 
     }
+
     var EditView = Backbone.View.extend({
         tagName:'div',
         events:{
@@ -52,10 +53,10 @@ define([
             $el.effect("bounce", { times:3 }, 300);
             this.focusStep(d.field);
         },
-        focusStep:function(field){
-            if (this.isWiz){
-                _(this.fieldsets).find(function(v,k){
-                    if (v.fields.indexOf(field) > -1){
+        focusStep:function (field) {
+            if (this.isWiz) {
+                _(this.fieldsets).find(function (v, k) {
+                    if (v.fields.indexOf(field) > -1) {
                         $('.form-wrap', this.$el).wiz('step', k);
                         return true;
                     }
@@ -69,8 +70,8 @@ define([
             if (errors) {
                 if (errors.responseText) {
                     errors = JSON.parse(errors.responseText);
-                }else if (_.isString(errors.error)){
-                    $error.prepend( $(replacer('<li><span class="alert-heading pointer">{error}</li>',errors)));
+                } else if (_.isString(errors.error)) {
+                    $error.prepend($(replacer('<li><span class="alert-heading pointer">{error}</li>', errors)));
                 }
                 var fields = this.form.fields;
                 var fField;
@@ -80,7 +81,7 @@ define([
                     if (field && field.$el)
                         field.$el.addClass('error');
                     var $e = $(
-                        replacer('<li><span class="alert-heading pointer">"{path}" is in error: </span>{message}</li>', _.extend({path:path},v))).data({'scroll-to':field && field.$el, field:path});
+                        replacer('<li><span class="alert-heading pointer">"{path}" is in error: </span>{message}</li>', _.extend({path:path}, v))).data({'scroll-to':field && field.$el, field:path});
                     fField = path
                     $error.prepend($e);
                 }, this);
@@ -97,7 +98,7 @@ define([
             //this.form.validate();
             //TODO - make sure to re-enable client side validation.
             var errors = this.form.commit();
-     //       var errors;
+            //       var errors;
             var save = this.form.getValue();
             nullEmptyStr(save);
             //handle nested objects.
@@ -108,12 +109,12 @@ define([
                     var last = split.pop();
                     var obj = save;
                     _(split).each(function (kk, vv) {
-                        obj = _.isUndefined(obj[kk])? (obj[kk]={}) : obj[kk];
+                        obj = _.isUndefined(obj[kk]) ? (obj[kk] = {}) : obj[kk];
                     });
                     obj[last] = v;
                     delete save[k];
-                }else{
-                    save[k] =v;
+                } else {
+                    save[k] = v;
                 }
 
             });
@@ -148,13 +149,13 @@ define([
             return this;
         },
         doCancel:function () {
-             window.location.hash = replacer('#/{modelName}/list', this.config);
+            window.location.hash = replacer('#/{modelName}/list', this.config);
         },
-        createModel:function(opts){
-          return new this.model(opts);
+        createModel:function (opts) {
+            return new this.model(opts);
         },
-        createForm:function(options){
-             return new Form(options);
+        createForm:function (options) {
+            return new Form(options);
         },
         wizOptions:{
 
@@ -176,19 +177,18 @@ define([
             var isWiz = _.isUndefined(this.isWizard) ? this.fieldsets && this.fieldsets.length > 1 : this.isWizard;
             var $del = this.$el;
             var wizOptions = _.extend({replace:$('.save', $del)}, this.wizOptions);
-
-            if (id) {
-                model.fetch({success:function () {
-                    $fm.append(form.render().el);
-                    if (isWiz)
-                        $('.form-wrap', $del).wiz(wizOptions);
-                }});
-            } else {
-                var html = form.render().el;
+            form.on('render', function () {
+                var html = form.el;
                 console.log('appending', html);
                 $fm.append(html);
-                 if (isWiz)
-                    $('.form-wrap',$del).wiz(wizOptions);
+                if (isWiz)
+                    $('.form-wrap', $del).wiz(wizOptions);
+            }, this);
+
+            if (id) {
+                model.fetch({success:_.bind(form.render, form)});
+            } else {
+                form.render();
             }
             $(this.options.container).html($el);
             return this;

@@ -10,6 +10,20 @@ module.exports = [
         }
     },
     {
+        name:'FilterText',
+        types:['String', 'Boolean', 'Number', 'Date'],
+        schema:{
+            placeholder:{ type:'Text' },
+            dataType:{ type:'Select', options:DataTypes.String},
+            filter:{
+                type:'Text',
+                help:'A regular expression to match against'
+
+            }
+        }
+
+    },
+    {
         name:'TypeAhead',
         types:['String', 'Number', 'Date'],
         schema:{

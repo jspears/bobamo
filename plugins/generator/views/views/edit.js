@@ -1,13 +1,14 @@
 
-define({{html includes(
-    ['underscore',
+define([
+    'underscore',
     'libs/bobamo/edit',
-    'collections/<%=collection%>',
-    'models/<%=collection%>',
-    'text!templates/<%=collection%>/edit.html',
+    'collections/${collection}',
+    'models/${collection}',
+    'text!templates/${collection}/edit.html',
     'libs/backbone-forms/templates/bootstrap',
     'jquery-ui',
-    'libs/backbone-forms/editors/list'])}}
+    'libs/backbone-forms/editors/list'
+]
     , function (_,EditView, collection, Model, template) {
     "use strict";
 
