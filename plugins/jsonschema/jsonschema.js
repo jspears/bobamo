@@ -15,7 +15,7 @@ var bobamo = require('../../index'),
 var JsonSchemaPlugin = function () {
     PluginApi.apply(this, arguments);
     this.conf = {
-        url:'http://localhost:3001/',
+ //       url:'http://localhost:3001/',
         scala:process.env['SCALA_HOME'],
         java:process.env['JAVA_HOME'] || '/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home',
         java_opts:process.env['JAVA_OPTS'] || ' -XX:MaxPermSize=256M -Xmx1024M -DloggerPath=conf/log4j.properties',
@@ -265,7 +265,7 @@ JsonSchemaPlugin.prototype.filters = function () {
     PluginApi.prototype.filters.call(this);
 }
 JsonSchemaPlugin.prototype.swaggerUrl = function () {
-    var url = this.conf.url.replace(/(\/)?$/, '');
+    var url = this.conf.url && this.conf.url.replace(/(\/)?$/, '');
     var swagUrl = url + (this.pluginUrl + '/api');
     return swagUrl;
 }

@@ -3,8 +3,20 @@ var m = JSON.parse(fs.readFileSync('./schema.json'))
 var model = new Model("Exception", [m]);
 //(m, depends, pluginManager, models)
 //console.log('model', JSON.stringify(model,null,3));
+function prettyLog(json) {
+    var str = [];
+    for (var i = 0, l = arguments.length; i < l; i++) {
+        if (typeof arguments[i] == 'string')
+            str.push(arguments[i]);
+        else
+            str.push(JSON.stringify(arguments[i], null, 3))
+    }
+    console.log(str.join(' '));
+}
+
 var models = {};
 var json = gen.modelToSchema(model, null, null, models);
+//prettyLog('json', json, 'models', models);
 models.should.have.property('Note')
 models.Note.properties.should.have.property('addDt').obj.should.have.property('type', 'Date');
 
@@ -14,6 +26,7 @@ json.properties.deep.should.have.property('properties')
     .obj.should.have.property('superdeep')
     .obj.should.have.property("type", "string")
 
+json.properties.should.have.property('notes');
 json.properties.notes.should.not.have.property('properties');
 json.properties.notes.should.have.property('type', 'array');
 json.properties.notes.items.should.have.property('$ref', 'Note');
@@ -79,29 +92,32 @@ var LoanPoolStateSummary = {
     }
 }
 var m = {};
-var dashSchema = gen.modelToSchema(new Model('Dashboard', [{
-    modelName:'LenderStatusSummary',
-    schema:{
-        loans:{
-            type:'List',
-            subSchema:{
-                lenderName:'Text',
-                lenderId:'Text',
-                wireId:'Text',
-                status:{
-                    type:'NestedModel',
+var dashSchema = gen.modelToSchema(new Model('Dashboard', [
+    {
+        modelName:'LenderStatusSummary',
+        schema:{
+            loans:{
+                type:'List',
+                subSchema:{
+                    lenderName:'Text',
+                    lenderId:'Text',
+                    wireId:'Text',
+                    status:{
+                        type:'NestedModel',
 //                            modelName:"LoanPoolStateSummary",
-                    subSchema:LoanPoolStateSummary
+                        subSchema:LoanPoolStateSummary
+                    }
                 }
             }
-        }
 
+        }
     }
-}]), null, null, m);
+]), null, null, m);
+console.log('dashSchema', dashSchema);
 dashSchema.properties.loans.should.have.property('type', 'array')
 dashSchema.properties.loans.items.should.have.property('$ref', 'DashboardLoans');
 m.should.have.property('DashboardLoans');
 
-console.log('m', JSON.stringify(m,null, 3));
+console.log('m', JSON.stringify(m, null, 3));
 
-process.exit(0);
+process.exit(0)

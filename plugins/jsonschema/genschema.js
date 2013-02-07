@@ -33,13 +33,13 @@ function fromType(type, obj) {
         if (t == 'integer' || t == 'int')
             return 'int';
 
-        if ( t == 'list' || t == 'array')
+        if (t == 'list' || t == 'array')
             return 'array';
 
-        if (t == 'object' || t == 'objectid')
+        if (t == 'object' || t == 'objectid' || t == 'nestedmodel')
             return 'object'
 
-        }
+    }
     return null;
 }
 
@@ -62,14 +62,15 @@ function fromType(type, obj) {
  * @param func
  * @param path
  */
-function walkSchema(schema, func, path) {
+function walkSchema(schema, func, path, parent) {
     path = path || [];
     _u.each(schema, function (v, k) {
         var p = path.concat(k);
-        if (func(v, k, p) === true)
+        if (func(v, k, p, parent) === true)
             return;
-        if (v.subSchema)
-            walkSchema(v.subSchema, func, p);
+        if (v.subSchema){
+            walkSchema(v.subSchema, func, p, v);
+        }
     });
 }
 
@@ -88,31 +89,28 @@ module.exports = {
     modelToSchema:function doModelToSchema(m, depends, pluginManager, models, hasIdCallback) {
         if (!models) models = {};
         var noId = true;//hasIdCallback && hasIdCallback(m); // !(pluginManager.appModel.modelPaths[m.modelName || m]);
-//        depends = depends || [];
-
-//        if (_u.isString(m))
-//            m = pluginManager.modelFor(m);
         var model = m.schemaFor();
         var description = m.description || m.help || m.title;
         var jsonSchema = {
-        //    "id":"http://some.site.somewhere/entry-schema#",
+            //    "id":"http://some.site.somewhere/entry-schema#",
             "$schema":"http://json-schema.org/draft-04/schema#",
             type:"object",
             id:m.modelName,
             required:[],
             description:description,
-            properties:(function(){
+            properties:(function () {
                 return noId ? {} : {
-                        _id:{
-                            type:'string',
-                            description:'Identifier for "' + m.modelName + '"'
-                        }
+                    _id:{
+                        type:'string',
+                        description:'Identifier for "' + m.modelName + '"'
                     }
-                })()
-            };
+                }
+            })()
+        };
         var depth = jsonSchema;
-        walkSchema(model, function (v, k, path) {
-            if (v == null ){
+        walkSchema(model, function (v, k, path,parent) {
+           // console.log('walk', path.join('.'), JSON.stringify([v,parent], null, 3), "\n");
+            if (v == null) {
                 console.log('walkSchema', k, path);
                 return true;
             }
@@ -122,20 +120,36 @@ module.exports = {
 
             var type = fromType(v.schemaType, v.type);
             subJson.description = v.description || v.help || v.title;
-            var multiple = v.multiple || type == 'array' || type == 'list' || type == 'set';
+            var lType = type && type.toLowerCase();
+            var multiple = v.multiple || lType == 'array' || lType == 'list' || lType == 'set';
             var ref = v.modelName || v.ref;
+            if (v.subSchema) {
 
-            if (v.subSchema){
-                if (!ref && multiple ) ref = inflection.classJoin([m.modelName].concat(path).join(' '));
+                console.log('modelName', ref);
+                if (!ref && multiple) ref = inflection.classJoin([m.modelName].concat(path).join(' '));
 
-                if (ref && !models[ref])
-                    models[ref] = false;
+//                if (ref && typeof models[ref] == 'undefined')
+//                    models[ref] = false;
 
-                if (ref && !models[ref]){
-                    var subModel = _u.extend({schema:v.subSchema}, _u.omit(v, 'subSchema'));
+                if (ref && !models[ref]) {
+                    var subModel = _u.extend({schema:v.subSchema}, _u.omit(JSON.stringify(v), 'subSchema'));
                     models[ref] = this.modelToSchema(new Model(ref, [subModel]), depends, pluginManager, models, hasIdCallback);
-                   return true;
+                    if (multiple) {
+                        var items = subJson.items = {}
+                        subJson.type = 'array';
+                        if (ref) {
+                            items.$ref = ref;
+                        }
+                        util.depth(jsonSchema, properties, subJson, true);
+                        return true;
+                    }else{
+                        subJson.type = ref;
+                        util.depth(jsonSchema, properties, subJson, true);
+                        return true;
+                    }
+
                 }
+
             }
 
             _u.each(v.validators, function (vv, kk) {
@@ -162,49 +176,51 @@ module.exports = {
                 } else if (vv.type == 'max') {
                     subJson.type = type;
                     subJson.maximum = vv.max;
-                } else if (vv.type == 'minLength'){
+                } else if (vv.type == 'minLength') {
                     subJson.type = type;
                     subJson.minLength = vv.minLength;
-                } else if (vv.type == 'maxLength'){
+                } else if (vv.type == 'maxLength') {
                     subJson.type = type;
                     subJson.maxLength = vv.maxLength;
-                } else if (vv.type == 'minItems'){
+                } else if (vv.type == 'minItems') {
                     subJson.type = 'array';
                     subJson.minItems = vv.minItems;
-                } else if (vv.type == 'maxItems'){
+                } else if (vv.type == 'maxItems') {
                     subJson.type = 'array';
                     subJson.maxItems = vv.maxItems;
                 }
             });
-            if (v.unique){
+            if (v.unique) {
                 subJson.uniqueItems = true;
             }
-            if (v.type == 'Select' && v.options){
+            if (v.type == 'Select' && v.options) {
                 subJson.type = 'String'
-                subJson.enum = v.options.map(function(v){
+                subJson.enum = v.options.map(function (v) {
                     return v && v.val || v;
                 });
             }
             if (multiple) {
                 var items = subJson.items = {}
-                if (ref) items.$ref = ref;
+                subJson.type = 'array';
+                if (ref) {
+                    items.$ref = ref;
+                }
                 else
                     items.type = 'string';
-                subJson.type = 'array';
-             //   ret = true;
-            }else if (type || ref) {
+                //   ret = true;
+            } else if (type || ref) {
                 subJson.type = type || ref;
-            }else {
+            } else {
+                subJson.type="object"
                 subJson.properties = {};
                 depth = subJson.properties;
-                return true;
             }
             if (!subJson.type)
-                console.log('No type for ',[m.modelName].concat(path).join('.'), JSON.stringify(v,null,3));
+                console.log('No type for ', [m.modelName].concat(path).join('.'), JSON.stringify(v, null, 3));
 
             util.depth(jsonSchema, properties, subJson, true);
             return ret;
-        }.bind(this));
+        }.bind(this), null, m);
         return jsonSchema;
     },
     put:function (v, k) {
@@ -216,7 +232,7 @@ module.exports = {
             "notes":"updates a " + K + " in the store",
             "httpMethod":"PUT",
             "summary":"Update an existing " + v.title.toLowerCase(),
-            "parameters":[param.path("id", "ID of " + v.modelName, "string"),param.post(k, v.title + " object that needs to be added to the store")],
+            "parameters":[param.path("id", "ID of " + v.modelName, "string"), param.post(k, v.title + " object that needs to be added to the store")],
             "errorResponses":[swe.invalid('id'), swe.notFound(k), swe.invalid('input')],
             "allowMultiple":false,
             "paramType":"body",
@@ -236,7 +252,7 @@ module.exports = {
             "dataType":k,
             "allowMultiple":false,
             "paramType":"body",
-             responseClass:"void"
+            responseClass:"void"
         }
     },
     action:function (req, res, next) {
@@ -258,7 +274,7 @@ module.exports = {
                 return;
             var type = vv.schemaType;
             if (type == 'Date' || type == 'Number' || type == 'String') {
-                filters.push(param.q('filter[' + k + ']', 'filter text fields on ' + k+' supports &gt;, &lt;, = modifiers', 'string', false, false));
+                filters.push(param.q('filter[' + k + ']', 'filter text fields on ' + k + ' supports &gt;, &lt;, = modifiers', 'string', false, false));
                 sort.push(param.q('sort[' + k + ']', 'sort on ' + k + ' direction ascending 1, descending -1', 'int', false, false, [1, -1], 1));
             } else {
                 populate.push(k)

@@ -88,6 +88,7 @@ define([
                 this.focusStep(fField);
                 $error.show('slow');
             }
+            this.trigger('error', this, errors);
         },
 
         onSave:function (e) {
@@ -135,7 +136,7 @@ define([
                 $success.append(
                     replacer('<li class="alert alert-success"><a class="close" data-dismiss="alert">×</a><h4 class="alert-heading">Success!</h4>Successfully Saved {title} [{_id}]</li>', config));
                 $success.show('slow');
-
+                this.trigger('save-success', this);
             }
 
         },
