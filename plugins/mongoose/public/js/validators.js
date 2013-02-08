@@ -169,7 +169,7 @@ define(['underscore'], function (_) {
 
                 //Don't check empty values (add a 'required' validator for this)
                 if (empty(value)) return;
-                if (re.text(value)) return {
+                if (re.test(value)) return {
                     type:options.type,
                     message:helpers.createTemplate(options.message, _.extend({value:value}, options))
                 };
