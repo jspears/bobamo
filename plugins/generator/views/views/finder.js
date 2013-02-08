@@ -1,18 +1,17 @@
 // Filename: ${baseUrl}/js/views/finder.js
 
 define(
-    {{html includes(
     [   'underscore',
         'Backbone',
         'Backbone.Form',
         'backbone-modal',
         'libs/bobamo/list',
 
-        'collections/<%=collection%>',
-        'text!templates/<%=collection%>/table.html',
-        'text!templates/<%=collection%>/table-item.html'
+        'collections/${collection}',
+        'text!templates/${collection}/table.html',
+        'text!templates/${collection}/table-item.html'
 
-    ])}}
+    ]
     , function (_,B, Form,Modal,View, collection, tableTemplate, tableItemTemplate) {
     "use strict";
      var finder = {{json finder}}

@@ -44,31 +44,22 @@ function fromType(type, obj) {
 }
 
 
-//var defSpec = {
-//    "description":"Operations about pets",
-//    "path":"/pet.{format}/{petId}",
-//    "notes":"Returns a pet based on ID",
-//    "summary":"Find pet by ID",
-//    "method":"GET",
-//    "params":[param.path("petId", "ID of pet that needs to be fetched", "string")],
-//    "responseClass":"Pet",
-//    "errorResponses":[swe.invalid('id'), swe.notFound('pet')],
-//    "nickname":"getPetById"
-//};
-//args == specs;
 /**
  * Takes a schema calls function on each path.
  * @param schema
  * @param func
  * @param path
  */
-function walkSchema(schema, func, path, parent) {
+function walkSchema(schema, func, path, ctx) {
     path = path || [];
-    _u.each(schema, function (v, k) {
+    ctx = ctx || this;
+    Object.keys(schema).forEach(function (k) {
+        var v = schema[k];
         var p = path.concat(k);
-        if (func(v, k, p, parent) === true)
+        if (func.call(ctx, v, k, p) === true)
             return;
-        if (v.subSchema){
+        if (v && v.subSchema) {
+
             walkSchema(v.subSchema, func, p, v);
         }
     });
@@ -86,10 +77,10 @@ function fix(arr, str) {
 
 }
 module.exports = {
-    modelToSchema:function doModelToSchema(m, depends, pluginManager, models, hasIdCallback) {
+    modelToSchema:function doModelToSchema(m, models, hasIdCallback) {
         if (!models) models = {};
         var noId = true;//hasIdCallback && hasIdCallback(m); // !(pluginManager.appModel.modelPaths[m.modelName || m]);
-        var model = m.schemaFor();
+        var model = m.schema;
         var description = m.description || m.help || m.title;
         var jsonSchema = {
             //    "id":"http://some.site.somewhere/entry-schema#",
@@ -108,10 +99,9 @@ module.exports = {
             })()
         };
         var depth = jsonSchema;
-        walkSchema(model, function (v, k, path,parent) {
-           // console.log('walk', path.join('.'), JSON.stringify([v,parent], null, 3), "\n");
+        walkSchema(model, function (v, k, path) {
             if (v == null) {
-                console.log('walkSchema', k, path);
+                console.log('walkSchema v is null for', k, path);
                 return true;
             }
             var ret;
@@ -124,30 +114,20 @@ module.exports = {
             var multiple = v.multiple || lType == 'array' || lType == 'list' || lType == 'set';
             var ref = v.modelName || v.ref;
             if (v.subSchema) {
-
-                console.log('modelName', ref);
                 if (!ref && multiple) ref = inflection.classJoin([m.modelName].concat(path).join(' '));
-
-//                if (ref && typeof models[ref] == 'undefined')
-//                    models[ref] = false;
-
-                if (ref && !models[ref]) {
-                    var subModel = _u.extend({schema:v.subSchema}, _u.omit(JSON.stringify(v), 'subSchema'));
-                    models[ref] = this.modelToSchema(new Model(ref, [subModel]), depends, pluginManager, models, hasIdCallback);
-                    if (multiple) {
-                        var items = subJson.items = {}
-                        subJson.type = 'array';
-                        if (ref) {
-                            items.$ref = ref;
-                        }
-                        util.depth(jsonSchema, properties, subJson, true);
-                        return true;
-                    }else{
-                        subJson.type = ref;
-                        util.depth(jsonSchema, properties, subJson, true);
-                        return true;
+                if (ref) {
+                    if (!models[ref]) {
+                        var sm = new Model(ref, [v]);
+                        models[ref] = this.modelToSchema(sm, models, hasIdCallback);
                     }
-
+                    if (multiple) {
+                        subJson.type = 'array';
+                        subJson.items = {$ref:ref}
+                    } else {
+                        subJson.type = ref;
+                    }
+                    util.depth(jsonSchema, properties, subJson, true);
+                    return true;
                 }
 
             }
@@ -211,7 +191,7 @@ module.exports = {
             } else if (type || ref) {
                 subJson.type = type || ref;
             } else {
-                subJson.type="object"
+                subJson.type = "object"
                 subJson.properties = {};
                 depth = subJson.properties;
             }
@@ -220,7 +200,7 @@ module.exports = {
 
             util.depth(jsonSchema, properties, subJson, true);
             return ret;
-        }.bind(this), null, m);
+        }.bind(this));
         return jsonSchema;
     },
     put:function (v, k) {
@@ -345,5 +325,6 @@ module.exports = {
             "responseClass":"void"
         };
     },
-    fromType:fromType
+    fromType:fromType,
+    walkSchema:walkSchema
 }

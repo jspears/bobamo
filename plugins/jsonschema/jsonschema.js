@@ -26,22 +26,17 @@ var JsonSchemaPlugin = function () {
 util.inherits(JsonSchemaPlugin, PluginApi);
 
 
-JsonSchemaPlugin.prototype.modelToSchema = function (model, depends, models) {
+JsonSchemaPlugin.prototype.modelToSchema = function (model, models) {
     model = _u.isString(model) ? this.pluginManager.appModel.modelFor(model) : model;
     if (!model) {
         console.log('could not model ' + model);
         return {};
     }
     var modelPaths = this.pluginManager.appModel.modelPaths;
-    var ret = swagger.modelToSchema(model, depends, this.pluginManager, models || {}, function (m) {
+    var ret = swagger.modelToSchema(model, models || {}, function (m) {
         return modelPaths && m && m.modelName && modelPaths[m.modelName]
     });
 
-    if (depends) {
-        //one day javascript will have add all until then.
-        var keys = Object.keys(models);
-        depends.splice.apply(depends, [depends.length, keys.length].concat(keys));
-    }
     return ret;
 
 }
@@ -340,7 +335,7 @@ JsonSchemaPlugin.prototype.resource = function (modelName) {
                     var pType = v.dataType && v.dataType.replace(typeRe, "$1");
                     if (!~builtin_types.indexOf(pType) ){
                         if (!doc.models[pType]){
-                            doc.models[pType] = self.modelToSchema(v.dataTypeModel, [], doc.models);
+                            doc.models[pType] = self.modelToSchema(v.dataTypeModel,doc.models);
                             delete v.dataTypeModel;
                         }
                     }
@@ -350,13 +345,13 @@ JsonSchemaPlugin.prototype.resource = function (modelName) {
 
             if (!~builtin_types.indexOf(rName)) {
                 if (!doc.models[rName]) {
-                    doc.models[rName] = self.modelToSchema(ret.responseModel || rName, [], doc.models);
+                    doc.models[rName] = self.modelToSchema(ret.responseModel || rName,  doc.models);
                     doc.models[rName].id = rName;
                 }
             }
             function resolve(){
                Object.keys(doc.models).filter(function(v){ return !doc.models[v]}).forEach(function(k){
-                    doc.models[k] = self.modelToSchema(k, [], doc.models);
+                    doc.models[k] = self.modelToSchema(k, doc.models);
                    doc.models[k].id = k;
                    resolve();
                });

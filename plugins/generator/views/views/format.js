@@ -1,6 +1,6 @@
 define(function(){
     var format = {
-        ''
+
     };
 
 
