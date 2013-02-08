@@ -14,13 +14,14 @@ module.exports = [
         types:['String', 'Boolean', 'Number', 'Date'],
         schema:{
             placeholder:{ type:'Text' },
-            dataType:{ type:'Select', options:DataTypes.String},
             filter:{
-                type:'Text',
-                help:'A regular expression to match against'
+                type:'FilterTextConfigEditor',
+                help:'A regular expression to match against',
+            },
+            dataType:{ type:'Select', options:DataTypes.String}
 
-            }
         }
+        //,fields:['filter', 'placeholder', 'dataType']
 
     },
     {
@@ -103,12 +104,8 @@ module.exports = [
         types:[ 'ObjectId'],
         schema:{
             ref:{
-                type:'MultiEditor',
-                collection:'views/modeleditor/admin/schema-collection',
-                multiple:false
-            },
-            multiple:{
-                type:'Checkbox'
+                type:'Select',
+                collection:'views/modeleditor/admin/schema-collection'
             }
         }
     },

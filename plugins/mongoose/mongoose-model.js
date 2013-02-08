@@ -30,7 +30,7 @@ module.exports = function MModel(m, manager) {
     var defaults = {};
     Object.keys(m.schema.tree).forEach(function(k) {
         var d = m.schema.tree[k].default;
-        if (typeof d === 'undefined') return;
+        if (typeof d === 'undefined' || !d) return;
         defaults[k] = d;
     });
     this.defaults = defaults;
@@ -38,6 +38,7 @@ module.exports = function MModel(m, manager) {
     this.__defineGetter__('schema', function () {
         var ret = {};
         _u.each(m.schema.tree, function (v,k) {
+            if (!k || k === 'undefined') return;
             ret[k] = new MField(k, manager.pluginFor(k, v, m, this));
         }, this);
 

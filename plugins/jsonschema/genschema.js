@@ -53,9 +53,13 @@ function fromType(type, obj) {
 function walkSchema(schema, func, path, ctx) {
     path = path || [];
     ctx = ctx || this;
+    if (!schema)
+        return;
     Object.keys(schema).forEach(function (k) {
         var v = schema[k];
         var p = path.concat(k);
+        if (!v)
+            return;
         if (func.call(ctx, v, k, p) === true)
             return;
         if (v && v.subSchema) {
@@ -98,109 +102,100 @@ module.exports = {
                 }
             })()
         };
-        var depth = jsonSchema;
-        walkSchema(model, function (v, k, path) {
-            if (v == null) {
-                console.log('walkSchema v is null for', k, path);
-                return true;
-            }
-            var ret;
-            var properties = fix(path, 'properties').join('.');
-            var subJson = {};
-
-            var type = fromType(v.schemaType, v.type);
-            subJson.description = v.description || v.help || v.title;
-            var lType = type && type.toLowerCase();
-            var multiple = v.multiple || lType == 'array' || lType == 'list' || lType == 'set';
-            var ref = v.modelName || v.ref;
-            if (v.subSchema) {
-                if (!ref && multiple) ref = inflection.classJoin([m.modelName].concat(path).join(' '));
-                if (ref) {
-                    if (!models[ref]) {
-                        var sm = new Model(ref, [v]);
-                        models[ref] = this.modelToSchema(sm, models, hasIdCallback);
-                    }
-                    if (multiple) {
-                        subJson.type = 'array';
-                        subJson.items = {$ref:ref}
-                    } else {
-                        subJson.type = ref;
-                    }
-                    util.depth(jsonSchema, properties, subJson, true);
+        var walkJson = function (schema, properties, required) {
+            _u.each(schema, function eachWalkJson(v, ok) {
+                var k = ok.split('.').pop();
+                console.log('key',k);
+                if (!v) {
+                    console.log('walkSchema v is null for', k);
                     return true;
                 }
+                var subJson = properties[k] || (properties[k] = {});
+                var type = fromType(v.schemaType, v.type);
+                subJson.description = v.description || v.help || v.title;
+                var lType = type && type.toLowerCase();
+                var multiple = v.multiple || lType == 'array' || lType == 'list' || lType == 'set';
+                if (multiple)
+                    subJson.type = 'array';
 
-            }
+                var ref = v.modelName || v.ref;
 
-            _u.each(v.validators, function (vv, kk) {
-                if (vv.type == 'required') {
-                    //subJson.required = true;
-                    if (path.length == 1) {
-                        if (!~jsonSchema.required.indexOf(k))
-                            jsonSchema.required.push(k);
+                if (v.subSchema) {
+                    if (!ref && multiple) ref = inflection.classJoin([m.modelName].concat(k.split('.')).join(' '));
+                    if (ref) {
+                        if (!models[ref]) {
+                            var sm = new Model(ref, [v]);
+                            models[ref] = this.modelToSchema(sm, models, hasIdCallback);
+                        }
+                        if (multiple) {
+                            subJson.items = {
+                                "$ref":ref
+                            }
+                        } else {
+                            subJson.type = ref;
+                        }
                     } else {
-                        var pt = util.depth(jsonSchema, fix(path.slice(0, path.length - 1), 'properties'), {});
-                        var arr = pt.required || (pt.required = []);
-                        if (!~arr.indexOf(k))
-                            arr.push(k);
+                        if (multiple) {
+                          subJson.items = {type:'string'}
+                        } else {
+                            subJson.type = "object"
+                            subJson.properties = {};
+                            walkJson(v.subSchema, subJson.properties, (subJson.required = []));
+                        }
                     }
                 }
-                else if (vv.type == 'enum') {
-                    subJson.enum = vv.enums;
-                } else if (vv.type == "regexp") {
-                    subJson.type = type;
-                    subJson.pattern = vv.regexp;
-                } else if (vv.type == 'min') {
-                    subJson.type = type;
-                    subJson.minimum = vv.min;
-                } else if (vv.type == 'max') {
-                    subJson.type = type;
-                    subJson.maximum = vv.max;
-                } else if (vv.type == 'minLength') {
-                    subJson.type = type;
-                    subJson.minLength = vv.minLength;
-                } else if (vv.type == 'maxLength') {
-                    subJson.type = type;
-                    subJson.maxLength = vv.maxLength;
-                } else if (vv.type == 'minItems') {
-                    subJson.type = 'array';
-                    subJson.minItems = vv.minItems;
-                } else if (vv.type == 'maxItems') {
-                    subJson.type = 'array';
-                    subJson.maxItems = vv.maxItems;
-                }
-            });
-            if (v.unique) {
-                subJson.uniqueItems = true;
-            }
-            if (v.type == 'Select' && v.options) {
-                subJson.type = 'String'
-                subJson.enum = v.options.map(function (v) {
-                    return v && v.val || v;
-                });
-            }
-            if (multiple) {
-                var items = subJson.items = {}
-                subJson.type = 'array';
-                if (ref) {
-                    items.$ref = ref;
-                }
-                else
-                    items.type = 'string';
-                //   ret = true;
-            } else if (type || ref) {
-                subJson.type = type || ref;
-            } else {
-                subJson.type = "object"
-                subJson.properties = {};
-                depth = subJson.properties;
-            }
-            if (!subJson.type)
-                console.log('No type for ', [m.modelName].concat(path).join('.'), JSON.stringify(v, null, 3));
 
-            util.depth(jsonSchema, properties, subJson, true);
-            return ret;
-        }.bind(this));
+                _u.each(v.validators, function (vv, kk) {
+                    if (vv.type == 'required') {
+                        //subJson.required = true;
+                        if (!~required.indexOf(k))
+                            required.push(k);
+                    }
+                    else if (vv.type == 'enum') {
+                        subJson.enum = vv.enums;
+                        subJson.type = 'string'
+                    } else if (vv.type == "regexp") {
+                        subJson.type = 'string';
+                        subJson.pattern = vv.regexp;
+                    } else if (vv.type == 'min') {
+                        subJson.type = type;
+                        subJson.minimum = vv.min;
+                    } else if (vv.type == 'max') {
+                        subJson.type = type;
+                        subJson.maximum = vv.max;
+                    } else if (vv.type == 'minLength') {
+                        subJson.type = type;
+                        subJson.minLength = vv.minLength;
+                    } else if (vv.type == 'maxLength') {
+                        subJson.type = type;
+                        subJson.maxLength = vv.maxLength;
+                    } else if (vv.type == 'minItems') {
+                        subJson.minItems = vv.minItems;
+                    } else if (vv.type == 'maxItems') {
+                        subJson.maxItems = vv.maxItems;
+                    }
+                });
+                if (v.unique) {
+                    subJson.uniqueItems = true;
+                }
+                if (v.type == 'Select' && v.options) {
+                    subJson.enum = v.options.map(function (v) {
+                        return v && v.val || v;
+                    });
+                    //todo look at this for sanity.
+                    subJson.type = 'string'
+                }
+                if (!subJson.type)
+                    subJson.type = type;
+
+                if (!subJson.type)
+                    console.log('No type for ', [m.modelName].concat(k).join('.'), JSON.stringify(v, null, 3));
+
+            }, this);
+        }.bind(this)
+
+        walkJson(m.schema, jsonSchema.properties, jsonSchema.required);
+
         return jsonSchema;
     },
     put:function (v, k) {
@@ -294,7 +289,7 @@ module.exports = {
             "parameters":this.params(v),
             "responseClass":"List[" + k + "]",
             "errorResponses":[],
-            "nickname":"findAll" + inflection.capitalize(inflection.camelTo(v.plural))
+            "nickname":"findAll" + inflection.titleize(inflection.camelTo(v.plural, ' ')).replace(/\s+?/g, '')
         }
 
     },

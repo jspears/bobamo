@@ -77,15 +77,10 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                 type:'Checkbox',
                 help:'Multiple values as an Array'
 
-            },
-            modelName:{
-                "type":"FilterText",
-                filter:/^[a-zA-Z_]([a-zA-Z0-9,_,-,$])*$/,
-                help:'Optional schema name, useful to reuse schema fragments'
             }
         },
         fieldsets:[
-            { legend:'Property', fields:['name', 'multiple', 'hidden', 'modelName']},
+            { legend:'Property', fields:['name', 'multiple', 'hidden']},
             { legend:'Persistence', fields:['persistence']},
             { legend:'Display', fields:['title', 'help']},
             { legend:'Editor', fields:['type', 'editor']}
