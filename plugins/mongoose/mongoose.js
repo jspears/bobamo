@@ -175,7 +175,8 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
 
     if (!tmpP && Model) {
         var obj = { subSchema:{}, type:'Object'}
-        _u(p).each(function (v, k) {
+        //I really am not sure about p[path]   but it makes a bug if I don't.
+        _u(p[path]).each(function (v, k) {
             var ref = schema.path(path + '.' + k);
             var editor = this.pluginManager.pluginFor(path + '.' + k, ref || v, Model);
             if (editor)

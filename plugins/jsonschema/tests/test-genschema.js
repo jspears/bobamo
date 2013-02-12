@@ -1,4 +1,5 @@
-var gen = require('../genschema'), fs = require('fs'), bobamo = require('../../../index'), Model = bobamo.DisplayModel, should = require('should');
+var gen = require('../genschema'), fs = require('fs'), bobamo = require('../../../index'), Model = bobamo.DisplayModel,
+    should = require('should');
 var m = JSON.parse(fs.readFileSync(__dirname+'/data/schema.json'))
 
 

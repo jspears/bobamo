@@ -1,6 +1,8 @@
 var bobamo = require('../../index'),
     _u = require('underscore'),
-    inflection = bobamo.inflection
+    inflection = bobamo.inflection,
+    Spec = require('./Spec'),
+    su = require('./swag-utils')
     ;
 var swagger = require("swagger-node-express/Common/node/swagger");
 var util = require('../../lib/util');
@@ -8,78 +10,12 @@ var param = require("swagger-node-express/Common/node/paramTypes");
 var url = require("url");
 var swe = swagger.errors;
 var Model = bobamo.DisplayModel;
+
 "use strict";
 //byte boolean int long float double string Date void'
-function fromType(type, obj) {
-    for (var i = 0, l = arguments.length; i < l; i++) {
-        var t = arguments[i];
-        if (!t)
-            continue;
-        t = t.toLowerCase();
-
-        if (t == 'string' || t == 'boolean' || t == 'int' || t == 'double' || t == 'Date' || t == 'void')
-            return t;
-
-        if (t == 'number')
-            return 'number'
-
-        if (t == 'text' || t == 'textarea')
-            return 'string'
-
-        if (t == 'datetime' || t == 'date')
-            return 'Date'
 
 
-        if (t == 'integer' || t == 'int')
-            return 'int';
 
-        if (t == 'list' || t == 'array')
-            return 'array';
-
-        if (t == 'object' || t == 'objectid' || t == 'nestedmodel')
-            return 'object'
-
-    }
-    return null;
-}
-
-
-/**
- * Takes a schema calls function on each path.
- * @param schema
- * @param func
- * @param path
- */
-function walkSchema(schema, func, path, ctx) {
-    path = path || [];
-    ctx = ctx || this;
-    if (!schema)
-        return;
-    Object.keys(schema).forEach(function (k) {
-        var v = schema[k];
-        var p = path.concat(k);
-        if (!v)
-            return;
-        if (func.call(ctx, v, k, p) === true)
-            return;
-        if (v && v.subSchema) {
-
-            walkSchema(v.subSchema, func, p, v);
-        }
-    });
-}
-
-function fix(arr, str) {
-    if (!arr.length) return [];
-    var ret = [];
-    for (var i = 0, l = arr.length; i < l; i++) {
-        ret.push(str);
-        ret.push(arr[i]);
-    }
-
-    return ret;
-
-}
 module.exports = {
     modelToSchema:function doModelToSchema(m, models, hasIdCallback) {
         if (!models) models = {};
@@ -105,13 +41,12 @@ module.exports = {
         var walkJson = function (schema, properties, required) {
             _u.each(schema, function eachWalkJson(v, ok) {
                 var k = ok.split('.').pop();
-                console.log('key',k);
                 if (!v) {
                     console.log('walkSchema v is null for', k);
                     return true;
                 }
                 var subJson = properties[k] || (properties[k] = {});
-                var type = fromType(v.schemaType, v.type);
+                var type = su.fromType(v.schemaType, v.type);
                 subJson.description = v.description || v.help || v.title;
                 var lType = type && type.toLowerCase();
                 var multiple = v.multiple || lType == 'array' || lType == 'list' || lType == 'set';
@@ -136,7 +71,7 @@ module.exports = {
                         }
                     } else {
                         if (multiple) {
-                          subJson.items = {type:'string'}
+                            subJson.items = {type:'string'}
                         } else {
                             subJson.type = "object"
                             subJson.properties = {};
@@ -198,7 +133,7 @@ module.exports = {
 
         return jsonSchema;
     },
-    put:function (v, k) {
+    update:function (v, k) {
         var K = inflection.capitalize(k);
         return {
 //                "path":"/" + k,            "parameters":[param.path("id", "ID of " + v.modelName, "string")],
@@ -215,7 +150,7 @@ module.exports = {
             "nickname":"update" + K
         }
     },
-    post:function (v, k) {
+    create:function (v, k) {
         var K = inflection.capitalize(k);
         return {
             "notes":"adds a " + K + " to the store",
@@ -236,36 +171,19 @@ module.exports = {
         req.url = newUrl;
         next();
     },
-    params:function (v) {
-        var p = [
-            param.q('skip', 'number of records to skip', 'int', false, false, null, 0),
-            param.q('limit', 'limit the number of records', 'int', false, false, null, 10)
-        ]
-        var filters = [], sort = [], populate = [];
-        _u.each(v.schema, function (vv, k) {
-
-//            var k = vv.path;
-            if (k == 'id')
-                return;
-            var type = vv.schemaType;
-            if (type == 'Date' || type == 'Number' || type == 'String') {
-                filters.push(param.q('filter[' + k + ']', 'filter text fields on ' + k + ' supports &gt;, &lt;, = modifiers', 'string', false, false));
-                sort.push(param.q('sort[' + k + ']', 'sort on ' + k + ' direction ascending 1, descending -1', 'int', false, false, [1, -1], 1));
-            } else {
-                populate.push(k)
-            }
-
-        })
-        if (populate.length) {
-            p = p.concat(param.q('populate', 'populate field', 'string', false, true, populate))
-        }
-        return  p.concat(filters, sort);
-    },
     finders:function (v, k) {
-        return _u.map(v.finders, function (vv, kk) {
+        if (!v.finders)
+            return;
+        var allowed = v.allowedMethods || v.finders.map( function(v){ return v.name });
+        return _u.map(v.finders, function onMapFinders(vv, kk) {
             if (!vv.spec)
                 return;
-            var type = vv.spec && vv.spec.method && vv.spec.method.toLowerCase() || 'get';
+            if (!~allowed.indexOf(vv.name)){
+                console.log('method not allowed', vv.name);
+                return;
+            }
+
+            var type = vv.spec && vv.spec.method && vv.spec.method.toUpperCase() || 'GET';
             var responseClass = vv.spec.responseClass || 'List[' + k + ']'
             var ret = _u.extend({
                     path:vv.name,
@@ -275,25 +193,24 @@ module.exports = {
                     responseModel:vv.spec.responseModel()
                 },
                 _u.omit(vv.spec, 'method', 'params', 'path', 'responseModel'))
-
             return ret;
-        })
+        }, this)
 
     },
-    all:function (v, k) {
+    findAll:function (v, k) {
         return  {
             "description":"Returning all " + v.plural,
             "notes":"All values with typical sorting/filtering",
             "summary":"Find all " + v.plural,
             "httpMethod":"GET",
-            "parameters":this.params(v),
+            "parameters":su.params(v),
             "responseClass":"List[" + k + "]",
             "errorResponses":[],
             "nickname":"findAll" + inflection.titleize(inflection.camelTo(v.plural, ' ')).replace(/\s+?/g, '')
         }
 
     },
-    one:function (v, k) {
+    findOne:function (v, k) {
 
         var K = inflection.capitalize(k);
         return  {
@@ -307,7 +224,7 @@ module.exports = {
             "responseClass":k
         }
     },
-    del:function (v, k) {
+    remove:function (v, k) {
         var K = inflection.capitalize(k);
         return {
             //"path":"/" + k + "/{id}",
@@ -319,7 +236,5 @@ module.exports = {
             "nickname":"delete" + K,
             "responseClass":"void"
         };
-    },
-    fromType:fromType,
-    walkSchema:walkSchema
+    }
 }

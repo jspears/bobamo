@@ -309,7 +309,7 @@ module.exports = function SwaggerToMarkdown(options) {
         f.$write(this.$build_markdown_header("High-level Service Design", 2));
         f.$writeln('All services are designed as RESTful HTTP services. JSON is used as the transport format for all request/response bodies.' +
             'Although the service design at this point is intended to support no more beyond the scope of ' + options.apiname);
-
+        f.$writeln("\n")
         f.$write(this.$build_markdown_header("JSON Schema", 2));
         f.$writeln('The content of JSON request/response are specified as [JSON Schemas](http://json-schema.org/latest/json-schema-core.html). JSON Schema is to JSON as XML Schema is to XML, effectively a formal content for a documents structure expressed in the format itself. JSON Schema lends itself to being easily human readable which can significantly help with services design discussions.       The service contracts expressed in this document use version 4 of the JSON schema draft. There are a number of validators available for Java, Node and Ruby.\n')
 

@@ -1,7 +1,7 @@
 var bobamo = require('../../index'),
     _u = require('underscore'),
     inflection = bobamo.inflection, Model = bobamo.DisplayModel
-    Swag = require('./genschema')
+    Swag = require('./swag-utils')
     ;
 var swagger = require("swagger-node-express/Common/node/swagger");
 var util = require('../../lib/util');
@@ -57,7 +57,7 @@ var Spec = function (args, finder, path) {
                 });
 
             }
-        }else if (method == 'POST'  || method == 'PUT'){
+        }else if (method == 'POST'  || method == 'PUT' || method == 'DELETE'){
             /* "description":"Array of words to add to WordList",
              "required":false,
              "dataType":"Array[StringValue]",
@@ -111,19 +111,22 @@ var Spec = function (args, finder, path) {
             return rc;
         }
         rc = this.responseModel().modelName;
-        return display.single ? rc : "List[" + rc + "]";
+        return (this.method == 'POST' || this.method == 'DELETE') ?  'void' :  display.single ? rc : "List[" + rc + "]";
     });
 
     this.__defineGetter__('nickname', function () {
         return util.find('nickname', args) || finder.name;
 
     });
+
     this.__defineGetter__('method', function () {
         var m = util.find('method', args) || util.find('httpMethod', args);
+        if (m)
+            return m.toUpperCase();
         if (display.method)
-            return display.method;
+            return display.method.toUpperCase();
         if (display.httpMethod)
-            return display.httpMethod;
+            return display.httpMethod.toUpperCase();
 
         return 'GET';
 
@@ -135,4 +138,19 @@ var Spec = function (args, finder, path) {
 
     });
 }
+var Finder = bobamo.FinderModel
+
+Finder.prototype.__defineGetter__('spec', function () {
+    return new Spec([this.display.spec], this)
+});
+/**
+ * Specifies which actions are allowed on an object.
+ * by default all are.  Otherwise it would be
+ * 'findOne', 'findAll', 'create', 'update', 'remove'...
+ */
+bobamo.DisplayModel.prototype.__defineGetter__('allowedMethods', function(){
+    var args = this._args();
+    var allowed = util.find('allowedMethods', args);
+    return allowed;
+});
 module.exports = Spec;
