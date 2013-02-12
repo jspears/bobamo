@@ -36,7 +36,7 @@ define([
                     editors[v.type] = true;
                 if (v.multiple) {
                     nobj.listType = v.schemaType;
-                    nobj.type = 'List';
+                    if (!nobj.type) nobj.type = 'List';
                 }
                 if (schemaType == 'Object')
                     return   _.each(paths, onPath((nobj.subSchema = {})));

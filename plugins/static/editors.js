@@ -101,13 +101,11 @@ module.exports = [
     },
     {
         name:'MultiEditor',
-        types:[ 'ObjectId'],
-        schema:{
-            ref:{
-                type:'Select',
-                collection:'views/modeleditor/admin/schema-collection'
-            }
-        }
+        types:[ 'ObjectId']
+    },
+    {
+        name:'TokenEditor',
+        types:['ObjectId']
     },
     {   name:'Number',
         types:['Number', 'String'],

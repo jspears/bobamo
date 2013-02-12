@@ -5,7 +5,7 @@
 <!--<td><a href="#/modeleditor/admin/create?id=<%=item.id%>"><i class="icon-edit"></i>Edit</a></td>-->
 <td>
     <h2><%= item.get('modelName') %></h2>
-    <p class="lead"><%= item.get('display') && item.get('display').description || 'No Description' %></p>
+    <p class="lead"><%=  item.get('description') %></p>
     <br/>
     <a href="<%=item.get('url')%>" target="_blank"><%= item.get('url') %></a>
     <% if (item.get('managed')){%>

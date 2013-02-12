@@ -50,6 +50,18 @@ define([
             console.log('Collection#parse ${model.modelName}', resp.payload);
             this.total = resp.total;
             return resp.payload ? resp.payload : resp;
+        },
+        search:function(q, success, failure){
+            this.fetch({
+                data:{
+                    filter:{
+                        '${model.labelAttr}':q
+                    }
+                },
+                processJson:true,
+                success:success,
+                failure:failure
+            })
         }
     });
 

@@ -94,16 +94,8 @@ EditPlugin.prototype.routes = function () {
         var models = [];
         var editModel = this.local(res, 'editModel');
         editModel.models.forEach(function (v, k) {
-            var m = _u.extend({}, v);
-            delete m.schema;
-            delete m._paths;
-            delete m.model;
-            delete m.fields;
-            delete m.edit_fields;
-            delete m.list_fields;
-            delete m.fieldsets;
-            delete m.editors;
-            delete m.schema;
+            var m = _u.extend({}, _u.omit(v,'schema','_paths','model','fields','edit_fields','list_fields','fieldsets','editors'));
+            m.description = v.model.description;
             models.push(m);
         });
         res.send({
