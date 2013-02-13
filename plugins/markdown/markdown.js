@@ -6,6 +6,26 @@ var Markdown = function(){
 u.inherits(Markdown, PluginApi);
 
 Markdown.prototype.routes = function(){
+    this.app.post(this.pluginUrl+'/preview', function(req,res,next){
+        var marked = require('marked');
+
+        res.send(marked(req.body.data, {
+            gfm: true,
+            tables: true,
+            breaks: false,
+            pedantic: false,
+            sanitize: true,
+            smartLists: true,
+
+            langPrefix: 'language-',
+            highlight: function(code, lang) {
+                if (lang === 'js') {
+                    return highlighter.javascript(code);
+                }
+                return code;
+            }
+        }));
+    });
     PluginApi.prototype.routes.apply(this, arguments);
 }
 

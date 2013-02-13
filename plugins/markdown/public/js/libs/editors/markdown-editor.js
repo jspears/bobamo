@@ -2,6 +2,7 @@ define(['Backbone.Form', 'markdown/settings', 'markdown/js/libs/editors/markitup
 
     var Markdown = Form.editors.TextArea.extend({
         tagName:'textarea',
+        className:'markItUp',
         getValue:function(){
           return this.$el  ? this.$el.val()  : this.value;
         },
@@ -13,8 +14,11 @@ define(['Backbone.Form', 'markdown/settings', 'markdown/js/libs/editors/markitup
             var self = this;
             this.$el.attr('rows','20');
             this.$el.attr('cols','80')
+            var $el = this.$el;
+            setTimeout(function(){
+                $el.markItUp(settings);
 
-            this.$el.markItUp(settings);
+            },10)
             return this;
         }
     })

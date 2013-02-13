@@ -3,8 +3,8 @@ define(function(){
 
     var mySettings = {
         nameSpace:          'markdown', // Useful to prevent multi-instances CSS conflict
-        previewParserPath:  url+'/preview',
-        root:url+'js/libs/editors/markitup/markitup/',
+        previewParserPath:  '${pluginUrl}/preview',
+        root:'${pluginUrl}js/libs/editors/markitup/markitup/',
         onShiftEnter:       {keepDefault:false, openWith:'\n\n'},
         markupSet: [
             {name:'First Level Heading', key:"1", placeHolder:'Your title here...', closeWith:function(markItUp) { return miu.markdownTitle(markItUp, '=') } },

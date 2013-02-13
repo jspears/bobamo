@@ -75,11 +75,6 @@ define(['Backbone.Form', 'jquery', 'underscore', 'libs/jquery/jquery.tokeninput'
                         }
                     })
                 }
-//                //Don't do the fetch if it's already populated
-//                if (collection.length > 0) {
-//
-//                    this.renderOptions(collection.map(collectionToToken));
-//                }
 
                 if (collection.search)
                     collection.search();
@@ -106,12 +101,6 @@ define(['Backbone.Form', 'jquery', 'underscore', 'libs/jquery/jquery.tokeninput'
         },
         selectNone:'<option data-none="null" value="">None</option>',
         getValue:function () {
-//            var $children =this.$el.children();
-//            for(var i=0,l=$children.length; i<l; i++){
-//                if($children[i].selected && $($children[i]).attr('data-none') == 'null'){
-//                    return null;
-//                }
-//            }
             return this.$el.tokenInput("get").map(function(v){ return v.id });
 
         }

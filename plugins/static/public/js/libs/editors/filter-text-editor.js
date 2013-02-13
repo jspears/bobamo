@@ -37,7 +37,9 @@ define(['Backbone.Form','underscore'], function(Form, _){
                throw "Required attribute 'filter' is missing";
            }
            if (_.isString(options.schema.filter)){
-               this.filter = new RegExp(options.schema.filter.replace(reFilter, ''));
+               var f = options.schema.filter.replace(reFilter, '')
+               if (f == '*') f = '.*'
+               this.filter = new RegExp(f);
            }else{
                this.filter = options.schema.filter;
            }
