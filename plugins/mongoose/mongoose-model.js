@@ -27,7 +27,8 @@ module.exports = function MModel(m, manager) {
     this.__defineGetter__('schema', function () {
         var ret = {};
         _u.each(m.schema.tree, function (v,k) {
-            if (!k || k === 'undefined') return;
+            if (!k || k === 'undefined' || (k == 'id' && m.schema.virtualpath(k)) )
+                return;
             ret[k] = new MField(k, manager.pluginFor(k, v, m, this));
         }, this);
 

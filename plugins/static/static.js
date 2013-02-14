@@ -17,7 +17,7 @@ var StaticPlugin = function (options, app, name, p, pluginManager) {
     });
 }
 util.inherits(StaticPlugin, Plugin);
-
+StaticPlugin.prototype.renderers = function(){ return require('./renderers') };
 var formatters = [
     {name:'Text',
         schema:{

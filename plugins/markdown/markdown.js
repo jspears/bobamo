@@ -7,8 +7,11 @@ u.inherits(Markdown, PluginApi);
 
 Markdown.prototype.routes = function(){
     this.app.post(this.pluginUrl+'/preview', function(req,res,next){
+        try {
         var marked = require('marked');
-
+        }catch(e){
+            res.send('<html><body><h2>Please run npm install in the markdown directory for preview to work</h2></body></html>')
+        }
         res.send(marked(req.body.data, {
             gfm: true,
             tables: true,

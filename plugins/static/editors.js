@@ -105,7 +105,16 @@ module.exports = [
     },
     {
         name:'TokenEditor',
-        types:['ObjectId']
+        types:['ObjectId'],
+        schema:{
+            url:{
+                type:'Text',
+                help:'By default token editor will query and filter on whatever is labelAttr, use this' +
+                    ' to use a different rest url for this, the id of the parent object will be passed as ' +
+                    ' an attribute _id',
+                placeholder:'/rest/{ref}?transform=labelval&limit=10&_id={id}'
+            }
+        }
     },
     {   name:'Number',
         types:['Number', 'String'],
