@@ -46,6 +46,10 @@ JsonSchemaPlugin.prototype.appModel = function () {
                     label:'Service API Documentation ',
                     href:'#jsonschema/view/doc'
                 },
+                'jsonschema-doc':{
+                    label:'Service Edit Documentation ',
+                    href:'#jsonschema/view/markdown'
+                },
                 'jsonschema-conf':{
                     label:'Service API Configuration ',
                     href:'#views/configure/jsonschema'
@@ -108,37 +112,6 @@ JsonSchemaPlugin.prototype.admin = function () {
 }
 
 var docRe = /^document-(.*)/;
-/*<option value='document-native'>native</option>
- <option value='document-json'>json</option>
- <option value='document-html'>html</option>
- <option value='document-html5'>html5</option>
- <option value='document-html+lhs'>html+lhs</option>
- <option value='document-html5+lhs'>html5+lhs</option>
- <option value='document-s5'>s5</option>
- <option value='document-slidy'>slidy</option>
- <option value='document-slideous'>slideous</option>
- <option value='document-dzslides'>dzslides</option>
- <option value='document-docbook'>docbook</option>
- <option value='document-opendocument'>opendocument</option>
- <option value='document-latex'>latex</option>
- <option value='document-latex+lhs'>latex+lhs</option>
- <option value='document-beamer'>beamer</option>
- <option value='document-beamer+lhs'>beamer+lhs</option>
- <option value='document-context'>context</option>
- <option value='document-texinfo'>texinfo</option>
- <option value='document-man'>man</option>
- <option value='document-markdown'>markdown</option>
- <option value='document-markdown+lhs'>markdown+lhs</option>
- <option value='document-plain'>plain</option>
- <option value='document-rst'>rst</option>
- <option value='document-rst+lhs'>rst+lhs</option>
- <option value='document-mediawiki'>mediawiki</option>
- <option value='document-textile'>textile</option>
- <option value='document-rtf'>rtf</option>
- <option value='document-org'>org</option>
- <option value='document-asciidoc'>asciidoc</option>
- <option value='document-odt'>odt</option>
- <option value='document-docx'>docx</option>*/
 var extensionMap = JsonSchemaPlugin.prototype.extensionMap = {
     'html5':{
         ext:'html',

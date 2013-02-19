@@ -2,6 +2,7 @@ module.exports = [
     {
         name:'Text',
         types:['String', 'Boolean', 'Number', 'Date'],
+        description:"Settings for text fields",
         schema:{
             default:{ type:'Text' },
             ellipsis:{

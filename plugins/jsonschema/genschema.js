@@ -30,12 +30,18 @@ module.exports = {
             required:[],
             description:description,
             properties:(function () {
-                return noId ? {} : {
+                return _u.extend({
+                    _v:{
+                        type:'number',
+                        description:'Version identifier for current record, needed for optimistic locking'
+                    }
+
+                }, noId ? {} : {
                     _id:{
                         type:'string',
                         description:'Identifier for "' + m.modelName + '"'
                     }
-                }
+                });
             })()
         };
         var walkJson = function (schema, properties, required) {

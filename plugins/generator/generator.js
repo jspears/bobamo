@@ -97,13 +97,13 @@ GeneratorPlugin.prototype.routes = function (options) {
 //        }
     }
 
-    function makeOptions(req) {
+    function makeOptions(req,res) {
         var type = req.params.type;
         var opts = _u.extend({modelName:type}, baseOpts);
 
         if (type) {
             type = type.replace(extRe, '');
-            opts.model = appModel.modelFor(type);
+            opts.model = res.locals('model') || appModel.modelFor(type);
             opts.type = type;
             opts.view = req.params.view;
             opts.urlRoot = opts.model && opts.model.modelName;
@@ -129,7 +129,7 @@ GeneratorPlugin.prototype.routes = function (options) {
     var base = this.baseUrl;
     if (this.options.index) {
         app.get(base + this.options.index, function (req, res, next) {
-            this.generate(res, 'index.html', makeOptions(req), next);
+            this.generate(res, 'index.html', makeOptions(req,res), next);
         }.bind(this))
     }
 
@@ -137,8 +137,8 @@ GeneratorPlugin.prototype.routes = function (options) {
         res.redirect(this.baseUrl + (this.options.index || 'index.html'));
     }.bind(this));
 
-    function finderOpts(req) {
-        var options = makeOptions(req);
+    function finderOpts(req, res) {
+        var options = makeOptions(req,res);
         var finder = options.model.finder(options.view);
         options = _u.extend(options, {
             urlRoot:options.type + '/finder/' + options.view,
@@ -173,47 +173,47 @@ GeneratorPlugin.prototype.routes = function (options) {
     }.bind(this));
 
     app.get(base + 'js/views/:type/finder/:view.:format', function (req, res, next) {
-        this.generate(res, 'views/finder.' + req.params.format, finderOpts(req), next);
+        this.generate(res, 'views/finder.' + req.params.format, finderOpts(req,res), next);
     }.bind(this));
 
     app.get(base + 'js/:clz/:type/finder/:view.:format', function (req, res, next) {
 
-        this.generate(res, req.params.clz + '.' + req.params.format, finderOpts(req), next);
+        this.generate(res, req.params.clz + '.' + req.params.format, finderOpts(req,res), next);
     }.bind(this));
 
     app.get(base + 'templates/:type/finder/:view/:tmpl', function (req, res, next) {
-        this.generate(res, 'templates/' + req.params.tmpl, finderOpts(req), next);
+        this.generate(res, 'templates/' + req.params.tmpl, finderOpts(req,res), next);
 
     }.bind(this));
 
     app.get(base + ':view', function (req, res, next) {
-        this.generate(res, req.params.view, makeOptions(req), next);
+        this.generate(res, req.params.view, makeOptions(req,res), next);
     }.bind(this));
     app.get(base + 'js/:view', function (req, res, next) {
-        this.generate(res, req.params.view, makeOptions(req), next);
+        this.generate(res, req.params.view, makeOptions(req,res), next);
     }.bind(this));
     app.get(base + 'js/views/:view', function (req, res, next) {
-        this.generate(res, req.params.view, makeOptions(req), next);
+        this.generate(res, req.params.view, makeOptions(req,res), next);
     }.bind(this));
 
     app.get(base + 'js/views/:type/:view', function (req, res, next) {
-        this.generate(res, 'views/' + req.params.view, makeOptions(req), next);
+        this.generate(res, 'views/' + req.params.view, makeOptions(req,res), next);
     }.bind(this));
 
     app.get(base + 'js/:view/:type.:format', function (req, res, next) {
-        this.generate(res, req.params.view + '.' + req.params.format, makeOptions(req), next);
+        this.generate(res, req.params.view + '.' + req.params.format, makeOptions(req,res), next);
     }.bind(this));
 
     app.get(base + 'js/:view', function (req, res, next) {
-        this.generate(res, req.params.view, makeOptions(req), next);
+        this.generate(res, req.params.view, makeOptions(req,res), next);
 
     }.bind(this));
     app.get(base + 'templates/:type/:view', function (req, res, next) {
-        this.generate(res, 'templates/' + req.params.view, makeOptions(req), next);
+        this.generate(res, 'templates/' + req.params.view, makeOptions(req,res), next);
 
     }.bind(this));
     app.get(base + 'tpl/:view', function (req, res, next) {
-        this.generate(res, 'templates/' + req.params.view, makeOptions(req), next);
+        this.generate(res, 'templates/' + req.params.view, makeOptions(req,res), next);
 
     }.bind(this));
     //post instead of model
