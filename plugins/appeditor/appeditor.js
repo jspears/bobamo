@@ -14,16 +14,16 @@ var AppEditorPlugin = function (options, app, name) {
 }
 require('util').inherits(AppEditorPlugin, Plugin);
 
-AppEditorPlugin.prototype.appModel = function(){
+AppEditorPlugin.prototype.appModel = function () {
     return this._appModel;
 }
-AppEditorPlugin.prototype.configure = function(options){
-    _u.extend(this._appModel,options);
+AppEditorPlugin.prototype.configure = function (options) {
+    _u.extend(this._appModel, options);
     console.log('AppEditorPlugin AppModel', this._appModel);
 
 }
-AppEditorPlugin.prototype.filters = function(){
-    this.app.get(this.pluginUrl+'*', function(req,res,next){
+AppEditorPlugin.prototype.filters = function () {
+    this.app.get(this.pluginUrl + '*', function (req, res, next) {
         res.locals('pluginManager', this.pluginManager);
         next();
     }.bind(this));
@@ -38,9 +38,22 @@ AppEditorPlugin.prototype.routes = function (options) {
             status:1
         })
     }.bind(this));
+    var revision = function (req) {
+        var appModel = this.pluginManager.appModel;
+        if (req.body.version != appModel.version) {
+            var revisions = (req.body.revisions || (req.body.revisions = []));
+            revisions.push({
+                version:appModel.version,
+                description:appModel.description,
+                modified:appModel.modified || new Date(),
+                timestamp:appModel.timestamp
+            })
+        }
 
+    }.bind(this);
     this.app.post(this.pluginUrl + '/admin', function (req, res, next) {
-        this.save(req.body, function(err, obj){
+        revision(req);
+        this.save(req.body, function (err, obj) {
             res.send({
                 status:0,
                 payload:obj
@@ -49,7 +62,8 @@ AppEditorPlugin.prototype.routes = function (options) {
     }.bind(this));
 
     this.app.put(this.pluginUrl + '/admin', function (req, res, next) {
-        this.save(req.body, function(err, obj){
+        revision(req);
+        this.save(req.body, function (err, obj) {
             res.send({
                 status:0,
                 payload:obj

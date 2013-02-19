@@ -72,7 +72,7 @@ define([
                 build:'${appModel.build}',
 //                models:{{json Object.keys(appModel.modelPaths) }},
 //                plugins:{{json pluginManager.pluginNames()}},
-                authors:{{json appModel.authors}}
+                authors:{{json appModel.authors || []}}
             });
         }
     });

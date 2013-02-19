@@ -7,6 +7,7 @@ function $titlelize(str) {
             }).join(' ');
     }).join(' ')
 }
+var moment = require('moment');
 
 module.exports = function SwaggerToMarkdown(options) {
     var resources = options.resourcefile;
@@ -297,12 +298,22 @@ module.exports = function SwaggerToMarkdown(options) {
 
         f.$write(this.$build_markdown_header(api_name + ' Service Contract', 1));
         f.$write(this.$build_markdown_header('About', 2));
-        f.$write('<table><tbody><tr><td>Authors</td><td>' + (options.authors ? options.authors.join(', ') : '' ) + '</td></tr>' +
-            '<tr><td>Version</td><td>' + api_version + '</td></tr>');
+        f.$write('<table><thead>' +
+            '<tr><th colspan="3">Authors: ' + (options.authors ? options.authors.join(', ') : '' ) + '</th></tr>' +
+            '<tr><th>Date</th><th>Version</th><th>Notes</th></tr></thead><tbody>');
 
         if (options.modified) {
-            var moment = require('moment');
-            f.$write('<tr><td>Date</td><td>' + moment(options.modified).format("MM/DD/YYYY") + '</td></tr>');
+            f.$write('<tr><td>' + moment(options.modified).format("MM/DD/YYYY") + '</td><td>'+api_version+'</td><td>'+(options.description || 'current api')+'</td></tr>');
+        }
+        if (options.revisions){
+            options.revisions.forEach(function(v,k){
+                f.$write('<tr><td>' + moment(new Date(v.modified)).format("MM/DD/YYYY") + '</td><td>'+
+                    v.version
+                    +'</td><td>' +
+                    (v.description || '')
+                    +'</td></tr>');
+
+            });
         }
         f.$write('</tbody></table>');
         f.$write("\n\n");

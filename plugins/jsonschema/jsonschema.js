@@ -256,13 +256,15 @@ JsonSchemaPlugin.prototype.resource = function (modelName) {
     return doc;
 }
 JsonSchemaPlugin.prototype.markdown = function () {
+    var appModel = this.pluginManager.appModel;
     return new SwaggerToMarkdown({
         apiname:this.pluginManager.appModel.title,
         basePath:this.swaggerUrl(),
         resourcefile:this.resource(),
-        authors:this.pluginManager.appModel.authors,
-        modified:this.pluginManager.appModel.modified? new Date(this.pluginManager.appModel.modified) : new Date(),
-        specifications:Object.keys(this.pluginManager.appModel.modelPaths).map(this.resource, this)
+        authors:appModel.authors,
+        revisions:appModel.revisions,
+        modified:appModel.modified? new Date(appModel.modified) : new Date(),
+        specifications:Object.keys(appModel.modelPaths).map(this.resource, this)
     }).print();
 }
 JsonSchemaPlugin.prototype.routes = function () {
