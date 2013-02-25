@@ -14,7 +14,7 @@ LessPlugin.prototype.configure = function (conf) {
         if (v !== this)
             paths.push(path.join(v.path, 'less'));
     }, this);
-
+    paths.push(process.cwd()+'/less')
     if (!this.options.lessFactory)
         this.lessFactory = this.options.lessFactory = new LessFactory({
             paths:paths
