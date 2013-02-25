@@ -1,22 +1,6 @@
-var fs = require('fs'), sf = require('stringformat'), csv = require('csv'),
+var fs = require('fs'),  csv = require('csv'),
     inflection = require('../../lib/inflection'), pslice = Array.prototype.slice;
 
-function markdown(v, k) {
-    //  console.log('v',v);
-    var header = [
-        "\n####" + (k == 'undefined' ? 'No Assigned Epic' : k),
-        "\n\\#  Services      Priority                     As a...       I want to...\n---  ------------------------------  ---------      --------      -----------"
-    ]
-    v.forEach(function (o) {
-        o['as_a'] = o['As a...'];
-        o['want_to'] = o['I want to...'];
-        o['so_i_can'] = o['So that I...'];
-        header.push(sf("{#:-5}{Priority:-15}{as_a:-14}{want_to}", o));
-
-    });
-    var str = header.join('\n');
-    return str;
-}
 var empty = 0;
 var fixRe =  /[^a-zA-Z0-9#_-]/g;
 function readCsv(file, map, key, callback) {
@@ -85,11 +69,6 @@ function keys(obj) {
     return Array.isArray(obj) ? obj.map(function (v, k) {
         return k
     }) : Object.keys(obj);
-}
-function makeMarkdown(epic) {
-    keys(epic).forEach(function (k) {
-        markdown(epic[k], k);
-    });
 }
 /**
  *
@@ -262,10 +241,5 @@ module.exports = {
     pad:pad,
     rep:rep,
     readCsv:readCsv,
-    markdown:markdown,
-    make:makeMarkdown,
-    makeheader:makeheader,
-    maketable:maketable,
-    keys:keys,
-    makehtml:makehtml
+    keys:keys
 }

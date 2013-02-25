@@ -187,7 +187,7 @@ define([
             form.on('render', function () {
                 var html = form.el;
                 console.log('appending', html);
-                $fm.append(html);
+                $fm.empty().append(html);
                 if (isWiz)
                     $('.form-wrap', $del).wiz(wizOptions);
             }, this);

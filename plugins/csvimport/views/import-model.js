@@ -3,6 +3,9 @@ define(['underscore', 'Backbone', 'Backbone.Form', 'libs/bobamo/edit', 'views/mo
     var CVM = CreateView.prototype.model;
 
     var MappingModel = B.Model.extend({
+        toString:function(){
+          return this.get('column') || this.get('property');
+        },
         schema:{
             column:{
                 type:'Text'
@@ -37,23 +40,23 @@ define(['underscore', 'Backbone', 'Backbone.Form', 'libs/bobamo/edit', 'views/mo
             var resp  = r.payload;
             console.log('update', resp, this);
             var schema = [];
-            _.each(resp.headerMap, function(v,k){
-                schema.push({ title:v, name:k, type:'Text', schemaType:'String' });
-            })
+            var headerMap = resp.headerMap;
+            var headers = resp.headers;
+            _.each(headers, function(k){
+               var v = headerMap[k];
+               this.addItem({ title:v, name:k, type:'Text', schemaType:'String' });
+            }, this.fields.schema.editor)
+            _.each(headers, function(v){
+                this.addItem(v)
+            }, this.fields.list_fields.editor);
+            _.each(headers, function(k){
+                var v = headerMap[k];
+                this.addItem({property:k, column:v, type:'automatic'})
+            }, this.fields.mapping.editor);
+
             var modelName = resp.modelName.replace(/\..*$/,'');
-            this.setValue('schema', schema);
-            this.setValue('modelName', modelName);
-            this.setValue('fieldsets', [{legend:modelName, fields:resp.headers}]);
-            this.setValue('list_fields', resp.headers);
-//            this.fields.schema.setValue(schema);
-//            this.fields.modelName.setValue(resp.modelName);
-//            this.fields.list_fields.setValue(resp.headers);
-//            this.model.set({
-//                schema:schema,
-//                list_fields:resp.headers,
-//                modelName:resp.modelName
-//            })
-////            this.commit();
+            this.fields.modelName.setValue(modelName);
+            this.commit();
 //            this.render();
 
         },
