@@ -119,7 +119,7 @@ define([
                 if (!v.direction) return;
                 sort.push([v.field, v.direction].join(':'));
             });
-
+            this.collection.params = data;
             data.sort = sort.join(',');
             this.collection.fetch({data:data, success:_.bind(this._fetch, this)});
             return this;

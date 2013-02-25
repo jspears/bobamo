@@ -41,9 +41,16 @@ define([
         events:{
             'click button.save':'onSave',
             'click button.cancel':'onCancel',
-            'click ul.error-list li':'onErrorItemClick'
-//            ,
-//            'submit form':'onSave'
+            'click ul.error-list li':'onErrorItemClick',
+            'click .next':'onNext',
+            'click .previous':'onPrevious'
+        },
+        onNext:function(e){
+            if (e) e.preventDefault()
+        },
+        onPrevious:function(e){
+            if (e) e.preventDefault()
+
         },
         initialize:function () {
             _.bindAll(this);
