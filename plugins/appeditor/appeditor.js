@@ -19,8 +19,6 @@ AppEditorPlugin.prototype.appModel = function () {
 }
 AppEditorPlugin.prototype.configure = function (options) {
     _u.extend(this._appModel, options);
-    console.log('AppEditorPlugin AppModel', this._appModel);
-
 }
 AppEditorPlugin.prototype.filters = function () {
     this.app.get(this.pluginUrl + '*', function (req, res, next) {
