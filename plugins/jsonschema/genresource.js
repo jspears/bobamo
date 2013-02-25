@@ -11,15 +11,21 @@ var baseDoc = function(swagUrl, version){
 
 module.exports.resources = function(modelPaths, swagUrl, version){
     var doc = baseDoc(swagUrl, version);
-    doc.apis = _u.map(modelPaths, function (v, k) {
-        return {
+    var apis = doc.apis =  [];
+    _u.each(modelPaths, function (v, k) {
+        if (v.allowedMethods && v.allowedMethods.length == 0){
+            return
+        }
+        apis.push( {
             path:"/"+ k,
             description:v.description || v.help || ''
-        }
+        })
     });
     return doc;
 
 }
+
+var silent_methods = ['find', 'findById','create','update','remove']
 module.exports.resourceFor = function(model, swagUrl, version, resolver){
     resolver = resolver || function(v){
         return v;
@@ -34,8 +40,8 @@ module.exports.resourceFor = function(model, swagUrl, version, resolver){
            return swagger[method].call(swagger, model, modelName);
     }
     _u.each(_u.flatten([
-        isAllowed('findAll'),
-        isAllowed('findOne'),
+        isAllowed('find'),
+        isAllowed('findById'),
         isAllowed('create'),
         isAllowed('update'),
         isAllowed('remove'),

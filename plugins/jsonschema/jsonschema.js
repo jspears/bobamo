@@ -244,14 +244,15 @@ JsonSchemaPlugin.prototype.configure = function (conf) {
     this.swaggerUrl();
 }
 JsonSchemaPlugin.prototype.resource = function (modelName) {
-    var version = this.pluginManager.appModel.version, swagUrl = this.swaggerUrl();
+    var appModel =this.pluginManager.appModel;
+    var version = appModel.version, swagUrl = this.swaggerUrl();
     if (modelName){
 //        var model = this.pluginManager.appModel
-        var doc = gen_resource.resourceFor(this.pluginManager.appModel.modelFor(modelName),swagUrl, version, function(mName){
-           return _u.isString(mName) ? this.pluginManager.appModel.modelFor(mName) : mName;
+        var doc = gen_resource.resourceFor(appModel.modelFor(modelName),swagUrl, version, function(mName){
+           return _u.isString(mName) ? appModel.modelFor(mName) : mName;
         }.bind(this));
     }else{
-        var doc = gen_resource.resources(this.pluginManager.appModel.modelPaths, swagUrl, version);
+        var doc = gen_resource.resources(appModel.modelPaths, swagUrl, version);
     }
     return doc;
 }
@@ -268,6 +269,30 @@ JsonSchemaPlugin.prototype.markdown = function () {
     }).print();
 }
 JsonSchemaPlugin.prototype.routes = function () {
+    this.app.get(this.pluginUrl+'/meta/service', function(req,res){
+        var appModel = this.pluginManager.appModel;
+        var resources = _u.flatten(_u.flatten(Object.keys(appModel.modelPaths).map(this.resource, this).map(function(v){
+            return v.apis;
+        })).map(function(v){
+                console.log(v);
+                var path = v.path;
+                var fp = (((path[0] == '/' ) ? path.substring(1) : path).split('/')).shift();
+
+                return v.operations.map(function(v){
+                    var val = v.httpMethod+'['+ fp+'.'+v.nickname +']';
+                    return {
+                        label:v.nickname+' ['+v.httpMethod+' '+path+']',
+                        val:val
+                    }
+                })
+         }));
+
+        res.send({
+            status:0,
+            payload:resources
+        })
+
+    }.bind(this));
 
 
     var resource = function (req, res, next) {
@@ -277,6 +302,7 @@ JsonSchemaPlugin.prototype.routes = function () {
         res.setHeader('Content-Type', 'application/markdown');
         res.send(this.markdown());
     }.bind(this));
+
     this.app.get(this.pluginUrl + '/api/resources.:format', resource);
     this.app.get(this.pluginUrl + '/api-docs.:format?/:type?', resource);
     this.app.get(this.pluginUrl + '/api/api-docs.:format?/:type?', resource);

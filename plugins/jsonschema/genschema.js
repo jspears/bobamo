@@ -153,7 +153,7 @@ module.exports = {
             "allowMultiple":false,
             "paramType":"body",
             responseClass:"void",
-            "nickname":"update" + K
+            "nickname":"update"
         }
     },
     create:function (v, k) {
@@ -164,7 +164,7 @@ module.exports = {
             "httpMethod":"POST",
             "parameters":[param.post(k, v.title + " object that needs to be added to the store")],
             "errorResponses":[swe.invalid('input')],
-            "nickname":"add" + K,
+            "nickname":"add",
             "dataType":k,
             "allowMultiple":false,
             "paramType":"body",
@@ -196,50 +196,55 @@ module.exports = {
                     parameters:vv.spec.params,
                     httpMethod:type,
                     responseClass:responseClass,
-                    responseModel:vv.spec.responseModel()
+                    responseModel:vv.spec.responseModel(),
+                    summary:vv.spec.summary
                 },
                 _u.omit(vv.spec, 'method', 'params', 'path', 'responseModel'))
             return ret;
         }, this)
 
     },
-    findAll:function (v, k) {
+    find:function (v, k) {
+        var summary = (v.methods && v.methods.find && v.methods.find.summary || '');
+        console.log('summary find', summary);
         return  {
             "description":"Returning all " + v.plural,
             "notes":"All values with typical sorting/filtering",
-            "summary":"Find all " + v.plural,
+            "summary":"Find all " + v.plural+(v.find && v.find.find || ''),
             "httpMethod":"GET",
             "parameters":su.params(v),
             "responseClass":"List[" + k + "]",
             "errorResponses":[],
-            "nickname":"findAll" + inflection.titleize(inflection.camelTo(v.plural, ' ')).replace(/\s+?/g, '')
+            "nickname":"find"
         }
 
     },
-    findOne:function (v, k) {
-
+    findById:function (v, k) {
+        var summary = (v.methods && v.methods.findById && v.methods.findById.summary || '');
+        console.log('summary findById', summary);
         var K = inflection.capitalize(k);
         return  {
             //   "path":"/{id}",
             "notes":"updates a " + v.title + " in the store",
             "httpMethod":"GET",
-            "summary":"Return an exitsting " + v.title,
+            "summary":"Return an existing " + v.title+ (summary),
             "parameters":[param.path("id", "ID of " + v.modelName, "string")],
             "errorResponses":[swe.invalid('id'), swe.notFound(v.modelName)],
-            "nickname":"get" + K + "ById",
+            "nickname":"findById",
             "responseClass":k
         }
     },
     remove:function (v, k) {
         var K = inflection.capitalize(k);
+        var summary = (v.methods && v.methods.remove && v.methods.remove.summary || '');
         return {
             //"path":"/" + k + "/{id}",
             "notes":"removes a " + v.modelName + " from the store",
             "httpMethod":"DELETE",
-            "summary":"Remove an existing " + v.modelName,
+            "summary":"Remove an existing " + v.modelName+ (summary | ''),
             "parameters":[param.path("id", "ID of " + v.modelName + " that needs to be removed", "string")],
             "errorResponses":[swe.invalid('id'), swe.notFound(v.modelName)],
-            "nickname":"delete" + K,
+            "nickname":"remove",
             "responseClass":"void"
         };
     }

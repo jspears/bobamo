@@ -24,7 +24,7 @@ module.exports = {
             if (t == 'number')
                 return 'number'
 
-            if (t == 'text' || t == 'textarea')
+            if (t == 'text' || t == 'textarea' || t == 'password')
                 return 'string'
 
             if (t == 'datetime' || t == 'date')
