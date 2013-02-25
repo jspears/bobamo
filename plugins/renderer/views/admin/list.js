@@ -1,4 +1,4 @@
-define(['underscore', 'Backbone', 'libs/bobamo/list', 'renderer/js/collection', 'text!${pluginUrl}/templates/table.html',
+define(['underscore', 'Backbone', 'libs/bobamo/list', 'renderer/admin/collection', 'text!${pluginUrl}/templates/table.html',
     'text!${pluginUrl}/templates/table-item.html'], function (_, Backbone, ListView,collection, tableTemplate, listItemTemplate) {
 
 

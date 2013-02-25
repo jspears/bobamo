@@ -5,8 +5,11 @@
 <!--<td><a href="#/modeleditor/admin/create?id=<%=item.id%>"><i class="icon-edit"></i>Edit</a></td>-->
 <td>
     <h2><%= item.get('_id') %></h2>
-    <p class="lead"><%= item.get('help') %> works for <%= item.get('types') || 'Any Type'%></p>
+    <p class="lead">Works for <%= item.get('types') || 'Any Type'%></p>
     <br/>
+    <p class="">
+        <%=item.get('description')%>
+    </p>
     <a href="<%=item.get('url')%>" target="_blank"><%= item.get('url') %></a>
-    <a href="#/views/renderer/admin/edit?_id=<%=item.id%>" class="btn btn-primary pull-right"><i class="icon-wrench"></i> Configure</a>
+    <a href="#/renderer/views/<%=item.id.replace(/\//,'.')%>/edit" class="btn btn-primary pull-right"><i class="icon-wrench"></i> Configure</a>
 </td>
