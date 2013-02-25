@@ -25,18 +25,17 @@ module.exports = [
         types:['Date', 'Number', 'String'],
         schema:{
             format:{
-                type:'Text',
-                default:'dd/mm/yyy'
+                type:'Text'
             }
+        },
+        defaults:{
+            format:'dd/mm/yyy'
         }
     },
     {   name:'DateTime',
-        types:['Date', 'Number', 'String'],
-        schema:{
-            format:{
-                type:'Text',
-                default:'HH:MM dd/mm/yyy'
-            }
+        ref:'static/Date',
+        defaults:{
+            format:'HH:MM dd/mm/yyy'
         }
     },
     {
@@ -45,10 +44,18 @@ module.exports = [
     },
     {
         name:'Multiple',
+        types:['List'],
         schema:{
             itemType:{
                 type:'Select',
-                options:[]
+                multiple:false,
+                collection:'renderer/admin/collection',
+                refresh:true,
+                help:'Select a renderer for renderering each item'
+            },
+            number:{
+                type:'Integer',
+                help:'The number of items to show before ellipsing...'
             }
         }
     },

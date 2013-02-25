@@ -76,10 +76,15 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
             var path = {};
             if (v.name == '_id' || v.name == 'id')
                 return;
+            if (!v.name)
+                v.name = k;
             obj[v.name] = v.multiple ? [path] : path;
             if (v.ref) path.ref = v.ref;
             if (v.schemaType == 'Object'){
-                return onPath(v.subSchema, (path[v.name] = {}), sp ? v.name : [sp, v.name].join('.'))
+                var subObj =  (obj[v.name] = {
+                });
+
+                return onPath(v.subSchema,subObj, sp ? v.name : [sp, v.name].join('.'))
             }
             path.type = naturalType(mongoose, v.schemaType || 'String');
             _u.each(['unique', 'index', 'expires', 'select'], function (vv, k) {
@@ -176,7 +181,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
     if (!tmpP && Model) {
         var obj = { subSchema:{}, type:'Object'}
         //I really am not sure about p[path]   but it makes a bug if I don't.
-        _u(p[path]).each(function (v, k) {
+        _u(path in p ? path[p] : p).each(function (v, k) {
             var ref = schema.path(path + '.' + k);
             var editor = this.pluginManager.pluginFor(path + '.' + k, ref || v, Model);
             if (editor)

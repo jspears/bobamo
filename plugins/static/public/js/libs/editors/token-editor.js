@@ -20,6 +20,17 @@ define(['Backbone.Form', 'jquery', 'underscore', 'libs/jquery/jquery.tokeninput'
             if (this.schema.ref){
                 var self = this;
                 require(['collections/'+this.schema.ref], _.bind(this.setOptions, this));
+            }else if (this.schema.url){
+                var url = this.schema.url;
+                this.setOptions(function(cb){
+                    $.ajax({
+                        url:url,
+                        success:function(resp){
+                            cb(resp.payload);
+                        }
+                    })
+                });
+
             }else
                 this.setOptions(this.schema.options);
 
