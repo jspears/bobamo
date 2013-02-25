@@ -59,7 +59,7 @@ define([
                 obj = query.parse(parts[1]);
             }
             this.activeHeader(paths[0]);
-            var path = paths[0] == 'views' ? [] : ['views'];
+            var path = ~paths.indexOf('views') ?   [] : ['views'];
             if (paths.length == 1) {
                 path.push(paths[0])
                 path.push('list');
@@ -68,10 +68,14 @@ define([
             }
             var p = path.join('/');
             console.log('path=', p, 'params=', obj);
+            if (this.contentView && this.contentView.remove)
+                this.contentView.remove();
+            var self = this;
             require([p], function (View) {
                 console.log('rendering ', p, View);
                 // var view = self.views[p] || (self.views[p] =
-                var view = new View({router:AppRouter, container:'#content'}, obj);
+
+                var view = self.contentView = new View({router:AppRouter, container:'#content'}, obj);
                 view[ view.show ? 'show' : 'render'](obj);
             });
         }

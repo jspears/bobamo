@@ -23,6 +23,7 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
         });
     })
     var editors = Form.editors;
+    Form.editors.String = Form.editors.Text;
     var helpers = Form.helpers;
     /**
      * Trying to maintain some consistency and stuff.
@@ -72,6 +73,14 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
         }
     };
 
+    var setOptions = editors.Select.prototype.setOptions;
+    editors.Select.prototype.setOptions = function(options){
+        if (options instanceof Backbone.Collection) {
+            if (this.schema.refresh)
+                options.reset();
+        }
+        setOptions.call(this, options);
+    }
     //Monkey Patch select so that we can get the bobamo functionality.
     // maybe one day I will submit a patch.
     editors.Select.prototype.initialize = function (options) {
@@ -79,6 +88,8 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
 
         if (!this.schema || !(this.schema.options || this.schema.url || this.schema.ref || this.schema.collection))
             throw "Missing required 'schema.options' or 'schema.url' or 'schema.ref' or 'schema.collection'";
+        if (this.schema.prependOptions)
+            this.prependOptions = this.schema.prependOptions;
 
         if (this.schema.collection) {
             if (_.isString(this.schema.collection))
@@ -87,9 +98,24 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
                 this.setOptions(this.schema.collection);
         } else if (this.schema.ref) {
             require(['collections/' + this.schema.ref], _.bind(this.setOptions, this));
+        } else if (this.schema.url){
+            var url = this.schema.url;
+            this.setOptions(function(cb){
+                $.ajax({
+                    url:url,
+                    success:function(resp){
+                        resp.payload.push({
+                            label:'None',
+                            val:""
+                        })
+                        cb(resp.payload);
+                    }
+                })
+            });
         }
         return this;
     };
+    editors.Select
     var init = editors.Text.prototype.initialize;
     //Add place holder support for values that subclass Text, ie. Number.
     editors.Text.prototype.initialize = function () {

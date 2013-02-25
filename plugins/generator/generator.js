@@ -98,16 +98,16 @@ GeneratorPlugin.prototype.routes = function (options) {
     }
 
     function makeOptions(req,res) {
-        var type = req.params.type;
+        var type = req.params.type || res.locals.type;
         var opts = _u.extend({modelName:type}, baseOpts);
-
-        if (type) {
-            type = type.replace(extRe, '');
-            opts.model = res.locals('model') || appModel.modelFor(type);
+        var model = res.locals.model || type && appModel.modelFor(type);
+        if (model) {
+            type = type && type.replace(extRe, '');
+            opts.model =model;
             opts.type = type;
-            opts.view = req.params.view;
-            opts.urlRoot = opts.model && opts.model.modelName;
-            opts.collection = opts.model && opts.model.modelName;
+            opts.view = res.locals.view || req.params.view;
+            opts.urlRoot = model.modelName;
+            opts.collection = model.modelName;
         }
         return opts;
     }

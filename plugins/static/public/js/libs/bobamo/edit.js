@@ -41,8 +41,9 @@ define([
         events:{
             'click button.save':'onSave',
             'click button.cancel':'onCancel',
-            'click ul.error-list li':'onErrorItemClick',
-            'submit form':'onSave'
+            'click ul.error-list li':'onErrorItemClick'
+//            ,
+//            'submit form':'onSave'
         },
         initialize:function () {
             _.bindAll(this);
@@ -90,17 +91,10 @@ define([
             }
             this.trigger('error', this, errors);
         },
-
-        onSave:function (e) {
-            e.preventDefault();
-            $('.error-list', this.$el).empty().hide();
-            $('.success-list', this.$el).empty().hide();
-            console.log('changed', this.form.model.changed);
-            //this.form.validate();
-            //TODO - make sure to re-enable client side validation.
+        save:function(save){
             var errors = this.form.commit();
             //       var errors;
-            var save = this.form.getValue();
+            save = save || this.form.getValue();
             nullEmptyStr(save);
             //handle nested objects.
             _(save).each(function (v, k) {
@@ -125,6 +119,18 @@ define([
                 this.onError(this.form.model, errors);
             }
 
+        },
+        prepare:function(){
+
+        },
+        onSave:function (e) {
+            e.preventDefault();
+            $('.error-list', this.$el).empty().hide();
+            $('.success-list', this.$el).empty().hide();
+            console.log('changed', this.form.model.changed);
+            //this.form.validate();
+            //TODO - make sure to re-enable client side validation.
+            this.save(this.prepare());
         },
         onSuccess:function (resp, obj) {
             var config = _.extend({}, obj.payload, this.config);
