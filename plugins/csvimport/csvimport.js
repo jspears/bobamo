@@ -1,5 +1,7 @@
 var PluginApi = require('../../lib/plugin-api'),
-    u = require('util'), maker = require('./makemarkdown'), _ = require('underscore');
+    u = require('util'), maker = require('./makemarkdown'),
+    inflection = require('../../lib/inflection'),
+    _ = require('underscore');
 
 
 var CsvPlugin = function () {
@@ -15,7 +17,17 @@ CsvPlugin.prototype.appModel = function () {
                     label:'Import CSV',
                     href:'#csvimport/import'
 
+                },
+                'csvimport':{
+                    label:'Export CSV',
+                    href:'#csvimport/export'
+
+                },
+                'csvimport-model':{
+                    label:'Import CSV Model',
+                    href:'#csvimport/import-model'
                 }
+
             }
         }
     }
@@ -41,7 +53,27 @@ CsvPlugin.prototype.import = function (Type, content, callback) {
 
 CsvPlugin.prototype.routes = function () {
 
+    this.app.post(this.pluginUrl + '/export', function (req, res, next) {
+        var modelName = req.body.modelName;
+        var exportAs = req.body.fileName || req.body.modelName + ".csv";
+        var Model = this.options.mongoose.model(modelName);
+        var SM = this.pluginManager.appModel.modelPaths[modelName];
+        var headers = SM.list_fields;
+        Model.find({},
+            function (er, arr) {
+                res.setHeader("Content-Disposition", "attachment;filename=" + exportAs);
+                res.cookie('csvimport/exported', exportAs);
+                res.write(maker.schemaToHeader(SM)+"\n");
+                _.each(arr, function (obj) {
+                    res.write(_.map(headers, function (v, i) {
+                        return obj[v] ? JSON.stringify(obj[v]) : ''
+                    }).join(',')+"\n")
+                });
+                res.end()
+            }.bind(this)
+        )
 
+    }.bind(this));
     this.app.post(this.pluginUrl + '/import', function (req, res, next) {
 
         maker.readCsv(require('fs').createReadStream(req.files.import.path), function (err, resp) {
@@ -81,6 +113,7 @@ CsvPlugin.prototype.routes = function () {
 
                 resp.content.splice(10);
                 resp.file = req.files.import.path.split('/').pop();
+                resp.modelName = inflection.camelize(req.files.import.name.replace(/\.{0,7}$/, ''), false);
                 res.send({
                     status:0,
                     payload:resp

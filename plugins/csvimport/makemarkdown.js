@@ -247,7 +247,17 @@ function toSchema(map, headers){
 
     return {schema:schema, fields:headers};
 }
+function schemaToHeader(Model){
+    var headerMap = {};
+    var headers =[], schema = Model.schema;
+    _.each( Model.list_fields, function(v,k){
+        headers.push(JSON.stringify(schema[v].title || v));
+    });
+    return headers.join(',');
+}
+
 module.exports = {
+    schemaToHeader:schemaToHeader,
     toSchema:toSchema,
     pad:pad,
     rep:rep,
