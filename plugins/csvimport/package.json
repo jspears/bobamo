@@ -5,6 +5,7 @@
     , "private": true
     , "dependencies":{
         "csv":"latest",
-        "stringformat":"latest"
+        "q":"latest",
+        "moment":"latest"
     }
 }

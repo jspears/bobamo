@@ -1,7 +1,6 @@
 var  Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), MModel = require('./mongoose-model');
 
 var valid = {};
-var validFuncs =  {};
 
 var MongoosePlugin = function (options) {
     Plugin.apply(this, arguments);
@@ -10,7 +9,7 @@ var MongoosePlugin = function (options) {
 }
 sutil.inherits(MongoosePlugin, Plugin);
 module.exports = MongoosePlugin;
-
+MongoosePlugin.prototype.parsers = require('./parsers');
 var validFuncs = {};
 MongoosePlugin.prototype.appModel = function (options) {
 //    this.pluginManager.requirejs(['mongoose/validators'], function(validators){

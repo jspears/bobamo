@@ -14,14 +14,14 @@ define([
             // '/views/:type/finder/:finder':'defaultAction',
             '*actions':'defaultAction'
         },
-        doModal:function (view) {
+        doModal:function (view, opts) {
 
             var viewArr = _.isArray(view) ? view : [view];
-            console.log('doModal', viewArr);
+            console.log('doModal', viewArr, opts);
             require(viewArr, function (V) {
 
                 var m = new Modal({
-                    content:new V
+                    content:new V(opts)
                 }).open(function () {
                         window.history.back();
                     })

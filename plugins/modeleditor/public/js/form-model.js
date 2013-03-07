@@ -49,8 +49,14 @@ define(['Backbone', 'Backbone.Form', 'underscore', 'jquery', 'backbone-modal', '
                 key = this.key,
                 nestedModel = this.schema.model;
 
-            //Wrap the data in a model if it isn't already a model instance
+            //Wrap the data in a model if it isn 't already a model instance
             var modelInstance = (data.constructor === nestedModel) ? data : new nestedModel(data);
+            if (data.constructor === nestedModel){
+                data.set(this.value);
+                modelInstance = data;
+            }else{
+               modelInstance =   new nestedModel(data);
+            }
             var opts = {
                 model:modelInstance,
                 idPrefix:this.id + '_',

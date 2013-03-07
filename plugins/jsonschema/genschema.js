@@ -140,6 +140,7 @@ module.exports = {
         return jsonSchema;
     },
     update:function (v, k) {
+        var summary = (v.methods && v.methods.update && v.methods.update.summary || '');
         var K = inflection.capitalize(k);
         return {
 //                "path":"/" + k,            "parameters":[param.path("id", "ID of " + v.modelName, "string")],
@@ -147,7 +148,7 @@ module.exports = {
 
             "notes":"updates a " + K + " in the store",
             "httpMethod":"PUT",
-            "summary":"Update an existing " + v.title.toLowerCase(),
+            "summary":"Update an existing " + v.title.toLowerCase() +(summary || ''),
             "parameters":[param.path("id", "ID of " + v.modelName, "string"), param.post(k, v.title + " object that needs to be added to the store")],
             "errorResponses":[swe.invalid('id'), swe.notFound(k), swe.invalid('input')],
             "allowMultiple":false,
@@ -157,10 +158,12 @@ module.exports = {
         }
     },
     create:function (v, k) {
+        var summary = (v.methods && v.methods.create && v.methods.create.summary || '');
+
         var K = inflection.capitalize(k);
         return {
             "notes":"adds a " + K + " to the store",
-            "summary":"Add a new " + K + " to the store",
+            "summary":"Add a new " + K + " to the store "+(summary || ''),
             "httpMethod":"POST",
             "parameters":[param.post(k, v.title + " object that needs to be added to the store")],
             "errorResponses":[swe.invalid('input')],
@@ -197,7 +200,7 @@ module.exports = {
                     httpMethod:type,
                     responseClass:responseClass,
                     responseModel:vv.spec.responseModel(),
-                    summary:vv.spec.summary
+                    summary:vv.summary || vv.spec.summary
                 },
                 _u.omit(vv.spec, 'method', 'params', 'path', 'responseModel'))
             return ret;
@@ -206,11 +209,10 @@ module.exports = {
     },
     find:function (v, k) {
         var summary = (v.methods && v.methods.find && v.methods.find.summary || '');
-        console.log('summary find', summary);
         return  {
             "description":"Returning all " + v.plural,
             "notes":"All values with typical sorting/filtering",
-            "summary":"Find all " + v.plural+(v.find && v.find.find || ''),
+            "summary":"Find all " + v.plural+(v.find && v.find.find || '')+ (summary || ''),
             "httpMethod":"GET",
             "parameters":su.params(v),
             "responseClass":"List[" + k + "]",
@@ -221,7 +223,6 @@ module.exports = {
     },
     findById:function (v, k) {
         var summary = (v.methods && v.methods.findById && v.methods.findById.summary || '');
-        console.log('summary findById', summary);
         var K = inflection.capitalize(k);
         return  {
             //   "path":"/{id}",

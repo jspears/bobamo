@@ -51,17 +51,16 @@ define([
             this.total = resp.total;
             return resp.payload ? resp.payload : resp;
         },
-        _sorted:function(next, callback){
-
-        },
-        next:function(callback){
+        _sorted:function(callback){
             if (!this.params){
-                this.params = {sorts:['_id:1'], limit:10, skip:0}
+                this.params = { limit:10, skip:0}
             }
-            this.params.sort = this.params.sorts.join(',');
-            console.log('next', this.params)
+            if (!this.params.sort)
+                this.params.sort = '_id:1';
+            console.log('params', this.params)
             this.fetch({data:_.omit(this.params, 'sorts'), success:callback});
         },
+
         nextId:function(callback){
             var current  = this.currentId || this.models.length && this.models[0].id;
             if (current){
@@ -82,15 +81,7 @@ define([
             if (this.params && this.params.skip && this.params.skip > this.total){
                 return callback(null);
             }
-            this.next(_.bind(this.nextId, this, callback));
-        },
-        previous:function(callback){
-            if (!this.params){
-                this.params = {sorts:['_id:1'], limit:10, skip:0}
-            }
-            this.params.sort = this.params.sorts.join(',');
-            console.log('previous', this.params)
-            this.fetch({data:_.omit(this.params, 'sorts'), success:callback});
+            this._sorted(_.bind(this.nextId, this, callback));
         },
         previousId:function(callback){
             var current  = this.currentId || this.models.length && this.models[0].id;
@@ -110,7 +101,7 @@ define([
             if (this.params && this.params.skip && this.params.skip <= 0){
                 return callback(null);
             }
-            this.previous(_.bind(this.previousId, this, callback));
+            this._sorted(_.bind(this.previousId, this, callback));
         },
         search:function(q, success, failure){
             this.fetch({

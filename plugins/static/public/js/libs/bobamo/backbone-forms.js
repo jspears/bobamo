@@ -81,6 +81,12 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
         }
         setOptions.call(this, options);
     }
+    var oRender = editors.Select.prototype.renderOptions;
+    editors.Select.prototype.renderOptions = function(options){
+        var ret = oRender.apply(this, _.toArray(arguments));
+        this.trigger('options',  options);
+        return ret;
+    }
     //Monkey Patch select so that we can get the bobamo functionality.
     // maybe one day I will submit a patch.
     editors.Select.prototype.initialize = function (options) {
@@ -108,10 +114,12 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
                             label:'None',
                             val:""
                         })
-                        cb(resp.payload);
+                        cb(resp.payload || resp);
                     }
                 })
             });
+        } else if (this.schema.options){
+            this.setOptions(this.schema.options);
         }
         return this;
     };

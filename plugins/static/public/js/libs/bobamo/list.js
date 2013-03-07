@@ -110,6 +110,7 @@ define([
             var $p = this.$paginate.paginate('wait', message);
 
             var self = this;
+            var params = this.collection.params;
             var data = _.extend({
                 limit:parseInt($p.attr('data-limit')),
                 skip:Math.max(0, parseInt($p.attr('data-skip')))

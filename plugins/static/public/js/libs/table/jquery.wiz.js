@@ -66,23 +66,25 @@
                 this.$el.append($btns);
 
             var self = this;
-            this.$prev.on('click', function (e) {
-                if (self.current > 0)
-                    self.step(self.current - 1);
-            });
-            this.$next.on('click', function (e) {
-                if (self.current + 1 < self.steps) {
-                    self.step(self.current + 1);
-                }else{
-                    $(this).toggleClass('save', true    ).toggleClass(self.options.doneCls, true);
-                }
-            });
+            this.$prev.on('click', $.proxy(this.goPrev, this));
+            this.$next.on('click', $.proxy(this.goNext ,this));
             this.$el.on('click', 'a.step', function (e) {
                 self.step($(e.currentTarget).parent().data('step'));
             });
             this.step(this.current);
         }
+        Wizard.prototype.goNext = function(){
+            if (this.current + 1 < this.steps) {
+                this.step(this.current + 1);
+            }else{
+                this.$next.toggleClass('save', true    ).toggleClass(this.options.doneCls, true);
+            }
+        }
+        Wizard.prototype.goPrev = function(){
+            if (this.current > 0)
+                this.step(this.current - 1);
 
+        }
         Wizard.prototype.removeStepKey = function(){
              var h = window.location.hash;
              var idx = h.indexOf('?');
@@ -140,7 +142,7 @@
         }
 
         $.fn.wiz.defaults = {
-            stepKey:'_step',
+           // stepKey:'_step',
             titleTemplate:'<b>Step {step}</b>: {title}',
             listItemTemplate:'<li><a  class="step" href="{hash}">{content}</a></li>',
             next:'Next &raquo;',

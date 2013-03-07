@@ -330,6 +330,7 @@ define([
                         window.location.reload();
                     });
         },
+        url:'${pluginUrl}/admin/backbone',
         onSave:function (e) {
             e.preventDefault();
             $('.error-list').empty().hide();
@@ -340,7 +341,7 @@ define([
             var save = this.presave();
             if (!(errors)) {
                 $.ajax({
-                    url:'${pluginUrl}/admin/backbone',
+                    url:this.url,
                     type:'PUT',
                     data:save,
                     success:_.bind(this.onSuccessRefresh, this)

@@ -35,25 +35,73 @@ define(['Backbone.Form', 'jquery', 'underscore', 'libs/bootstrap/js/bootstrap-ty
         }
     })
 
-    editors.TypeAhead = Select.extend({
+    var TypeAhead = editors.Typeahead = editors.TypeAhead = Select.extend({
         tagName:'input',
         dataType:'text',
         // clsNames:'typeahead',
         //events:{},
         mapOptions:function (opt, cb) {
-            var options = _.isFunction(this.schema.options) ? this.schema.options.call(this) : this.schema.options;
-            cb(_.map(options, function (v) {
+            cb(_.map(opt, function (v) {
                 return new Item(v)
             }));
         },
+        setOptions: function(options, opt, cb) {
+            var self = this;
+            cb = cb || _.bind(this.renderOptions, this);
+            //If a collection was passed, check if it needs fetching
+            if (typeof options == "string"){
+                require([this.schema.collection], function(collection){
+                    self.setOptions(collection, opt, cb);
+                });
+
+            }else if (options instanceof Backbone.Collection) {
+                var collection = options;
+                    collection.fetch({
+                        data:opt,
+                        success:function(resp){
+                            self.mapOptions(resp.models, cb);
+                        }
+                    });
+            }
+
+            //If a function was passed, run it to get the options
+            else if (_.isFunction(options)) {
+                options(cb);
+            }
+
+            //Otherwise, ready to go straight to renderOptions
+            else {
+             self.mapOptions(options, cb);
+            }
+        },
+
         render:function () {
             this.$el.attr('type', this.options.dataType || this.dataType);
             this.$el.val(this.options.value);
             var self = this;
             var $el = this.$el.parent();
+            var schema = this.schema;
+            var search = this.options.schema.search;
+
             this.$el.typeahead({
                 source:function onSourceMap(opt, cb) {
-                    self.mapOptions(opt, cb);
+                    if (search){
+                        var o = {};
+                        o[search] = opt;
+                        opt = o;
+                    }
+                    var options;
+                    if (schema.url){
+                        options = function(cb){
+                            $.ajax({url:schema.url, data:opt, success:cb})
+                        }
+                    }else if (schema.collection){
+                        options = schema.collection;
+                    }else if (schema.options){
+                        options = schema.options;
+                    }
+
+                    self.setOptions(options, opt, cb);
                 },
 
                 container:$el
@@ -64,6 +112,6 @@ define(['Backbone.Form', 'jquery', 'underscore', 'libs/bootstrap/js/bootstrap-ty
             this._options = options;
         }
     });
-    return editors;
+    return TypeAhead;
 
 })

@@ -158,7 +158,7 @@ JsonSchemaPlugin.prototype.filters = function () {
             var opts = []
             var conf = _u.extend({title:appModel.title}, this.conf, req.query, req.body);
             if (conf.pandoc_template)
-                opts.push('--template=' + conf.pandoc_template);
+                opts.push('--template=' + process.cwd()+'/'+conf.pandoc_template);
             if (conf.title)
                 opts.push('--variable=title:' + conf.title + '');
             if (conf.toc !== false)
@@ -268,28 +268,32 @@ JsonSchemaPlugin.prototype.markdown = function () {
         specifications:Object.keys(appModel.modelPaths).map(this.resource, this)
     }).print();
 }
+JsonSchemaPlugin.prototype.metaService = function(){
+    var appModel = this.pluginManager.appModel;
+    var resources = _u.flatten(_u.flatten(Object.keys(appModel.modelPaths).map(this.resource, this).map(function(v){
+        return v.apis;
+    })).map(function(v){
+            console.log(v);
+            var path = v.path;
+            var fp = (((path[0] == '/' ) ? path.substring(1) : path).split('/')).shift();
+
+            return v.operations.map(function(v){
+                var val = v.httpMethod+'['+ fp+'.'+v.nickname +']';
+                return {
+                    label:v.nickname+' ['+v.httpMethod+' '+path+']',
+                    val:val
+                }
+            })
+        }));
+    return resources;
+}
+
 JsonSchemaPlugin.prototype.routes = function () {
     this.app.get(this.pluginUrl+'/meta/service', function(req,res){
-        var appModel = this.pluginManager.appModel;
-        var resources = _u.flatten(_u.flatten(Object.keys(appModel.modelPaths).map(this.resource, this).map(function(v){
-            return v.apis;
-        })).map(function(v){
-                console.log(v);
-                var path = v.path;
-                var fp = (((path[0] == '/' ) ? path.substring(1) : path).split('/')).shift();
-
-                return v.operations.map(function(v){
-                    var val = v.httpMethod+'['+ fp+'.'+v.nickname +']';
-                    return {
-                        label:v.nickname+' ['+v.httpMethod+' '+path+']',
-                        val:val
-                    }
-                })
-         }));
 
         res.send({
             status:0,
-            payload:resources
+            payload:this.metaService()
         })
 
     }.bind(this));

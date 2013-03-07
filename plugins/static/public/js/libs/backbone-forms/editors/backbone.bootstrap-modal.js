@@ -112,9 +112,11 @@ function($, _, Backbone, Form, BList) {
       var $content = this.$content = $el.find('.modal-body')
 
       //Insert the main content if it's a view
-      if (content.$el) {
+      if (content.render) {
         this.view = content.render();
         $el.find('.modal-body').html(content.$el);
+      }else if (!_.isString(content)){
+          $el.find('.modal-body').html(content);
       }
 
       if (options.animate) $el.addClass('fade');
