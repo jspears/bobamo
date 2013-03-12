@@ -33,16 +33,16 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
      * @param schemaType
      * @return {*}
      */
-    var fixupEditor = function(schemaType){
+    var fixupEditor = function (schemaType) {
         if (!schemaType) return schemaType;
-        if (~schemaType.indexOf('/')){
+        if (~schemaType.indexOf('/')) {
             var split = schemaType.split('/');
             var first = split.shift();
             split.unshift('js');
             split.unshift(first);
             return split.concat(fixupEditor(split.pop())).join('/');
 
-        }else{
+        } else {
             return 'libs/editors/' + inflection.hyphenize(schemaType) + (~schemaType.toLowerCase().indexOf('editor') ? '' : '-editor');
         }
 
@@ -74,7 +74,7 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
     };
 
     var setOptions = editors.Select.prototype.setOptions;
-    editors.Select.prototype.setOptions = function(options){
+    editors.Select.prototype.setOptions = function (options) {
         if (options instanceof Backbone.Collection) {
             if (this.schema.refresh)
                 options.reset();
@@ -82,9 +82,13 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
         setOptions.call(this, options);
     }
     var oRender = editors.Select.prototype.renderOptions;
-    editors.Select.prototype.renderOptions = function(options){
+    editors.Select.prototype.renderOptions = function (options) {
         var ret = oRender.apply(this, _.toArray(arguments));
-        this.trigger('options',  options);
+        this.trigger('options', options);
+        var val;
+        if (this.model && (val = this.model.get(this.key) ))
+            this.$el.val(val);
+
         return ret;
     }
     //Monkey Patch select so that we can get the bobamo functionality.
@@ -104,21 +108,21 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
                 this.setOptions(this.schema.collection);
         } else if (this.schema.ref) {
             require(['collections/' + this.schema.ref], _.bind(this.setOptions, this));
-        } else if (this.schema.url){
+        } else if (this.schema.url) {
             var url = this.schema.url;
-            this.setOptions(function(cb){
+            this.setOptions(function (cb) {
                 $.ajax({
-                    url:url,
-                    success:function(resp){
+                    url: url,
+                    success: function (resp) {
                         resp.payload.push({
-                            label:'None',
-                            val:""
+                            label: 'None',
+                            val: ""
                         })
                         cb(resp.payload || resp);
                     }
                 })
             });
-        } else if (this.schema.options){
+        } else if (this.schema.options) {
             this.setOptions(this.schema.options);
         }
         return this;
@@ -140,11 +144,11 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
 
         //Standard options that will go to all editors
         var options = {
-            form:this.form,
-            key:this.key,
-            schema:schema,
-            idPrefix:this.options.idPrefix,
-            id:this.getId()
+            form: this.form,
+            key: this.key,
+            schema: schema,
+            idPrefix: this.options.idPrefix,
+            id: this.getId()
         };
 
         //Decide on data delivery type to pass to editors
@@ -161,10 +165,10 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
 
 
             //Render editor
-            var $tmpEditor =  $field.find('.bbf-tmp-editor')
+            var $tmpEditor = $field.find('.bbf-tmp-editor')
 
             var eel = editor.render().el;
-                $tmpEditor.replaceWith(eel);
+            $tmpEditor.replaceWith(eel);
 
             //Set help text
             this.$help = $('.bbf-tmp-help', $field).parent();
@@ -197,7 +201,7 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
 
         //Create el from template
         var $form = $(template({
-            fieldsets:'<b class="bbf-tmp"></b>'
+            fieldsets: '<b class="bbf-tmp"></b>'
         }));
 
         //Render fieldsets
@@ -224,7 +228,7 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
             this.trigger('render');
 
 
-        },this), function () {
+        }, this), function () {
             console.log('oops errors', arguments);
         })
         wait[0].resolve();
@@ -242,14 +246,14 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
         var wait = [$.Deferred()];
         //Normalise to object
         if (_.isArray(fieldset)) {
-            fieldset = { fields:fieldset };
+            fieldset = { fields: fieldset };
         }
 
 
         //Concatenating HTML as strings won't work so we need to insert field elements into a placeholder
         var $fieldset = $(template(_.extend({}, fieldset, {
-            legend:'<b class="bbf-tmp-legend"></b>',
-            fields:'<b class="bbf-tmp-fields"></b>'
+            legend: '<b class="bbf-tmp-legend"></b>',
+            fields: '<b class="bbf-tmp-fields"></b>'
         })));
 
         //Set legend
@@ -323,7 +327,7 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
             });
         });
 
-        $.when.apply($, wait).then(function(){
+        $.when.apply($, wait).then(function () {
             $fieldsContainer = $fieldsContainer.children().unwrap();
             callback($fieldset);
         })
@@ -334,11 +338,11 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
         schema.template = schema.template || this.options.fieldTemplate;
 
         var options = {
-            form:this,
-            key:key,
-            schema:schema,
-            idPrefix:this.options.idPrefix,
-            template:this.options.fieldTemplate
+            form: this,
+            key: key,
+            schema: schema,
+            idPrefix: this.options.idPrefix,
+            template: this.options.fieldTemplate
         };
 
         if (this.model) {
@@ -352,7 +356,7 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
         callback.call(this, new Form.Field(options));
     };
     //Make Object renderer uses the render callback like the others.
-    editors.Object.prototype.render = function(){
+    editors.Object.prototype.render = function () {
         //Create the nested form
         this.form = new Form({
             schema: this.schema.subSchema,
@@ -362,14 +366,14 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
         });
 
         this._observeFormEvents();
-        this.form.on('render', function onObjectFormRender(){
+        this.form.on('render', function onObjectFormRender() {
             this.$el.html(this.form.el);
             if (this.hasFocus) this.trigger('blur', this);
         }, this);
         this.form.render();
         return this;
     }
-    editors.NestedModel.prototype.render = function(){
+    editors.NestedModel.prototype.render = function () {
         var data = this.value || {},
             key = this.key,
             nestedModel = this.schema.model;
@@ -381,10 +385,10 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
             idPrefix: this.id + '_',
             fieldTemplate: 'nestedField'
         }
-        this.form = modelInstance&& modelInstance.createForm ? modelInstance.createForm(opts) : new Form(opts);
+        this.form = modelInstance && modelInstance.createForm ? modelInstance.createForm(opts) : new Form(opts);
 
         this._observeFormEvents();
-        this.form.on('render', function onNestedFormRender(){
+        this.form.on('render', function onNestedFormRender() {
             this.$el.html(this.form.el);
 
             if (this.hasFocus) this.trigger('blur', this);

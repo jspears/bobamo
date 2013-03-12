@@ -81,6 +81,7 @@ GeneratorPlugin.prototype.appModel = function(){
 var extRe = /\.(js|html|css|htm)$/i;
 GeneratorPlugin.prototype.routes = function (options) {
     var appModel = this.pluginManager.appModel;
+
     var baseOpts = {
 //        includes:function (arr) {
 //            var data = this;

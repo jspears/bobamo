@@ -31,19 +31,19 @@ Markdown.prototype.routes = function(){
     });
     PluginApi.prototype.routes.apply(this, arguments);
 }
-Markdown.prototype.renderers = function(){
-    return  [
-        {
-            name:'Markdown',
-            types:['String'],
-            description:"Settings for markdown fields",
-            schema:{
-                showRendered:{ type:'Checkbox' },
-                allowEdit:{type:'Checkbox'}
-            }
-        }
-        ]
-}
+//Markdown.prototype.renderers = function(){
+//    return  [
+//        {
+//            name:'Markdown',
+//            types:['String'],
+//            description:"Settings for markdown fields",
+//            schema:{
+//                showRendered:{ type:'Checkbox' },
+//                allowEdit:{type:'Checkbox'}
+//            }
+//        }
+//        ]
+//}
 Markdown.prototype.editors = function () {
     return [
         {

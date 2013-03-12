@@ -1,5 +1,5 @@
 define(['Backbone'], function(Backbone){
-    var url = "${pluginUrl}/renderers"
+    var url = "${pluginUrl}/admin/renderer"
     var Collection = Backbone.Collection.extend({
         url:url,
         parse:function(resp){
@@ -7,9 +7,7 @@ define(['Backbone'], function(Backbone){
         },
         model:Backbone.Model.extend({
             idAttribute:"_id",
-            urlRoot:function(){
-              return url+'/'+this.id
-            },
+            urlRoot:url,
             toString:function(){
                 return this.get('name')
             }

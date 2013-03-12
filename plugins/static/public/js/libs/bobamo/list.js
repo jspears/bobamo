@@ -4,10 +4,11 @@ define([
     'underscore',
     'Backbone',
     'replacer',
+    'renderer/renderers',
     'libs/table/jquery.bobamo-paginate',
     'libs/table/jquery.sorter'
 
-], function ($, _, Backbone, replacer) {
+], function ($, _, Backbone, replacer, Renderer) {
     "use strict";
     function _null(v) {
         return v != null;
@@ -21,6 +22,7 @@ define([
     var ListItemView = Backbone.View.extend({
         tagName:"tr",
         initialize:function (options) {
+            this.renderer = options && options.renderer || new Renderer();
             this.model.bind("change", this.render, this);
             this.model.bind("destroy", this.close, this);
             this.sort = [];
@@ -28,7 +30,8 @@ define([
             return this;
         },
         format:function(field, model, schema){
-            return schema && schema.format ? schema.format(field, model, schema) : model.get(field);
+            return this.renderer.render(model.get(field), field,  model, schema);
+//            return schema && schema.format ? schema.format(field, model, schema) : model.get(field);
         },
         _fields:{},
         _format:function(field){
@@ -70,6 +73,7 @@ define([
             'sorter-change .sortable':'onSort'
         },
         initialize:function () {
+            this.rendere = new Renderer({});
             if (!this.template) {
                 throw new Error('template must be defined');
             }
@@ -80,13 +84,14 @@ define([
             this.collection.on('fetch', function(){
                 console.log('fetch', arguments)
                 this.renderList.apply(this, _.toArray(arguments)) }, this);
+
             return this;
         },
         itemView:ListItemView,
         renderItem:function (item) {
             var template = this.listItemTemplate;
             if (this.$ul) {
-                var lel = new ListItemView({model:item, template:template}).render().el;
+                var lel = new ListItemView({model:item, renderer:this.renderer, template:template}).render().el;
                 this.$ul.append(lel);
             }
             return this;
