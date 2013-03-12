@@ -6,9 +6,10 @@ define(['underscore', 'Backbone', 'Backbone.Form', 'csvimport/parserprovider'], 
         };
         if (v.schema)
             type.subSchema=v.schema;
-        else
-            v.help = 'No configuration for this parser'
-
+        else{
+            type.type = 'Hidden';
+            type.help = 'No configuration for this parser'
+        }
     });
     var schema = {
         type:{

@@ -19,7 +19,8 @@ define(['jquery'], function ($) {
        }
     });
     Renderer.prototype.add = function(obj){
-           this.config[obj.property] = obj;
+            if (obj && obj.property)
+               this.config[obj.property] = obj;
     };
     Renderer.prototype.render = function ( value, property, model, options) {
         var conf = this.config[property];

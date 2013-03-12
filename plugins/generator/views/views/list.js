@@ -3,7 +3,7 @@ define([
     'underscore',
     'libs/bobamo/list',
     'collections/${model.modelName}',
-    'renderer/renderers',
+    'libs/renderer/renderers',
     'text!templates/${model.modelName}/table.html',
     'text!templates/${model.modelName}/table-item.html'
 ], function (_,View, collection, Renderer, tableTemplate, tableItemTemplate) {

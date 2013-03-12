@@ -4,7 +4,7 @@ define([
     'underscore',
     'Backbone',
     'replacer',
-    'renderer/renderers',
+    'libs/renderer/renderers',
     'libs/table/jquery.bobamo-paginate',
     'libs/table/jquery.sorter'
 

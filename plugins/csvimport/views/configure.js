@@ -45,8 +45,8 @@ define(['underscore', 'Backbone.Form', 'libs/bobamo/edit',
             this._uploading = true;
             $fel.iframePostForm({
                 complete: _.bind(function (resp) {
-                    this.model.set(resp.payload);
-                    this._update();
+                  //  this.model.set(resp.payload);
+                   this._update();
                 }, this),
                 json: true
             });
@@ -70,7 +70,9 @@ define(['underscore', 'Backbone.Form', 'libs/bobamo/edit',
             console.log('_update', resp);
             var mapping = this.model.get('mapping');
             var me = this.form.fields.mapping.editor;
-            _.invoke(me.items, 'remove');
+            _.each(me.items, me.remove, me);
+            me.items = [];
+//            _.invoke(me.items, 'remove');
             if (mapping)
                 _.each(mapping.sort(function (a, b) {
                     if (!a) return -1;
