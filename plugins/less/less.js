@@ -21,12 +21,6 @@ LessPlugin.prototype.configure = function (conf) {
         });
 }
 
-LessPlugin.prototype.admin = function () {
-    return {
-        href:'#/less/admin/display',
-        title:'Display Settings'
-    };
-}
 LessPlugin.prototype.appModel = function () {
     return {
         modelPaths:{},
@@ -34,7 +28,7 @@ LessPlugin.prototype.appModel = function () {
             'admin-menu':{
 
                 'less':{
-                    href:'#/less/admin/display',
+                    href:'#/less/views/admin/display',
                     label:'Display Settings'
                 }
             }

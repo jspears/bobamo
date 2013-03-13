@@ -2,7 +2,7 @@ define([
     'underscore',
     'Backbone',
     'libs/bobamo/edit',
-    'text!${pluginUrl}/templates/admin/edit.html',
+    'text!appeditor/views/templates/admin/edit.html',
     'libs/editors/multi-editor'
 ], function (_, Backbone, EditView, template) {
     "use strict";

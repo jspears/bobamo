@@ -1,16 +1,32 @@
 var bobamo = require('../../index'), util = require('util'), bu = require('../../lib/util'),
     PluginApi = bobamo.PluginApi, _ = require('underscore'), Model = bobamo.DisplayModel;
-
-
+/**
+ * Returns the first match in an array.
+ * @param [Array] arr
+ * @param [String] property
+ * @param [*] value to compare arr[i][property] to;
+ * @returns {null}
+ */
+function first(arr, property, value){
+    if (!(arr || arr.length)) return ;
+    var v = null;
+    for(var i= 0,l=arr.length;i<l;i++){
+        v = arr[i];
+        if (v && v[property] == value)
+            return v;
+    }
+    return null;
+}
 var RendererPlugin = function () {
     PluginApi.apply(this, arguments);
     this.conf = {};
     var self = this;
     Model.prototype.renderer = function (property, view) {
-        var s = _.each(this[view || 'list_fields'], function (v) {
-            if (v.name == property)
-                return v;
-        });
+        var s = first(this[view || 'list_fields'], 'name', property);
+
+        //We determine types for 'automatic renderers';
+        if (s && s.renderer == 'automatic') s = null;
+
         s = s || (function (schema) {
 
             var ret = self.determineRenderer(schema, property);
@@ -42,11 +58,19 @@ RendererPlugin.prototype.configure = function (conf) {
     _.extend(this.conf, conf);
 }
 /**
- * Looks at the schema and tries to guess the best renderer for said renderer.
- * Similar to how editors/formatters work.
- * @param schema
- * @param property
- * @returns {*}
+ * Determines score for an object match... Should be
+ * externalized.
+ *
+ * First matches renderer to type name.
+ * Second matches renderer to schemaType;
+ * Then gives it a score based on which item and how early in the list it is found.
+ *
+ * @param {Array} types - the types that renderer can handle can be null.
+ * @param {Schema} obj -- the schema for said renderer;
+ * @param {Object} v -- the current renderer
+ * @param {number} t - length of possible renderers.
+ * @param {number} i - the current offset from top of array
+ * @returns {number}
  */
 function score(types, obj, v, t, i) {
     if (v.name == obj.type) return t * t * t * t; //ie. type == password than renderer == password.
@@ -65,6 +89,13 @@ function score(types, obj, v, t, i) {
     }
     return 0;
 }
+/**
+ * Looks at the schema and tries to guess the best renderer for said renderer.
+ * Similar to how editors/formatters work.
+ * @param schema
+ * @param property
+ * @returns {Renderer}
+ */
 RendererPlugin.prototype.determineRenderer = function (schema, property) {
     var prop = Array.isArray(property) ? property.concat() : property.split('.');
     var obj = schema;
@@ -121,11 +152,12 @@ RendererPlugin.prototype.renderers = function () {
 
 RendererPlugin.prototype.find = function (id) {
     var renderers = this.listRenderers();
-    for(var i= 0,l=renderers.length;i<l;i++)
-        if (renderers[i]._id == id) return renderers[i];
-    console.log('did not find ', id);
-    return null;
+    var ret = first(renderers, '_id', id);
+    if (!ret)
+        console.log('did not find ', id);
+    return ret;
 }
+
 RendererPlugin.prototype.listRenderers = function () {
     var all = [], keys = [], refs = [];
     var allRenderers = this.pluginManager.asList('renderers');

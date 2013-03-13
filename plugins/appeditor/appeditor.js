@@ -6,7 +6,7 @@ var AppEditorPlugin = function (options, app, name) {
             'admin-menu':{
                 appeditor:{
                     label:'Application Details',
-                    href:'#/appeditor/admin/edit'
+                    href:'#/appeditor/views/admin/edit'
                 }
             }
         }
