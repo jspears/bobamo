@@ -15,15 +15,10 @@ define(['underscore', 'Backbone', 'Backbone.Form', 'csvimport/mapping-form', 'mo
             });
             return p;
         },
-        toJSON:function(){
-            console.log('ConfModel.toJson');
-            return B.Model.prototype.toJSON.apply(this, _.toArray(arguments));
-        },
         createForm:function(opt){
           return (this.form = new Form(opt));
         },
         urlRoot:function () {
-//            /admin/importmodel/:modelName/:configure
             return '${pluginUrl}/admin/configure/' + this.get('modelName')
         },
         defaults:{
