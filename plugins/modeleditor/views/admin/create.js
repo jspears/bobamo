@@ -1,19 +1,17 @@
 define([
     'underscore',
     'Backbone',
-    'views/modeleditor/admin/property',
-
-    'views/modeleditor/admin/fieldset',
+    'modeleditor/views/admin/model-model',
     'modeleditor/js/form-model',
     'libs/bobamo/edit',
-    'modeleditor/js/inflection',
+    'libs/util/inflection',
     'backbone-modal',
-    'text!${pluginUrl}/templates/admin/edit.html',
+    'text!modeleditor/views/templates/admin/edit.html',
     'libs/editors/filter-editor',
     'libs/editors/typeahead-editor'
 
 
-], function (_, Backbone, Property, Fieldset, Form, EditView, inflection, Modal, template) {
+], function (_, Backbone, Model, Form, EditView, inflection, Modal, template) {
     "use strict";
 
     function onModel(body) {
@@ -62,168 +60,7 @@ define([
 
     }
 
-    var Display = Backbone.Model.extend({
-        schema:{
-            "title":{"title":"Title", "help":"The title of the object singular", "type":"Text"},
-            "plural":{
-                "title":"Plural",
-                "help":"The plural of the object",
-                "type":"Text"
-            },
-            "hidden":{"title":"Hidden", "help":"Is this object hidden?", "type":"Checkbox"},
-            "labelAttr":{"title":"Label Attribute", "help":"This is a label that gives a succinct description of object, dot notation can be used"}
-        },
-        fields:['title', 'plural', 'hidden', 'labelAttr'],
-        createForm:function (opts) {
-            var form = this.form = new Form(opts);
-            var pform = opts.pform;
-            if (pform && pform.fields.modelName) {
-                var onModelName = function () {
-                    var modelName = pform.fields.modelName.getValue()
-                    form.fields.title.editor.$el.attr('placeholder', inflection.titleize(inflection.humanize(modelName)));
-                    form.fields.plural.editor.$el.attr('placeholder', inflection.titleize(inflection.pluralize(inflection.humanize(modelName))));
-                }
-                pform.on('modelName:change', onModelName);
-                pform.on('render', onModelName);
-                pform.on('paths:change', function () {
-                    //update
-                    var value = _.map(pform.fields.schema.getValue(), function (v) {
-                        return {schemaType:v.persistence.schemaType, name:v.name};
-                    });
-                    var $el = form.fields.labelAttr.editor.$el;
-                    if (!( value || value.length)) {
-                        $el.removeAttr('placeholder');
-                    } else {
-                        var pv = _.pluck(_.where(value, {schemaType:'String'}), 'name');
-                        if (pv.length) {
-                            var labelAttr = ((~pv.indexOf('name') && 'name') || (~pv.indexOf('label') && 'label') || (~pv.indexOf('description') && 'description') || pv[0]);
-                            $el.attr('placeholder', labelAttr);
-                        }
-                    }
 
-                });
-            }
-
-            return form;
-        }
-    });
-
-    var Model = Backbone.Model.extend({
-        schema:{
-            "modelName":{
-                "title":"Model Name",
-                "help":"The model name of the object",
-                "type":"FilterText",
-                filter:/^[a-zA-Z_]([a-zA-Z0-9,_,-,$])*$/,
-                validators:['required']
-            },
-            description:{
-                title:'Description',
-                help:'A description of the model for documentation',
-                type:'TextArea'
-            },
-
-            display:{
-                type:'NestedModel',
-                model:Display
-            },
-            "schema":{
-                type:'List',
-                itemType:'NestedModel',
-                model:Property,
-                title:'Properties',
-                help:'This is where you add properties to this object.'
-            },
-            fieldsets:{
-                type:'List',
-                title:'Edit View',
-                help:'Fields to allow editing',
-                itemType:'NestedModel',
-                model:Fieldset
-            },
-            list_fields:{
-                type:'List',
-                itemType:'TypeAhead',
-                options:[],
-                title:'List View',
-                help:'Fields to show in list views'
-            }
-        },
-        urlRoot:"${pluginUrl}/admin/backbone/",
-        save:function () {
-            var data = this.presave();
-            var arr = _.toArray(arguments);
-            arr.splice(0, 1, data);
-            Backbone.Model.prototype.save.apply(this, arr);
-        },
-
-        parse:function (resp) {
-            var model = resp.payload;
-            var paths = model.schema;
-            delete model.schema;
-            var npaths = (model.schema = []);
-
-            function fixPaths(p) {
-                return function (v, k) {
-                    if (!v.name)
-                        v.name = k;
-                    p.push(v);
-                    var model = resp.payload;
-                    var display = {
-                        labelAttr:model.labelAttr,
-                        title:model.title,
-                        help:model.help,
-                        plural:model.plural,
-                        hidden:model.hidden || model.display == 'none'
-                    };
-                    delete model.labelAttr;
-                    delete model.title;
-                    delete model.help;
-                    delete model.plural;
-                    delete model.hidden;
-
-                    _.extend(model.display || (model.display = {}), display);
-                    v.multiple = v.type == 'Array' || v.multiple;
-
-                    if (v.ref) {
-                        v.schemaType = 'ObjectId';
-                    } else if (!v.schemaType)
-                        v.schemaType = 'Object';
-                    var persistence = (v.persistence = {schemaType:v.schemaType})[v.schemaType] = v;
-
-                    if (v.validators && v.validators.length) {
-                        v.validators = _.map(v.validators, function (v, k) {
-                            var ret = {
-                                type:v.type,
-                                message:v.message,
-                                configure:{}
-                            }
-                            ret.configure[v.type] = _.omit(v, 'type', 'message')
-                            return ret;
-                        });
-                    }
-
-                    (v.editor || (v.editor={}))[v.type] = _.omit(v, 'persistence', 'subSchema', 'schema', 'schemaType','title','plural', 'labelAttr','title','help','plural','validators','hidden');
-                    if (v.subSchema) {
-                        var sub = v.subSchema;
-                        v.schemaType = 'Object';
-                        delete v.subSchema;
-                        var np = (v.schema = []);
-                        _.each(sub, fixPaths(np));
-                    }
-                }
-
-            }
-
-            _.each(paths, fixPaths(npaths));
-            return model;
-        },
-
-        defaults:{
-            hidden:false
-        },
-        idAttribute:'modelName'
-    });
 
     function schemaWalk(schema, callback) {
         _.each(schema, function (v, k) {

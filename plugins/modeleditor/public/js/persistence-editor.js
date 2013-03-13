@@ -1,4 +1,4 @@
-define([ 'views/modeleditor/admin/mongoose-types','Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fieldset', 'views/modeleditor/admin/mongoose-types', 'exports', 'underscore', 'Backbone.Form'], function (Types, b, Form, Fieldset, MongooseType, exports, _) {
+define([ 'modeleditor/views/admin/mongoose-types','Backbone', 'modeleditor/js/form-model', 'modeleditor/views/admin/fieldset', 'modeleditor/views/admin/mongoose-types', 'exports', 'underscore', 'Backbone.Form'], function (Types, b, Form, Fieldset, MongooseType, exports, _) {
     return Form.editors.PropertyEditor = editors.NestedModel.extend({
         initialize:function (options) {
 

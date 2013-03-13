@@ -5,21 +5,27 @@ var EditPlugin = function () {
     this._appModel = {modelPaths:{}};
 }
 util.inherits(EditPlugin, Plugin);
+EditPlugin.prototype.fieldsets = {
+    property:[{
+        legend:'Stuff',
+        fields:[]
+    }]
+}
 
-var extRe = /\.(js|html|css|htm)$/i;
 EditPlugin.prototype.admin = function () {
     return {
-        href:'#/views/modeleditor/admin/list',
+        href:'#/modeleditor/views/admin/list',
         title:'Model Settings'
     };
 }
+
 EditPlugin.prototype.appModel = function () {
     return _u.extend(this._appModel, {
         header:{
             'admin-menu':{
 
                 'modeleditor':{
-                    href:'#/views/modeleditor/admin/list',
+                    href:'#/modeleditor/views/admin/list',
                     label:'Model Settings'
                 }
             }
@@ -53,7 +59,7 @@ EditPlugin.prototype.routes = function () {
         var editModel = new EditModel(this.pluginManager.appModel, {
             editors:this.pluginManager.editors
         });
-
+        this.local(res, 'plugin', this);
         this.local(res, 'editModel', editModel);
 
         next();
@@ -61,7 +67,7 @@ EditPlugin.prototype.routes = function () {
 
     var base = this.pluginUrl;
     var jsView = this.baseUrl + 'js/views/' + this.name;
-    this.app.get(this.baseUrl + 'js/views/modeleditor/admin/:type?/:view', function (req, res, next) {
+    this.app.get(this.pluginUrl + '/views/admin/:type?/:view', function (req, res, next) {
         var view = 'admin/' + req.params.view;
 
         var editModel = new EditModel(this.pluginManager.appModel, {
