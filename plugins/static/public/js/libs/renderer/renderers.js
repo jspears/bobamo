@@ -3,16 +3,7 @@ define(['jquery'], function ($) {
     var Renderer = function (config) {
         this.config = config || {};
     }
-    define('renderer/Text', function(){
-        return function(value){
-            this.$el.html(value);
-        }
-    });
-//    define('renderer/Number', function(){
-//        return function(value){
-//            this.$el.html(value);
-//        }
-//    });
+
     define('renderer/default', function(){
        return function(value){
            this.$el.html(value);
@@ -22,17 +13,18 @@ define(['jquery'], function ($) {
             if (obj && obj.property)
                this.config[obj.property] = obj;
     };
+    var re = /\./g;
     Renderer.prototype.render = function ( value, property, model, options) {
         var conf = this.config[property];
         var type = conf ? conf.renderer :  'default'
-        var nodeId = 'render-'+type+'-'+property+"-"+(id++);
+        var nodeId = 'render-'+type+'-'+property.replace(re, '_')+"-"+(id++);
         require(['renderer/'+type], function(render){
-            render.apply({
+            render(options).apply({
                 id:nodeId,
                 $el:$('#'+nodeId),
                 property:property,
                 options:options
-            }, [value]);
+            }, [value, property, model]);
         });
         return '<div id="'+nodeId+'"></div>';
     }
