@@ -2,7 +2,7 @@ define([
     'underscore',
     'Backbone',
     'modeleditor/views/admin/model-model',
-    'modeleditor/js/form-model',
+    'Backbone.Form/form-model',
     'libs/bobamo/edit',
     'libs/util/inflection',
     'backbone-modal',

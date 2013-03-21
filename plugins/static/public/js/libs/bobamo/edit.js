@@ -179,17 +179,19 @@ define([
         wizOptions: {
 
         },
+        createTemplate: _.template('<i class="icon-plus"></i>Create New <%=title%>'),
+        editTemplate: _.template('<i class="icon-edit"></i> Edit <%=title%> [<%=id%>]'),
         render: function (opts) {
             var $el = this.$el.html(this.template());
             var id = opts && (opts.id || opts._id);
             var model = this.createModel(opts);
             model.on('sync', this.onSuccess, this);
-            var title = id ? '<i class="icon-edit"></i> Edit {title} [{id}]' : '<i class="icon-plus"></i>Create New {title}';
+            var title = id ? this.editTemplate :  this.createTemplate;
             var config = _.extend({id: id}, this.config);
             var form = this.form = this.createForm({
                 model: model,
                 fieldsets: this.fieldsets || model.fieldsets || [
-                    {legend: replacer(title, config), fields: this.fields}
+                    {legend: title(config), fields: this.fields}
                 ]
             });
             var $fm = $('.form-container', this.$el);

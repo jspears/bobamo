@@ -72,12 +72,14 @@ CsvPlugin.prototype.parsers = function () {
     return parsers;
 };
 
-CsvPlugin.prototype.configure = function (conf) {
+CsvPlugin.prototype.configure = function (conf, cb) {
     Object.keys(this.conf).forEach(function (v) {
         delete this.conf[v];
     }, this);
     this.conf.modelName = {};
     _.extend(this.conf, conf);
+    if (cb)
+        cb(null, this);
 };
 CsvPlugin.prototype.genConf = function (modelName, headers, allParsers) {
     var schema = this.pluginManager.appModel.modelPaths[modelName].schema;

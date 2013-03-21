@@ -1,8 +1,9 @@
-define(['Backbone', 'libs/bobamo/edit', 'text!tpl/edit.html', 'libs/editors/multi-editor'], function(B, Edit, template){
-    var model = {{json plugin.admin()}}
-    console.log('configure', model);
+define(['Backbone', 'libs/bobamo/edit',
+    'views/configure-model/${plugin.name}',
+    'text!templates/${plugin.name}/configure.html',
+    'Backbone.Form/form-model'], function(B, Edit, Model, template){
     return Edit.extend({
-        model:B.Model.extend(model),
+        model:Model,
         template:_.template(template),
         fieldsets:model.fieldsets,
         config:{

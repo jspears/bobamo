@@ -35,7 +35,7 @@ EditPlugin.prototype.appModel = function () {
 //EditPlugin.prototype.appModel = function () {
 //    return this._appModel;
 //}
-EditPlugin.prototype.configure = function (conf) {
+EditPlugin.prototype.configure = function (conf, cb) {
     if (conf && conf.modelPaths)
         _u.each(conf.modelPaths, function onModelConfigure(v, k) {
                 var _configured = false
@@ -51,7 +51,8 @@ EditPlugin.prototype.configure = function (conf) {
             //}
         }, this);
 //    new App(conf);
-    return _u.extend(this._appModel, conf);
+    cb(null, this);
+    return this;
 }
 EditPlugin.prototype.routes = function () {
 

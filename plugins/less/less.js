@@ -7,7 +7,7 @@ var LessPlugin = function (options, app, name) {
 
 }
 sutil.inherits(LessPlugin, Plugin);
-LessPlugin.prototype.configure = function (conf) {
+LessPlugin.prototype.configure = function (conf, cb) {
     _u.extend(this._variables, conf);
     var paths = [ path.join(this.path, 'less')];
     _u.each(this.pluginManager.plugins, function(v){
@@ -19,21 +19,15 @@ LessPlugin.prototype.configure = function (conf) {
         this.lessFactory = this.options.lessFactory = new LessFactory({
             paths:paths
         });
+    cb(null, this);
 }
 
 LessPlugin.prototype.appModel = function () {
-    return {
-        modelPaths:{},
-        header:{
-            'admin-menu':{
+     return {
+             href:'#/less/views/admin/display',
+             label:'Display Settings'
+     }
 
-                'less':{
-                    href:'#/less/views/admin/display',
-                    label:'Display Settings'
-                }
-            }
-        }
-    }
 }
 LessPlugin.prototype.editors = function () {
     return [
@@ -58,13 +52,10 @@ LessPlugin.prototype.editors = function () {
 
 LessPlugin.prototype.filters = function () {
     this.app.get(this.baseUrl + '*', function (req, res, next) {
-        if (_u.isFunction(res.local)) {
-            res.local('lessFactory', this.lessFactory);
-        } else {
-            res.locals['lessFactory'] = this.lessFactory;
-        }
+        res.locals.lessFactory = this.lessFactory;
         next();
     }.bind(this));
+
     Plugin.prototype.filters.apply(this, arguments);
 }
 

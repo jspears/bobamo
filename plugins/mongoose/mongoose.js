@@ -1,15 +1,120 @@
-var  Plugin = require('../../lib/plugin-api'), util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), MModel = require('./mongoose-model');
+var bobamo = require('../../index'), Plugin = bobamo.PluginApi,
+    Model = bobamo.DisplayModel,
+    URL = require('url')
+util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), MModel = require('./mongoose-model');
 
 var valid = {};
 
 var MongoosePlugin = function (options) {
     Plugin.apply(this, arguments);
     this.pluginUrl = this.baseUrl;
+    this.conf = {
+        host:'localhost',
+        port:27017,
+        name:'bobamo'
+    }
 
 }
 sutil.inherits(MongoosePlugin, Plugin);
 module.exports = MongoosePlugin;
+MongoosePlugin.prototype.runningConf = function () {
+    var m = this.options.mongoose;
+    var conf = [];
+    if (m && m.connections) {
+        m.connections.forEach(function (c, i) {
+            if (c.host && c.name)
+                conf.push({
+                    host: c.host,
+                    port: c.port,
+                    user: c.user,
+                    pass: c.pass,
+                    name: c.name,
+                    _id: 'mongoose-id-' + i
+                })
+        });
+    }
+    return conf;
+}
+MongoosePlugin.prototype.configure = function (rconf, cb) {
+    if (!this.options.mongoose)
+        this.options.mongoose = require('mongoose');
+    var conf = rconf;
+    if (rconf) {
+        console.log('conf', rconf);
+
+    } else {
+        conf = this.conf = this.runningConf();
+    }
+    var c = this.options.mongoose.connection;
+    //readyState 0= disconnected 1=connected, 2=connecting,3=disconnecting
+    if (c && (c.readyState == 1 || c.readyState == 2 ) || !(conf && conf.host && conf.name)){
+       return cb(new Error("Not a valid configuration"), this);
+    }
+    if (c.readyState == 0 || c.readyState == 3) {
+        var db = this.options.mongoose.createConnection();
+        var port = conf.port || 27017;
+        db.open(conf.host, conf.name, port, _.omit(conf, 'host', 'name', 'port'),function(e,o){
+            cb( e,this);
+        }.bind(this));
+    }
+
+    return this;
+};
+
 MongoosePlugin.prototype.parsers = require('./parsers');
+var mkeys = ['host', 'name', 'port', 'user', 'pass', 'name'];
+function diff(o1, o2) {
+    if (!(o1 && o2))
+        return false;
+
+    for (var j = 0, l = mkeys.length; j < l; j++) {
+        var k = mkeys[j];
+        if (o1[k] != o2[k]) {
+            return true;
+        }
+    }
+    return false;
+};
+
+MongoosePlugin.prototype.admin = function () {
+    return new Model('mongoose', {
+        schema: {
+            host: {
+                type: 'Text',
+                title: '*Host',
+                help: 'The to your mongoose instance',
+                validators: [
+                    {type: 'required'}
+                ]
+            },
+            name: {
+                type: 'Text',
+                title: '*Name',
+                help: 'The name of your mongodb',
+                validators: [
+                    {type: 'required'}
+                ]
+            },
+            user: {
+                title: 'Username',
+                type: 'Text',
+                help: 'If you use username enter it here'
+            },
+            pass: {
+                type: 'Text',
+                title: 'Password',
+                help: 'If you use passwords enter it here'
+            },
+            port: {
+                title: 'Port',
+                type: 'Integer',
+                help: 'Port of your mongodb'
+            }
+        },
+        defaults: this.conf || this.runningConf().shift()
+    });
+
+}
 var validFuncs = {};
 MongoosePlugin.prototype.appModel = function (options) {
 //    this.pluginManager.requirejs(['mongoose/validators'], function(validators){
@@ -27,8 +132,8 @@ MongoosePlugin.prototype.appModel = function (options) {
                 //This tells us that it was externally configured. If this is the
                 // case all the configuration will come from there. Otherwise it goes
                 // this should be fixed someday.   Not entirely sure how.
-                if (v._configured){
-                  //  ret[v.modelName] = new MModel(v, self.pluginManager)
+                if (v._configured) {
+                    //  ret[v.modelName] = new MModel(v, self.pluginManager)
                     return; //skip configured to prevent a nasty loop.
                 }
                 ret[v.modelName] = new MModel(v, self.pluginManager);
@@ -58,10 +163,10 @@ function naturalType(mongoose, type) {
     }
 }
 var TypeAllow = {
-    'String':['min', 'max', 'trim', 'uppercase', 'lowercase'],
-    'Number':['min', 'max']
+    'String': ['min', 'max', 'trim', 'uppercase', 'lowercase'],
+    'Number': ['min', 'max']
 }
-MongoosePlugin.prototype.modelFor = function(m){
+MongoosePlugin.prototype.modelFor = function (m) {
     return this.options.mongoose.models[m];
 }
 MongoosePlugin.prototype.schemaFor = function (schema) {
@@ -70,6 +175,7 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
     var pm = this.pluginManager;
     var mongoose = this.options.mongoose;
     var validatorPaths = {};
+
     function onPath(model, obj, sp) {
         _u.each(model, function (v, k) {
             var path = {};
@@ -79,11 +185,11 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
                 v.name = k;
             obj[v.name] = v.multiple ? [path] : path;
             if (v.ref) path.ref = v.ref;
-            if (v.schemaType == 'Object'){
-                var subObj =  (obj[v.name] = {
+            if (v.schemaType == 'Object') {
+                var subObj = (obj[v.name] = {
                 });
 
-                return onPath(v.subSchema,subObj, sp ? v.name : [sp, v.name].join('.'))
+                return onPath(v.subSchema, subObj, sp ? v.name : [sp, v.name].join('.'))
             }
             path.type = naturalType(mongoose, v.schemaType || 'String');
             _u.each(['unique', 'index', 'expires', 'select'], function (vv, k) {
@@ -100,7 +206,7 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
             if (v.validators) {
                 var validate = (path.validate = []);
 
-                _u.each(v.validators, function (vv,kk){
+                _u.each(v.validators, function (vv, kk) {
                     validate.push(pm.validator(vv.type || vv.name, vv));
 
                 });
@@ -128,28 +234,28 @@ MongoosePlugin.prototype.schemaFor = function (schema) {
 }
 MongoosePlugin.prototype.updateSchema = function (modelName, schema, callback) {
     var model;
-   try {
-       model = this.options.mongoose.model(modelName);
+    try {
+        model = this.options.mongoose.model(modelName);
 
-   }catch(e){
+    } catch (e) {
 
-       var mschema = this.schemaFor(schema);
-       model = this.options.mongoose.model(modelName, mschema);
-   }
+        var mschema = this.schemaFor(schema);
+        model = this.options.mongoose.model(modelName, mschema);
+    }
 
     console.log('loading schema', modelName);
     if (callback)
         callback(model);
     return true;
 }
-function onValid(v,k){
-    return _u.extend({type:k}, v);
+function onValid(v, k) {
+    return _u.extend({type: k}, v);
 }
 MongoosePlugin.prototype.validators = function (type) {
-    var validall =  _u.map(valid.validators, onValid);
+    var validall = _u.map(valid.validators, onValid);
 
-    if (type){
-        return _u.filter(validall, function(v,k){
+    if (type) {
+        return _u.filter(validall, function (v, k) {
             return !v.types ? true : v.types && ~v.types.indexOf(type);
         });
     }
@@ -178,7 +284,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
         defaults.hidden = true;
 
     if (!tmpP && Model) {
-        var obj = { subSchema:{}, type:'Object'}
+        var obj = { subSchema: {}, type: 'Object'}
         //I really am not sure about p[path]   but it makes a bug if I don't.
         _u(path in p ? path[p] : p).each(function (v, k) {
             var ref = schema.path(path + '.' + k);
@@ -192,41 +298,41 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
         if (opts.ref) {
 
             _u.extend(defaults, {
-                url:apiPath + opts.ref + '?transform=labelval',
-                schemaType:'String',
-                type:'MultiEditor',
-                multiple:false,
-                ref:opts.ref
+                url: apiPath + opts.ref + '?transform=labelval',
+                schemaType: 'String',
+                type: 'MultiEditor',
+                multiple: false,
+                ref: opts.ref
             }, opts.display);
         } else if (path == '_id') {
             _u.extend(defaults, {
-                type:'Hidden',
-                schemaType:'String'
+                type: 'Hidden',
+                schemaType: 'String'
             });
         }
     } else if (p.ref) {
         _u.extend(defaults, {
-            url:apiPath + p.ref + '?transform=labelval',
-            schemaType:'String',
-            type:'MultiEditor',
-            multiple:false
+            url: apiPath + p.ref + '?transform=labelval',
+            schemaType: 'String',
+            type: 'MultiEditor',
+            multiple: false
         });
     } else {
         var modelName = util.depth(p, 'caster.options.ref');
         if (modelName) {
             _u.extend(defaults, {
-                schemaType:'Array',
-                url:apiPath + modelName + '?transform=labelval',
-                type:'MultiEditor',
-                multiple:true,
-                ref:modelName
+                schemaType: 'Array',
+                url: apiPath + modelName + '?transform=labelval',
+                type: 'MultiEditor',
+                multiple: true,
+                ref: modelName
             });
         } else {
             var type = p && (util.depth(p, 'options.type') || p.type);
-            type = _u.isString(type) ? naturalType(mongoose, type) :type;
+            type = _u.isString(type) ? naturalType(mongoose, type) : type;
             if (type instanceof Array) {
                 _u.extend(defaults, {
-                    type:'List'
+                    type: 'List'
                 });
                 if (type.length) {
                     var o = type[0];
@@ -265,11 +371,11 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                         break;
                     case
                     Number:
-                        _u.extend(defaults, {schemaType:'Number', type:'Number'});
+                        _u.extend(defaults, {schemaType: 'Number', type: 'Number'});
                         break;
                     case
                     String:
-                        var o = {schemaType:'String'};
+                        var o = {schemaType: 'String'};
                         if (p.enumValues && p.enumValues.length) {
                             o.options = p.enumValues;
                             o.type = 'MultiEditor';
@@ -279,32 +385,32 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                         break;
                     case
                     Buffer:
-                        _u.extend(defaults, {type:'File'});
+                        _u.extend(defaults, {type: 'File'});
                         break;
                     case
                     Boolean:
                         _u.extend(defaults, {
-                            schemaType:'Boolean',
-                            type:'Checkbox'
+                            schemaType: 'Boolean',
+                            type: 'Checkbox'
                         });
                         break;
                     case
                     Date:
                         _u.extend(defaults, {
-                            type:'DateTime',
-                            schemaType:'Date',
-                            dataType:'date'
+                            type: 'DateTime',
+                            schemaType: 'Date',
+                            dataType: 'date'
 
                         })
                         break;
                     default:
                     {
-                        var type = this.pluginManager.pluginFor(path,  p, schema);
+                        var type = this.pluginManager.pluginFor(path, p, schema);
                         if (type == null)
-                          console.error('unknown type for [' + path + ']', p);
+                            console.error('unknown type for [' + path + ']', p);
 
-                        else{
-                            console.log('found type', type);
+                        else {
+                            //         console.log('found type', type);
                             _u.extend(defaults, type);
                         }
                         break;
@@ -319,43 +425,43 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
         }
     }
     if (opts.required) {
-        util.defaultOrSet(defaults, 'validators', []).push({type:'required'});
+        util.defaultOrSet(defaults, 'validators', []).push({type: 'required'});
 //        (defaults.validator ? defaults.validator : (defaults.validator = [])).push('required');
     }
     if (p.validators) {
         _u.each(p.validators, function (v, k) {
             if (v.length) {
                 if (v[0] instanceof RegExp) {
-                    util.defaultOrSet(defaults, 'validators', []).push({ type:'regexp', regexp:v[0] + '', message:v[1] });
+                    util.defaultOrSet(defaults, 'validators', []).push({ type: 'regexp', regexp: v[0] + '', message: v[1] });
                 } else if (v[1] == 'required') {
-                    util.defaultOrSet(defaults, 'validators', []).push({ type:'required', message:v[1] });
+                    util.defaultOrSet(defaults, 'validators', []).push({ type: 'required', message: v[1] });
 
                 } else if (p.instance == 'Number' || _u.isNumber(p.options.min)) {
                     if (v[1] == 'min') {
-                       util.defaultOrSet(defaults, 'validators', []).push({ type:'min', message:v[1], configure:{min:p.options.max} });
+                        util.defaultOrSet(defaults, 'validators', []).push({ type: 'min', message: v[1], configure: {min: p.options.max} });
 
                     } else if (v[1] == 'max' || _u.isNumber(p.options.max)) {
-                       util.defaultOrSet(defaults, 'validators', []).push({ type:'max', message:v[1], configure:{min:p.options.min}  });
+                        util.defaultOrSet(defaults, 'validators', []).push({ type: 'max', message: v[1], configure: {min: p.options.min}  });
                     }
-                }else if(v[0].type){
+                } else if (v[0].type) {
                     console.log('validator type', v[0].type, v[0]);
-                    util.defaultOrSet(defaults, 'validators', []).push( v[0] );
+                    util.defaultOrSet(defaults, 'validators', []).push(v[0]);
 
-                }else{
+                } else {
                     console.warn('can only handle client side regex/required/min/max validators for now', v)
                 }
             }
         })
     }
-    if (p.instance == 'String' && p.options){
-        if ( _u.isNumber(p.options.min)) {
-            util.defaultOrSet(defaults, 'validators', []).push({ type:'minlength', configure:{minlength:p.options.min} });
+    if (p.instance == 'String' && p.options) {
+        if (_u.isNumber(p.options.min)) {
+            util.defaultOrSet(defaults, 'validators', []).push({ type: 'minlength', configure: {minlength: p.options.min} });
         }
         if (_u.isNumber(p.options.max)) {
-            util.defaultOrSet(defaults, 'validators', []).push({ type:'maxlength', configure:{maxlength:p.options.max} });
+            util.defaultOrSet(defaults, 'validators', []).push({ type: 'maxlength', configure: {maxlength: p.options.max} });
         }
     }
-    var ret = _u.extend({type:'Text'}, defaults, opts.display);
+    var ret = _u.extend({type: 'Text'}, defaults, opts.display);
     return ret;
 
 }

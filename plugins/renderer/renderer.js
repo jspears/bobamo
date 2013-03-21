@@ -8,7 +8,7 @@ var bobamo = require('../../index'), util = require('util'), bu = require('../..
  * @returns {null}
  */
 function first(arr, property, value){
-    if (!(arr || arr.length)) return ;
+    if (!(arr || arr.length)) return null;
     var v = null;
     for(var i= 0,l=arr.length;i<l;i++){
         v = arr[i];
@@ -22,7 +22,8 @@ var RendererPlugin = function () {
     this.conf = {};
     var self = this;
     Model.prototype.renderer = function (property, view) {
-        var s = first(this[view || 'list_fields'], 'name', property);
+        var fields = this[view || 'list_fields'];
+        var s = first(fields, 'name', property);
 
         //We determine types for 'automatic renderers';
         if (s && s.renderer == 'automatic') s = null;
@@ -30,7 +31,7 @@ var RendererPlugin = function () {
         s = s || (function (schema) {
 
             var ret = self.determineRenderer(schema, property);
-            return _.extend({renderer: ret.name}, ret.defaults);
+            return _.extend({renderer: ret._id}, ret.defaults);
         })(this.schema);
         return _.extend({}, s, {property: property});
     };
@@ -51,11 +52,13 @@ RendererPlugin.prototype.appModel = function () {
     }
 };
 
-RendererPlugin.prototype.configure = function (conf) {
+RendererPlugin.prototype.configure = function (conf,cb) {
     Object.keys(this.conf).forEach(function (k) {
         delete this.conf[k];
     }, this);
     _.extend(this.conf, conf);
+    cb(null, this);
+    return this;
 }
 /**
  * Determines score for an object match... Should be
@@ -105,7 +108,7 @@ RendererPlugin.prototype.determineRenderer = function (schema, property) {
         return this.find(obj.renderer);
     }
     var order = [];
-    var renderers = this.pluginManager.asList('renderers');
+    var renderers = this.listRenderers();
     var t = renderers.length;
 
     _.each(renderers, function (v, i) {
@@ -287,6 +290,7 @@ RendererPlugin.prototype.routes = function () {
                 ]
             })
     }.bind(this));
+    var rendererRe = /^renderer\./;
     this.app.get(pluginUrl + '/:type.:format?', function (req, res, next) {
         //  var schema = this.rendererFor(req.params.renderer);
         var id = ~req.params.type.indexOf('.') ? req.params.type : 'renderer.'+req.params.type;
@@ -294,13 +298,13 @@ RendererPlugin.prototype.routes = function () {
         if (!res.locals.model)
             res.locals.model = new Model(req.params.type, schema);
 
-        if (schema && schema.ref){
+        if (schema && !rendererRe.test(schema._id)){
             //might need to delegate to other plugin so doing this
             // instead of an or.
-            req.url = this.baseUrl+schema.ref.replace(/\./g, '/')+'.js';
+            req.url = this.baseUrl+(schema.ref || schema._id).replace(/\./g, '/')+'.js';
             next();
         }else
-            generate.call(this, res,  schema._id.replace('renderer.','')+ '.' + req.params.format)
+            generate.call(this, res,  schema._id.replace(rendererRe,'')+ '.' + req.params.format)
     }.bind(this));
 
     PluginApi.prototype.routes.apply(this, arguments);

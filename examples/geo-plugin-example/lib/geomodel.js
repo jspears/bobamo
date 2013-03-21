@@ -23,7 +23,7 @@ var AddressSchema = new mongoose.Schema({
 //            }
 //        ]
 //    }
-}, {display:{list_fields:['name','location.formatted_address', 'location.dis']}});
+}, {display:{list_fields:['name','location.formatted_address', 'location']}});
 
 var config = {};
 
@@ -92,5 +92,5 @@ AddressSchema.statics.search.display = {
     ],
     list_fields:['name', 'location.formatted_address', 'dis']
 }
-var Address = mongoose.model('Address', AddressSchema);
-module.exports = Address;
+//var Address = mongoose.model('Address', AddressSchema);
+module.exports = AddressSchema;

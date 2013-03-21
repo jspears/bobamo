@@ -9,14 +9,16 @@
                     _.each(items[t], function(l){ %>
                     <%= menu(l) %>
                     <%})})%>
+                </ul>
+                <ul class="nav pull-right">
 
                     <%if (items['admin-menu']&& _.keys(items['admin-menu']).length){%>
-                        <li class="divider-vertical"></li>
-                        <%=menu({items:items['admin-menu'],label:'Admin'})%>
+                    <li class="divider-vertical"></li>
+                    <%=menu({items:items['admin-menu'],label:'Admin'})%>
                     <%}%>
                     <%if (items['user-menu'] && _.keys(items['user-menu']).length){%>
-                         <li class="divider-vertical"></li>
-                          <%=menu({items:items['user-menu'],label:'User'})%>
+                    <li class="divider-vertical"></li>
+                    <%=menu({items:items['user-menu'],label:'User'})%>
                     <%}%>
                 </ul>
             </div>

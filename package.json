@@ -12,7 +12,8 @@
     "less": "latest",
     "connect": "latest",
     "express": ">=3",
-    "requirejs": "latest"
+    "requirejs": "latest",
+      "q":"latest"
   },
   "bin": {
     "bobamo": "bin/bobamo"

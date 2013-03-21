@@ -234,7 +234,7 @@ JsonSchemaPlugin.prototype.swaggerUrl = function () {
     var swagUrl = url + (this.pluginUrl + '/api');
     return swagUrl;
 }
-JsonSchemaPlugin.prototype.configure = function (conf) {
+JsonSchemaPlugin.prototype.configure = function (conf, cb) {
     if (conf)
         _u.each(conf, function (v, k) {
             if (!v)
@@ -242,6 +242,7 @@ JsonSchemaPlugin.prototype.configure = function (conf) {
         });
     _u.extend(this.conf, conf);
     this.swaggerUrl();
+    cb(null, this);
 }
 JsonSchemaPlugin.prototype.resource = function (modelName) {
     var appModel =this.pluginManager.appModel;
