@@ -4,9 +4,8 @@ define([
     'underscore',
     'Backbone',
     'router',
-    'views/header',
-    'setup'
-], function ($, _, Backbone, Router, HeaderView, Setup) {
+    'views/header'
+], function ($, _, Backbone, Router, HeaderView) {
     return (function () {
         this.headerView = new HeaderView();
         $('.header').html(this.headerView.render().el);

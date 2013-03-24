@@ -52,14 +52,6 @@ RendererPlugin.prototype.appModel = function () {
     }
 };
 
-RendererPlugin.prototype.configure = function (conf,cb) {
-    Object.keys(this.conf).forEach(function (k) {
-        delete this.conf[k];
-    }, this);
-    _.extend(this.conf, conf);
-    cb(null, this);
-    return this;
-}
 /**
  * Determines score for an object match... Should be
  * externalized.
@@ -304,7 +296,7 @@ RendererPlugin.prototype.routes = function () {
             req.url = this.baseUrl+(schema.ref || schema._id).replace(/\./g, '/')+'.js';
             next();
         }else
-            generate.call(this, res,  schema._id.replace(rendererRe,'')+ '.' + req.params.format)
+            generate.call(this, res,  (schema.ref || schema._id).replace(rendererRe,'')+ '.' + req.params.format)
     }.bind(this));
 
     PluginApi.prototype.routes.apply(this, arguments);

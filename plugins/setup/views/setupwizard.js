@@ -1,18 +1,17 @@
 var pslice = Array.prototype.slice;
-var includes = ['underscore', 'Backbone', 'libs/bobamo/edit', 'backbone-modal', 'text!setup/tpl/setup.html',
+var includes = ['underscore', 'Backbone',   'Backbone.Form','libs/bobamo/edit', 'backbone-modal', 'text!setup/tpl/setup.html',
     'libs/bobamo/backbone-forms/form-model'
 ]
 var reconfigure //${nl}={{json pluginManager.reconfigure}};
 for(var i= 0,l=reconfigure.length;i<l;i++)
     includes.push('views/configure-model/'+reconfigure[i]);
 
-define(includes.concat(reconfigure)
-    , function (_, B, Edit, Modal, template) {
+define(includes, function (_, B, Form, Edit, Modal, template) {
 //        var models = [];
         var schema = {
 
         };
-        var fields = [];
+        var fieldsets = [];
         var args = pslice.call(arguments).slice(includes.length - reconfigure.length);
 
         _.each(args, function (M,i) {
@@ -20,13 +19,18 @@ define(includes.concat(reconfigure)
             if (!modelName)
                 return false;
             //var m = new M();
+            var MP = M.prototype;
             schema[modelName] = {
                 type: 'NestedModel',
-                model:M
+                model:M,
+                fields:MP.fields
             };
-            fields.push(modelName);
+            fieldsets.push({
+                legend:MP.title,
+                fields:[modelName]
+            });
         })
-        console.log('schema', fields, schema)
+        console.log('schema', fieldsets, schema)
         var Model = B.Model.extend({
             schema: schema,
             url:'${pluginUrl}/admin/configure'
@@ -34,8 +38,16 @@ define(includes.concat(reconfigure)
         var View = Edit.extend({
             model: Model,
             template: _.template(template),
-            fields: fields,
+            fieldsets: fieldsets,
             createTemplate: _.template('<i class="icon-globe"></i> <%=title%>'),
+            isWizard: true,
+            createForm:function(opts){
+                var form =Edit.prototype.createForm.apply(this, pslice.call(arguments));
+                form.on('render', function(){
+                    this.wizOptions = _.extend({}, this.wizOptions, {fieldset:form.$('fieldset > legend').parent()    });
+                }, this);
+                return form;
+            },
             config: {
                 title: 'Setup Wizard',
                 plural: '',

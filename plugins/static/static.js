@@ -86,7 +86,6 @@ StaticPlugin.prototype.filters = function () {
 
     var public = static(sdir);
     var publicUser = static(psdir);
-    console.log("Public Dir: ", psdir);
     this.app.get(prefix + '*', function (req, res, next) {
         req._url = req.url;
         req.url = req.url.substring(prefix.length - 1);

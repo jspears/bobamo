@@ -1,4 +1,4 @@
-var bobamo = require('../../index'), Plugin = bobamo.PluginApi,
+var bobamo = require('../../index'), Plugin = bobamo.PluginApi, Q = bobamo.Q,
     Model = bobamo.DisplayModel,
     URL = require('url')
 util = require('../../lib/util'), _u = require('underscore'), sutil = require('util'), MModel = require('./mongoose-model');
@@ -9,19 +9,21 @@ var MongoosePlugin = function (options) {
     Plugin.apply(this, arguments);
     this.pluginUrl = this.baseUrl;
     this.conf = {
-        host:'localhost',
-        port:27017,
-        name:'bobamo'
+        connection: {
+            host: 'localhost',
+            port: 27017,
+            name: 'bobamo'
+        }
     }
 
 }
 sutil.inherits(MongoosePlugin, Plugin);
 module.exports = MongoosePlugin;
-MongoosePlugin.prototype.runningConf = function () {
+MongoosePlugin.prototype.runningConf = function (type) {
     var m = this.options.mongoose;
     var conf = [];
-    if (m && m.connections) {
-        m.connections.forEach(function (c, i) {
+    if (m && m[type]) {
+        m[type].forEach(function (c, i) {
             if (c.host && c.name)
                 conf.push({
                     host: c.host,
@@ -35,30 +37,72 @@ MongoosePlugin.prototype.runningConf = function () {
     }
     return conf;
 }
-MongoosePlugin.prototype.configure = function (rconf, cb) {
+function connect(conf, i) {
+    var mongoose = this.options && this.options.mongoose;
+    var connections = mongoose && mongoose.connections;
+    var c = connections[i];
+    //readyState 0= disconnected 1=connected, 2=connecting,3=disconnecting
+    if (c && (c.readyState == 1 || c.readyState == 2 ) || !(conf && conf.host && conf.name)) {
+        var error = {};
+        if (!(conf && conf.host))
+            error['host'] = 'is required';
+        if (!(conf && conf.name))
+            error['name'] = 'is required';
+        return error;
+    }
+    var defer = Q.defer(), ctx;
+
+    if (c && (c.readyState == 0 || c.readyState == 3)) {
+        ctx = c;
+    } else {
+        if (c >= connections.length) {
+            ctx = mongoose.createConnection();
+        } else {
+            ctx = mongoose;
+        }
+    }
+    try {
+        ctx.open(conf.host, conf.name, conf.port || 27017, _.omit(conf, 'host', 'name', 'port'), function (e, o) {
+            if (e)
+                return defer.reject(e);
+
+            return defer.resolve(conf);
+        }.bind(this));
+    } catch (e) {
+        defer.reject(e)
+    }
+    return defer.promise;
+}
+MongoosePlugin.prototype.configure = function (rconf) {
     if (!this.options.mongoose)
         this.options.mongoose = require('mongoose');
-    var conf = rconf;
     if (rconf) {
-        console.log('conf', rconf);
+        var errors, resolve = Q.resolve(), conf = rconf && rconf.connection, all = [conf];
+        if (rconf.conections)
+            all = all.concat(rconf.connections);
 
+        all.forEach(function (conf, i) {
+            resolve = resolve.then(connect.call(this, conf, i), function (conf) {
+            }.bind(this), function (e) {
+                errors = errors || {};
+                if (i == 0) {
+                    errors['connection'] = e.message;
+                } else {
+                    (errors['connections'] || (errors['connections'] = []))[i - 1] = e.message;
+                }
+
+            });
+        }, this);
+        return resolve.then(function () {
+            if (errors)
+                return errors;
+            return null;
+        });
     } else {
-        conf = this.conf = this.runningConf();
-    }
-    var c = this.options.mongoose.connection;
-    //readyState 0= disconnected 1=connected, 2=connecting,3=disconnecting
-    if (c && (c.readyState == 1 || c.readyState == 2 ) || !(conf && conf.host && conf.name)){
-       return cb(new Error("Not a valid configuration"), this);
-    }
-    if (c.readyState == 0 || c.readyState == 3) {
-        var db = this.options.mongoose.createConnection();
-        var port = conf.port || 27017;
-        db.open(conf.host, conf.name, port, _.omit(conf, 'host', 'name', 'port'),function(e,o){
-            cb( e,this);
-        }.bind(this));
+        this.conf.connection = this.runningConf('connection').shift(),
+            this.conf.connections = this.runningConf('connections').slice(1)
     }
 
-    return this;
 };
 
 MongoosePlugin.prototype.parsers = require('./parsers');
@@ -77,40 +121,57 @@ function diff(o1, o2) {
 };
 
 MongoosePlugin.prototype.admin = function () {
+    var Connection = {
+        host: {
+            type: 'Text',
+            title: '*Host',
+            help: 'The to your mongoose instance',
+            validators: [
+                {type: 'required'}
+            ]
+        },
+        name: {
+            type: 'Text',
+            title: '*Name',
+            help: 'The name of your mongodb',
+            validators: [
+                {type: 'required'}
+            ]
+        },
+        user: {
+            title: 'Username',
+            type: 'Text',
+            help: 'If you use username enter it here'
+        },
+        pass: {
+            type: 'Text',
+            title: 'Password',
+            help: 'If you use passwords enter it here'
+        },
+        port: {
+            title: 'Port',
+            type: 'Integer',
+            help: 'Port of your mongodb'
+        }
+
+    }
+
     return new Model('mongoose', {
         schema: {
-            host: {
-                type: 'Text',
-                title: '*Host',
-                help: 'The to your mongoose instance',
-                validators: [
-                    {type: 'required'}
-                ]
+            connection: {
+                title: 'Default Connection',
+                type: 'Object',
+                subSchema: Connection
             },
-            name: {
-                type: 'Text',
-                title: '*Name',
-                help: 'The name of your mongodb',
-                validators: [
-                    {type: 'required'}
-                ]
-            },
-            user: {
-                title: 'Username',
-                type: 'Text',
-                help: 'If you use username enter it here'
-            },
-            pass: {
-                type: 'Text',
-                title: 'Password',
-                help: 'If you use passwords enter it here'
-            },
-            port: {
-                title: 'Port',
-                type: 'Integer',
-                help: 'Port of your mongodb'
+            connections: {
+                type: 'List',
+                itemType: 'Object',
+                labelAttr: 'name',
+                subSchema: Connection,
+                title: "More Connections"
             }
         },
+        fields: ['connection', 'connections'],
         defaults: this.conf || this.runningConf().shift()
     });
 

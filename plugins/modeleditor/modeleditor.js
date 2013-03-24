@@ -35,7 +35,7 @@ EditPlugin.prototype.appModel = function () {
 //EditPlugin.prototype.appModel = function () {
 //    return this._appModel;
 //}
-EditPlugin.prototype.configure = function (conf, cb) {
+EditPlugin.prototype.configure = function (conf) {
     if (conf && conf.modelPaths)
         _u.each(conf.modelPaths, function onModelConfigure(v, k) {
                 var _configured = false
@@ -45,14 +45,12 @@ EditPlugin.prototype.configure = function (conf, cb) {
                     if (plugin && plugin.updateSchema ){
                         _configured = ( plugin.updateSchema(k, v) == true)
 
-                        console.log('updateSchema by', plugin.name, k);
+                        //console.log('updateSchema by', plugin.name, k);
                     }
                 });
             //}
         }, this);
-//    new App(conf);
-    cb(null, this);
-    return this;
+    return null;
 }
 EditPlugin.prototype.routes = function () {
 

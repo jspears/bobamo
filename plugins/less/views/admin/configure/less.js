@@ -8,6 +8,7 @@ define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!less/views
     var Model = Backbone.Model.extend({
         schema: schema,
         urlRoot: 'less/admin',
+        //${nl()} defaults:{{json plugin.conf.variables}},
         parse: function (resp) {
             console.log('response', resp);
             return resp.payload && resp.payload.variables || resp.payload || resp;
@@ -49,10 +50,10 @@ define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!less/views
         onPreview: function () {
             var onSave = _.bind(this.onSave, this);
             var save = this.form.getValue();
-            this.form.model.save(save, {success: function onPreviewSave(obj) {
+            this.form.model.save(save, {success: function onPreviewSave(obj, resp) {
                 require([ 'text!${pluginUrl}/templates/admin/preview.html', 'backbone-modal'], function (preview, Modal) {
                     new Modal({
-                        content: '<iframe src="${baseUrl}index.html?checksum=' + obj.id + '" style="width:100%;height:100%;border:none;"></iframe>',
+                        content: '<iframe src="${baseUrl}index.html?checksum=' + resp.payloadR.id + '" style="width:100%;height:100%;border:none;"></iframe>',
                         title: 'Display Changes',
                         animate: true
                     }).open(onSave)
@@ -66,10 +67,10 @@ define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!less/views
             }, 1000);
 
         },
-        render: function (obj) {
-            if (obj) obj.id = id;
-            EditView.prototype.render.apply(this, Array.prototype.slice.call(arguments));
-        },
+//        render: function (obj) {
+//            if (obj) id = id;
+//            EditView.prototype.render.apply(this, Array.prototype.slice.call(arguments));
+//        },
         config: {
             title: 'Display',
             plural: 'Display Variables',

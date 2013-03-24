@@ -136,7 +136,8 @@ define([
 
         },
         onSave: function (e) {
-            e.preventDefault();
+            if (e && e.preventDefault)
+                e.preventDefault();
             $('.error-list', this.$el).empty().hide();
             $('.success-list', this.$el).empty().hide();
             console.log('changed', this.form.model.changed);
@@ -197,8 +198,8 @@ define([
             var $fm = $('.form-container', this.$el);
             var isWiz = _.isUndefined(this.isWizard) ? this.fieldsets && this.fieldsets.length > 1 : this.isWizard;
             var $del = this.$el;
-            var wizOptions = _.extend({replace: $('.save', $del)}, this.wizOptions);
             form.on('render', function () {
+                var wizOptions = _.extend({replace: $('.save', $del)}, this.wizOptions);
                 var html = form.el;
                 console.log('appending', html);
                 $fm.empty().append(html);

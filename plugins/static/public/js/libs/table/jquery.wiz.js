@@ -69,7 +69,10 @@
             this.$prev.on('click', $.proxy(this.goPrev, this));
             this.$next.on('click', $.proxy(this.goNext ,this));
             this.$el.on('click', 'a.step', function (e) {
-                self.step($(e.currentTarget).parent().data('step'));
+                e.preventDefault();
+                var step = $(e.currentTarget).parent().data('step')
+                if (+step !== +self.current)
+                self.step(step);
             });
             this.step(this.current);
         }

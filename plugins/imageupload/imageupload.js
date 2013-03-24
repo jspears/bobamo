@@ -175,8 +175,7 @@ ImageUploadPlugin.prototype.configure = function (conf, cb) {
             im[k].path = v;
         }
     });
-    cb(null, this);
-
+    return null;
 }
 ImageUploadPlugin.prototype.routes = function () {
 

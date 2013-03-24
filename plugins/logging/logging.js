@@ -46,9 +46,6 @@ var LoggingPlugin = function(){
 }
 
 util.inherits(LoggingPlugin, PluginApi);
-LoggingPlugin.prototype.configure = function(conf, resp){
-
-};
 LoggingPlugin.prototype.admin = function(){
     var defaults = _.extend( {logging:'all'}, this.conf);
     var schema = {

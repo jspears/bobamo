@@ -27,13 +27,19 @@ module.exports = [
             }
         },
         defaults: {
-            format: "MMMM Do YYYY, h:mm:ss a"
+            format: "MMMM Do YYYY"
         }
     },
     {   name: 'DateTime',
-        ref: 'renderer/Date',
+        ref: 'renderer.Date',
         defaults: {
-            format: 'HH:MM dd/mm/yyy'
+            format: 'MMMM Do YYYY, h:mm:ss a'
+        }
+    },
+    {   name: 'Time',
+        ref: 'renderer.Date',
+        defaults: {
+            format: 'h:mm:ss a'
         }
     },
     {
