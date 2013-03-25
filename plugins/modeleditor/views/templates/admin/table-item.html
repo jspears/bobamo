@@ -4,10 +4,15 @@
 <!--<td><%= item.get('labelAttr') %></td>-->
 <!--<td><a href="#/modeleditor/admin/create?id=<%=item.id%>"><i class="icon-edit"></i>Edit</a></td>-->
 <td>
-    <h2><%= item.get('modelName') %></h2>
+    <h2><%= item.get('modelName') %> <small class="pull-right">
+        Edit:
+        <!--<a href="#!modeleditor/views/admin/<%=item.id%>/form-edit"> Form</a> |-->
+        <a href="#!modeleditor/views/admin/<%=item.id%>/list-edit">List View</a>
+    </small></h2>
+    <hr/>
     <p class="lead"><%=  item.get('description') %></p>
-    <br/>
     <a href="<%=item.get('url')%>" target="_blank"><%= item.get('url') %></a>
+
     <% if (item.get('managed')){%>
     <div class="pull-right">
         <a class="btn active" href="#/modeleditor/views/admin/create?id=<%=item.id%>"><i class="icon-wrench"></i>Configure</a>

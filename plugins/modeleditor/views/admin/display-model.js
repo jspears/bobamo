@@ -1,4 +1,4 @@
-define(['underscore', 'Backbone', 'modeleditor/js/form-model', 'libs/util/inflection'], function(_, Backbone,Form, inflection){
+define(['underscore', 'Backbone', 'Backbone.Form/form-model', 'libs/util/inflection'], function(_, Backbone,Form, inflection){
     "use strict";
     return Backbone.Model.extend({
         schema:{

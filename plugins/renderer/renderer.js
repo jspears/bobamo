@@ -95,7 +95,9 @@ RendererPlugin.prototype.determineRenderer = function (schema, property) {
     var prop = Array.isArray(property) ? property.concat() : property.split('.');
     var obj = schema;
     while ((obj = obj[prop.shift()] )&& prop.length  && obj.subSchema && (obj = obj.subSchema));
- //   obj = obj[prop.shift()];
+   return this.rendererForProp(obj);
+}
+RendererPlugin.prototype.rendererForProp = function ( obj) {
     if (obj.renderer) {
         return this.find(obj.renderer);
     }

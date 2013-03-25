@@ -1,4 +1,5 @@
-define(['exports', 'Backbone', 'modeleditor/js/form-model', 'modeleditor/views/admin/schema-types', 'mongoose/js/validators', 'underscore', 'jquery'], function (exports, b, Form, schemaTypes, validators, _, $) {
+define(['exports', 'Backbone', 'Backbone.Form/form-model',
+    'modeleditor/views/admin/schema-types', 'mongoose/js/validators', 'underscore', 'jquery'], function (exports, b, Form, schemaTypes, validators, _, $) {
     "use strict";
     validators.inject(Form);
 

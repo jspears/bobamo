@@ -1,4 +1,4 @@
-define(['Backbone', 'modeleditor/js/form-model', 'underscore'], function (b, Form, _) {
+define(['Backbone', 'Backbone.Form/form-model',  'underscore'], function (b, Form, _) {
 
     return b.Model.extend({
         defaults:{

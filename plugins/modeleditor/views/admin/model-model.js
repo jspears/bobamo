@@ -1,4 +1,5 @@
-define(['underscore', 'Backbone', 'modeleditor/views/admin/display-model',  'modeleditor/views/admin/property', 'modeleditor/views/admin/fieldset'], function(_, Backbone, Display, Property, Fieldset ){
+define(['underscore', 'Backbone', 'modeleditor/views/admin/display-model',
+    'modeleditor/views/admin/property', 'modeleditor/views/admin/fieldset'], function(_, Backbone, Display, Property, Fieldset ){
     return Backbone.Model.extend({
         schema:{
             "modelName":{

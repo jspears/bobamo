@@ -1,4 +1,4 @@
-define([ 'Backbone', 'modeleditor/js/form-model', 'modeleditor/views/admin/fieldset', 'modeleditor/views/admin/editors', 'modeleditor/views/admin/mongoose-types', 'exports', 'underscore', 'Backbone.Form', 'libs/editors/typeahead-editor'], function (b, Form, Fieldset, Editors, MongooseType, exports, _) {
+define([ 'Backbone', 'Backbone.Form/form-model', 'modeleditor/views/admin/fieldset', 'modeleditor/views/admin/editors', 'modeleditor/views/admin/mongoose-types', 'exports', 'underscore', 'Backbone.Form', 'libs/editors/typeahead-editor'], function (b, Form, Fieldset, Editors, MongooseType, exports, _) {
     "use strict";
     function editorsFor(val) {
         var editors = [];

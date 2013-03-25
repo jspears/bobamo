@@ -1,4 +1,5 @@
-define(['modeleditor/views/admin/schema-collection', 'underscore', 'Backbone', 'libs/bobamo/list',  'text!modeleditor/views//templates/admin/table.html',
+define(['modeleditor/views/admin/schema-collection',
+    'underscore', 'Backbone', 'libs/bobamo/list',  'text!modeleditor/views/templates/admin/table.html',
     'text!modeleditor/views/templates/admin/table-item.html'], function (collection, _, Backbone, ListView, tableTemplate, listItemTemplate) {
 
 

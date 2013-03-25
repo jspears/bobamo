@@ -87,6 +87,33 @@ EditPlugin.prototype.routes = function () {
         var pm = this.pluginManager;
         this.generate(res, view);
     }.bind(this))
+    this.app.get(base + '/admin/list/:type', function (req,res,next){
+        var pm = this.pluginManager;
+        var appModel = pm.appModel;
+        var model = appModel.modelPaths[req.params.type];
+        res.send({
+            status:0,
+            payload:{
+                list:model.list_fields.map( function(v,k){
+                    if (_.isString(v)){
+                        var prop = model.pathFor(v);
+
+                        return {
+                            property:v,
+                            header:prop.title || v,
+                            renderer:pm.exec('renderer', 'rendererForProp', prop)._id
+
+                        }
+                    }
+                    return v;
+                }, this)
+            }
+        });
+
+    }.bind(this));
+    this.app.put(base + '/admin/list/:modelName', function (req,re,next){
+
+    }.bind(this));
 
     this.app.get(base + '/admin/backbone/:modelName', function (req, res) {
         res.send({

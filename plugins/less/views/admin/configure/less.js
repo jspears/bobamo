@@ -8,7 +8,7 @@ define(['underscore', 'jquery', 'Backbone', 'libs/bobamo/edit', 'text!less/views
     var Model = Backbone.Model.extend({
         schema: schema,
         urlRoot: 'less/admin',
-        //${nl()} defaults:{{json plugin.conf.variables}},
+        //${nl()} defaults:{{json (plugin.conf.variables || {}) }},
         parse: function (resp) {
             console.log('response', resp);
             return resp.payload && resp.payload.variables || resp.payload || resp;
