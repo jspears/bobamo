@@ -98,5 +98,6 @@ StaticPlugin.prototype.filters = function () {
     });
 }
 StaticPlugin.prototype.routes = function () {
+
 }
 module.exports = StaticPlugin;

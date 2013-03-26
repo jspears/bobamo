@@ -23,7 +23,8 @@ MongoosePlugin.prototype.runningConf = function (type) {
     var m = this.options.mongoose;
     var conf = [];
     if (m && m[type]) {
-        m[type].forEach(function (c, i) {
+
+        (_.isArray(m[type]) ? m[type] : [m[type]]).forEach(function (c, i) {
             if (c.host && c.name)
                 conf.push({
                     host: c.host,
@@ -78,9 +79,9 @@ MongoosePlugin.prototype.configure = function (rconf) {
         this.options.mongoose = require('mongoose');
     if (rconf) {
         var errors, resolve = Q.resolve(), conf = rconf && rconf.connection, all = [conf];
-        if (rconf.conections)
+        if (rconf.connections)
             all = all.concat(rconf.connections);
-
+        console.log('all ',all)
         all.forEach(function (conf, i) {
             resolve = resolve.then(connect.call(this, conf, i), function (conf) {
             }.bind(this), function (e) {

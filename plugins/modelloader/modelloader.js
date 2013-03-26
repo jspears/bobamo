@@ -10,7 +10,7 @@ var ModelLoaderPlugin = function () {
 u.inherits(ModelLoaderPlugin, PluginApi);
 ModelLoaderPlugin.prototype.admin = function () {
 
-    return new Model('modelloader', {
+    return new DisplayModel('modelloader', {
         schema: {
             modelDir: {
                 type: 'Text',

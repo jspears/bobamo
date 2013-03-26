@@ -211,7 +211,6 @@ define([
                     }
                 }
             ],
-            'center': [],
             'right': [
                 {
                     html: 'Save',
@@ -234,7 +233,7 @@ define([
             var $div =
                 this.$el.find('.form-actions');
             if (!$div.length)
-                $div = $('<div class="form-actions"></div>');
+                $div = $('<div class="form-actions btn-toolbar"></div>');
             btns = _.isArray(btns) ? { right: btns } : btns;
             var events = {};
             _.each(btns, function (buttons, k) {
@@ -262,12 +261,12 @@ define([
                 //return $el;
             },this);
             this.delegateEvents(events);
-            var $clearfix = $div.find('.clearfix').remove();
-            if (!$clearfix.length) {
-                $clearfix = $('<div class="clearfix" style="clear:right"> </div>');
-            }
+//            var $clearfix = $div.find('.clearfix').remove();
+//            if (!$clearfix.length) {
+//                $clearfix = $('<div class="clearfix" style="clear:right"> </div>');
+//            }
 
-            $div.append($clearfix);
+//            $div.append($clearfix);
 
             return $div;
 

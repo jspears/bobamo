@@ -13,8 +13,8 @@ define([
     //setup renderers ${nl()} {{each(i,l) model.list_fields}} renderer.add({{json model.renderer(i)}}); {{/each}}
 
     return View.extend({
-        template: _.template(tableTemplate),
         collection: collection,
+        template: _.template(tableTemplate),
         listItemTemplate: _.template(tableItemTemplate),
         renderer: renderer,
         config: {

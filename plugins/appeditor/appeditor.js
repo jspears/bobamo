@@ -43,7 +43,7 @@ AppEditorPlugin.prototype.configure = function (conf) {
     }
     var cversion = appModel.version || this.conf && this.conf.version;
     if (conf.version != cversion) {
-        var revisions = conf.revisions;
+        var revisions =  conf.revisions  || (conf.revisions = []);
         revisions.push({
             version: appModel.version,
             description: appModel.description,

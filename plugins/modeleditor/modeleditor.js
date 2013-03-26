@@ -2,7 +2,8 @@ var Plugin = require('../../lib/plugin-api'), util = require('util'), App = requ
 
 var EditPlugin = function () {
     Plugin.apply(this, arguments);
-    this._appModel = {modelPaths:{}};
+    this.conf = {modelPaths:{}};
+
 }
 util.inherits(EditPlugin, Plugin);
 EditPlugin.prototype.fieldsets = {
@@ -20,7 +21,7 @@ EditPlugin.prototype.admin = function () {
 }
 
 EditPlugin.prototype.appModel = function () {
-    return _u.extend(this._appModel, {
+    return _u.extend(this.conf, {
         header:{
             'admin-menu':{
 
@@ -49,7 +50,9 @@ EditPlugin.prototype.configure = function (conf) {
                     }
                 });
             //}
+
         }, this);
+    Plugin.prototype.configure.call(this, conf);
     return null;
 }
 EditPlugin.prototype.routes = function () {
@@ -100,9 +103,8 @@ EditPlugin.prototype.routes = function () {
 
                         return {
                             property:v,
-                            header:prop.title || v,
+                            title:prop.title || v,
                             renderer:pm.exec('renderer', 'rendererForProp', prop)._id
-
                         }
                     }
                     return v;
