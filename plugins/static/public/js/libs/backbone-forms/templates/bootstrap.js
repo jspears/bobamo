@@ -33,7 +33,14 @@ define(['Backbone.FormOrig'], function(Form) {
         </div>\
       </div>\
     ',
-
+/*
+ <div class="control-group nested field-{{key}}">\
+ <label class="control-label" for="{{id}}">{{title}}</label>\
+ {{editor}}\
+ <span class="help-inline">{{error}}</span>\
+ <span class="help-block">{{help}}</span>\
+ </div>\
+ */
     nestedField: '\
       <div class="control-group nested field-{{key}}">\
         <label class="control-label" for="{{id}}">{{title}}</label>\

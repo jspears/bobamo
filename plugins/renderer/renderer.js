@@ -214,8 +214,31 @@ RendererPlugin.prototype.routes = function () {
     this.app.get(pluginUrl + '/views/admin/:type/:view.:format?', function (req, res, next) {
         //  var schema = this.rendererFor(req.params.renderer);
         var id = req.params.type;
-        var schema = this.find(id);
-        res.locals.model = new Model(req.params.type, schema);
+        var model = this.find(id), refmodel = model;
+        var max = 10;
+        if (!model){
+           return res.send(403, 'Could not find reference '+id);
+        }
+        var schema = model.schema;
+        var defaults = model.defaults;
+        while(refmodel && refmodel.ref && (refmodel.ref != id) &&! schema && max-- > 0){
+            var ref = refmodel.ref;
+            refmodel = this.find(ref);
+            if (refmodel){
+            schema = refmodel.schema;
+            if (!defaults)
+                defaults = refmodel.defaults;
+            }else{
+                console.warn('renderer: could not find referenced model '+id+' ref '+ref);
+            }
+        }
+        if (!schema || Object.keys(schema).length == 0){
+            schema = {
+               config:{type:'Hidden', help:'No configuration for "'+id+'"'}
+            };
+        }
+        _.extend(model, {schema: schema}, {defaults:defaults});
+        res.locals.model = new Model(req.params.type, model);
         generate.call(this, res, 'admin/' + req.params.view + '.' + req.params.format)
     }.bind(this));
     this.app.get(pluginUrl + '/admin/renderer', function (req, res, next) {

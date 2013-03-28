@@ -5,66 +5,61 @@ define(['Backbone', 'Backbone.Form/form-model',
     'libs/jquery/jqtpl',
     'backbone-modal',
     'text!modeleditor/views/templates/admin/list-edit.html',
-    'libs/jquery/jquery.busy'
+    'libs/jquery/jquery.busy', //added to $
+    'libs/editors/reorder-list-editor' //added to Form.editors
 
 
 ], function (B, Form, EditView, inflection, Renderer, jqtpl, modal, template) {
-    _.extend(Form.templates, {
-        listItemReorder: Form.helpers.compileTemplate('<li class="edit-item-li">\
-            <div class="bbf-editor-container">\{\{editor\}\}</div>\
-            <div class="edit-control">\
-                 <button type="button" data-action="remove" class="bbf-remove"><i class="icon-remove"></i></button>\
-                 <button type="button" data-action="moveUp" class="bbf-moveUp"><i class="icon-chevron-up"></i></button>\
-                 <button type="button" data-action="moveDown" class="bbf-moveDown"><i class="icon-chevron-down"></i></button>\
-            </div>\
-            <div class="clearfix"> </div>\
-      </li>')
-    });
-    var swapItems = function (list, a, b) {
-        list[a] = list.splice(b, 1, list[a])[0];
-        return list;
-    }
-    var LIP = Form.editors.List.Item.prototype;
-    var oremove = LIP.remove;
-    LIP.remove = function () {
-        this.$el.remove();
-        oremove.call(this);
-    };
-    _.extend(LIP.events, {
-        'click [data-action="moveUp"]': function (event) {
-            event.preventDefault();
-            this.$el.insertBefore(this.$el.prev());
-            var list = this.list, items = list.items, idx = items.indexOf(this);
-            swapItems(items, idx - 1, idx);
-            list.trigger('change', this);
-        },
-        'click [data-action="moveDown"]': function (event) {
-            event.preventDefault();
-            this.$el.insertAfter(this.$el.next());
-            var list = this.list, items = list.items, idx = items.indexOf(this);
-            swapItems(items, idx, idx + 1);
-            list.trigger('change', this);
-        }
-
-    })
-    Form.editors.ReorderList = Form.editors.List.extend({});
+    var NestedModel = Form.editors.NestedModel;
     var RenderCollection = B.Collection.extend({
         url: '${baseUrl}renderer/renderers',
         parse: function (resp) {
             return resp.payload
         },
         model: B.Model.extend({
-            idAttribute:'_id',
+            idAttribute: '_id',
             toString: function () {
                 return this.get('_id');
             }
         })
     });
+    var RenderConfigModel = B.Model.extend({
+        url: '${baseUrl}renderer/renderers',
+        idAttribute: '_id',
+        schema: {
+            renderers: {
+                type: 'Select',
+                options: rendererCollection
+            },
+            config: {
+                type: 'NestedModel',
+                model: B.Model.extend({
+                    schema: {
+                        test: {
+                            type: 'Text'
+                        }
+                    }
+                }),
+                createForm: function (opts) {
+                    if (opts && opts.pform) {
+                        opts.pform.on('change', function () {
+                            console.log('changed');
+                        });
+                    }
+                    var form = new Form(opts);
+                    return form;
+                }
+            }
+        }
+    });
+
     var rendererCollection = new RenderCollection;
     rendererCollection.fetch();
     var RenderModel = B.Model.extend({
         url: '${baseUrl}/modeleditor/admin',
-        fields: ['property', 'title', 'renderer'],
+        options:{
+            fieldsets: ['property', 'title', 'renderer', 'config']
+        },
         toString: function () {
             return  '<div><h3>' + this.get('title') + '</h3>' +
                 '<small>' +
@@ -72,11 +67,58 @@ define(['Backbone', 'Backbone.Form/form-model',
                 + ' renderer: ' + (this.get('renderer') || 'Default');
             +'</small></div>'
         },
+        renderConfig:function(){
+            var renderer = this.form.getValue().renderer;
+            var form = this.form;
+            require(['renderer/views/admin/'+renderer+'/edit'], function(View){
+                var  fields = form.fields, config = fields.config;
+                var Model = View.prototype.model;
+                var $el = config.editor.$el;
+                console.log('schema', Model.prototype.schema);
+                config.editor.remove();
+                if (Model.prototype.schema){
+                    var configModel = new NestedModel({schema:{model:Model}, key:config.key, idPrefix:renderer}).render();
+                     $el.replaceWith(configModel.el);
+                     config.editor = configModel;
+                }else{
+                    config.editor = {
+                        remove:function(){},
+                        getValue:function(){return null},
+                        $el:$el.replaceWith('<div>No Configuration for "'+renderer+'"</div>')
+                    }
+
+                }
+
+            });
+        },
+        onRenderConfig:function(form, renderer, callback){
+            var renderer = form.getValue().renderer;
+            var form = this.form;
+            require(['renderer/views/admin/'+renderer+'/edit'], function(View){
+              var Model = View.prototype.model;
+               form.schema.config = {schema:{model:Model}, key:config.key};
+                callback();
+            });
+        },
+        createForm: function (opt) {
+            var form = this.form = new Form(opt);
+            console.log('createForm', this);
+            //this.onRenderConfig(form, 'renderer.Text', _.bind(form.render, form));
+            form.on('render', this.renderConfig, this)
+            form.on('renderer:change', this.renderConfig, this)
+            return form;
+        },
         schema: {
-            renderer: {
-                type: 'Select',
-                title:'Renderer <a href="#views/renderer/admin/list">configure</a>',
-                options: rendererCollection
+            renderer:{
+              type:'Select',
+              options:rendererCollection
+            } ,
+
+            config: {
+                type: 'Text',
+                title:'Configure Renderer',
+                fieldClass:'form-vertical'
+
             },
             title: {
                 type: 'Text'
@@ -103,7 +145,7 @@ define(['Backbone', 'Backbone.Form/form-model',
         model: B.Model.extend({
             schema: schema,
             urlRoot: '${pluginUrl}/admin/list',
-            parse:function(resp){
+            parse: function (resp) {
                 return resp.payload;
             }
         }),
@@ -128,14 +170,16 @@ define(['Backbone', 'Backbone.Form/form-model',
             var list = this.form.getValue().list;
             var obj = {
                 model: {
-                    list_fields: list.map(function (v) { return v.property; }),
+                    list_fields: list.map(function (v) {
+                        return v.property;
+                    }),
                     pathFor: function (property) {
-                        for (var i= 0,l=list.length;i<l;i++){
+                        for (var i = 0, l = list.length; i < l; i++) {
                             var itm = list[i];
                             if (itm && itm.property == property)
                                 return itm;
                         }
-                        return {title:property}
+                        return {title: property}
 
                     }
                 }
@@ -157,30 +201,20 @@ define(['Backbone', 'Backbone.Form/form-model',
         render: function () {
             EditView.prototype.render.call(this, {id: model.modelName});
             this.form.on('change', this.onPreview, this);
+            this.form.on('render', this.onPreview, this);
             return this;
         },
-
-        buttons: _.extend(EditView.prototype.buttons, {
-            left: EditView.prototype.buttons.left.concat(
-                {
-                    html: 'Preview',
-                    events: {
-                        'click .preview': 'onPreview'
-                    },
-                    clsNames: 'preview'
-                })
-        }),
         listUrl: function () {
             return "#${pluginUrl}/views/admin/list"
         },
-//        createTemplate: _.template('<i class="icon-plus"></i>Create New <%=title%>'),
-        editTemplate: _.template('<i class="icon-edit"></i> Edit List View for ' + model.modelName),
+        createTemplate: _.template('<i class="icon-plus"></i>Create New <%=title%>'),
+        editTemplate: _.template('<i class="icon-edit"></i> Edit <%=title%>'),
         fields: ['list'],
         template: _.template(template),
         config: {
             modelName: model.modelName,
             plural: model.plural,
-            title: 'List View for ' + model.modelName
+            title: 'List View for "' + model.modelName + '"'
         }
     });
 });

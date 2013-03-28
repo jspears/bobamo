@@ -214,7 +214,7 @@ define([
             'right': [
                 {
                     html: 'Save',
-                    clsNames: 'save',
+                    clsNames: 'save btn-primary',
                     type: 'button',
                     events: {
                         'click .save': 'onSave'
@@ -273,7 +273,15 @@ define([
         },
         createTemplate: _.template('<i class="icon-plus"></i>Create New <%=title%>'),
         editTemplate: _.template('<i class="icon-edit"></i> Edit <%=title%> [<%=id%>]'),
+        doFormRender:function( id){
+            var form = this.form, model = this.modelInstance;
+            if (id) {
+                model.fetch({success: _.bind(form.render, form)});
+            } else {
+                form.render();
+            }
 
+        },
         render: function (opts) {
             var $el = this.$el.html(this.template());
             var id = opts && (opts.id || opts._id);
@@ -302,12 +310,7 @@ define([
                 if (isWiz)
                     $('.form-wrap', $del).wiz(wizOptions);
             }, this);
-
-            if (id) {
-                model.fetch({success: _.bind(form.render, form)});
-            } else {
-                form.render();
-            }
+            this.doFormRender(id);
             this.drawButtons();
             $(this.options.container).html($el);
             return this;

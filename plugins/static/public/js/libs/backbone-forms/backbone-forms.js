@@ -2269,7 +2269,7 @@ Form.editors = (function() {
       <li class="bbf-field field-{{key}}">\
         <label for="{{id}}">{{title}}</label>\
         <div class="bbf-editor">{{editor}}</div>\
-        <div class="bbf-help">{{help}}</div>\
+        <dRiv class="bbf-help">{{help}}</div>\
         <div class="bbf-error">{{error}}</div>\
       </li>\
     ',

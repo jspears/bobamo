@@ -11,6 +11,15 @@ module.exports = [
     {
         name: 'Hidden'
     },
+    {
+        name :'Template',
+        schema:{
+            template:{
+                type:'TextArea',
+                validators:[{type:'required'}]
+            }
+        }
+    },
     {   name: 'Boolean',
         types: ['String', 'Number', 'Boolean'],
         schema: {
