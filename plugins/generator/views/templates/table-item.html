@@ -1,5 +1,5 @@
-{{each(i,l) model.list_fields}}
-<td><%= format('${i}') %></td>
+{{each(value,i) model.list_fields}}
+<td><%= format('${value.property || value}', ${i}) %></td>
 {{/each}}
 <td>
     <a href="#/views/${modelName}/edit?id=<%=item.id%>"><i class="icon-edit"></i>Edit</a>

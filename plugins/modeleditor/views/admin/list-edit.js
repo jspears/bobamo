@@ -6,10 +6,22 @@ define(['Backbone', 'Backbone.Form/form-model',
     'backbone-modal',
     'text!modeleditor/views/templates/admin/list-edit.html',
     'libs/jquery/jquery.busy', //added to $
-    'libs/editors/reorder-list-editor' //added to Form.editors
-
+    'libs/editors/reorder-list-editor', //added to Form.editors
+    'libs/editors/dyna-nested-model-editor'
 
 ], function (B, Form, EditView, inflection, Renderer, jqtpl, modal, template) {
+    var pslice = Array.prototype.slice;
+
+    Form.editors.Blank = Form.editors.Text.extend({
+        tagName:'div',
+        setValue:function(val){
+            this.value = val;
+        },
+        getValue:function(){
+            return this.value;
+        }
+
+    })
     var NestedModel = Form.editors.NestedModel;
     var RenderCollection = B.Collection.extend({
         url: '${baseUrl}renderer/renderers',
@@ -23,41 +35,12 @@ define(['Backbone', 'Backbone.Form/form-model',
             }
         })
     });
-    var RenderConfigModel = B.Model.extend({
-        url: '${baseUrl}renderer/renderers',
-        idAttribute: '_id',
-        schema: {
-            renderers: {
-                type: 'Select',
-                options: rendererCollection
-            },
-            config: {
-                type: 'NestedModel',
-                model: B.Model.extend({
-                    schema: {
-                        test: {
-                            type: 'Text'
-                        }
-                    }
-                }),
-                createForm: function (opts) {
-                    if (opts && opts.pform) {
-                        opts.pform.on('change', function () {
-                            console.log('changed');
-                        });
-                    }
-                    var form = new Form(opts);
-                    return form;
-                }
-            }
-        }
-    });
 
     var rendererCollection = new RenderCollection;
     rendererCollection.fetch();
     var RenderModel = B.Model.extend({
         url: '${baseUrl}/modeleditor/admin',
-        options:{
+        options: {
             fieldsets: ['property', 'title', 'renderer', 'config']
         },
         toString: function () {
@@ -67,57 +50,58 @@ define(['Backbone', 'Backbone.Form/form-model',
                 + ' renderer: ' + (this.get('renderer') || 'Default');
             +'</small></div>'
         },
-        renderConfig:function(){
+        renderConfig: function () {
             var renderer = this.form.getValue().renderer;
             var form = this.form;
-            require(['renderer/views/admin/'+renderer+'/edit'], function(View){
-                var  fields = form.fields, config = fields.config;
+            require(['renderer/views/admin/' + renderer + '/edit'], function (View) {
+                var fields = form.fields, config = fields.config;
                 var Model = View.prototype.model;
                 var $el = config.editor.$el;
                 console.log('schema', Model.prototype.schema);
                 config.editor.remove();
-                if (Model.prototype.schema){
-                    var configModel = new NestedModel({schema:{model:Model}, key:config.key, idPrefix:renderer}).render();
-                     $el.replaceWith(configModel.el);
-                     config.editor = configModel;
-                }else{
+                var data = form.getValue().config;
+                if (Model.prototype.schema) {
+                    var configModel = new NestedModel({schema: {model: Model}, value:data, key: config.key, idPrefix: renderer}).render();
+                    $el.replaceWith(configModel.el);
+                    config.editor = configModel;
+                } else {
                     config.editor = {
-                        remove:function(){},
-                        getValue:function(){return null},
-                        $el:$el.replaceWith('<div>No Configuration for "'+renderer+'"</div>')
+                        remove: function () {
+                        },
+                        getValue: function () {
+                            return null
+                        },
+                        $el: $el.replaceWith('<div>No Configuration for "' + renderer + '"</div>')
                     }
 
                 }
 
             });
         },
-        onRenderConfig:function(form, renderer, callback){
-            var renderer = form.getValue().renderer;
-            var form = this.form;
-            require(['renderer/views/admin/'+renderer+'/edit'], function(View){
-              var Model = View.prototype.model;
-               form.schema.config = {schema:{model:Model}, key:config.key};
-                callback();
-            });
-        },
+
         createForm: function (opt) {
             var form = this.form = new Form(opt);
             console.log('createForm', this);
-            //this.onRenderConfig(form, 'renderer.Text', _.bind(form.render, form));
-            form.on('render', this.renderConfig, this)
-            form.on('renderer:change', this.renderConfig, this)
+            var crenderer = this.get('renderer');
+                form.on('render', this.renderConfig, this)
+                form.on('renderer:change', this.renderConfig, this)
+//            form.schema.config.renderer = 'renderer/views/admin/'+this.get('renderer')+'/edit';
+//            form.on('renderer:change', function(){
+//                var renderer = form.getValue().renderer;
+//                form.fields.config.editor.render('renderer/views/admin/'+renderer+'/edit')
+//            }, this);
             return form;
         },
         schema: {
-            renderer:{
-              type:'Select',
-              options:rendererCollection
-            } ,
+            renderer: {
+                type: 'Select',
+                options: rendererCollection
+            },
 
             config: {
-                type: 'Text',
-                title:'Configure Renderer',
-                fieldClass:'form-vertical'
+                type: 'Blank',
+                title: 'Configure Renderer',
+                fieldClass: 'form-vertical'
 
             },
             title: {
@@ -131,7 +115,6 @@ define(['Backbone', 'Backbone.Form/form-model',
             }
         }
     })
-    var model//${nl}={{json model.model }}
 
     var schema = {
         list: {
@@ -157,16 +140,38 @@ define(['Backbone', 'Backbone.Form/form-model',
                 img: 'img/ajax-loader.gif',
                 title: 'Previewing...'
             });
-            require(['views/' + model.modelName + '/list',
-                'text!templates/' + model.modelName + '/table.html.raw',
-                'text!templates/' + model.modelName + '/table-item.html.raw'
+            var id = this.modelInstance.id;
+            require(['views/' + id + '/list',
+                'text!templates/' + id + '/table.html.raw',
+                'text!templates/' + id + '/table-item.html.raw'
 
-            ], this.doPreview);
+            ], this.doPreview.bind(this));
 
         },
         doPreview: function (View, table, tableItem) {
             if (this.preView)
                 this.preView.remove();
+            var config = this.createConfig(table,tableItem);
+            var NView = View.extend(config);
+            var v = this.preView = new NView();
+            v.render({
+                container: this.$preview
+            });
+            this.$preview.busy('remove');
+        },
+        onSuccess:function(){
+          EditView.prototype.onSuccess.apply(this, pslice.call(arguments))
+            var id = this.modelInstance.id;
+            require(['views/' + id + '/list',
+                'text!templates/' + id + '/table.html.raw',
+                'text!templates/' + id + '/table-item.html.raw'
+
+            ], this.doModify.bind(this));
+        },
+        doModify:function(View, table, tableItem){
+            _.extend(View.prototype,  this.createConfig(table,tableItem));
+        },
+        createConfig:function(table, tableItem){
             var list = this.form.getValue().list;
             var obj = {
                 model: {
@@ -186,20 +191,15 @@ define(['Backbone', 'Backbone.Form/form-model',
             };
             var renderer = new Renderer();
             _.each(list, renderer.add, renderer);
-            var NView = View.extend({
+            return {
                 template: _.template(jqtpl.render(table, obj)),
-                listItemTemplate: _.template(jqtpl.render(tableItem, obj))
-            });
-            var v = this.preView = new NView({
-                renderer: renderer
-            });
-            v.render({
-                container: this.$preview
-            });
-            this.$preview.busy('remove');
+                listItemTemplate: _.template(jqtpl.render(tableItem, obj)),
+                renderer:renderer
+            }
         },
-        render: function () {
-            EditView.prototype.render.call(this, {id: model.modelName});
+
+        render: function (obj) {
+            EditView.prototype.render.call(this, obj);
             this.form.on('change', this.onPreview, this);
             this.form.on('render', this.onPreview, this);
             return this;
@@ -212,9 +212,7 @@ define(['Backbone', 'Backbone.Form/form-model',
         fields: ['list'],
         template: _.template(template),
         config: {
-            modelName: model.modelName,
-            plural: model.plural,
-            title: 'List View for "' + model.modelName + '"'
+            title: 'List View'
         }
     });
 });

@@ -29,14 +29,14 @@ define([
       //      _.bind(this.format, this);
             return this;
         },
-        format:function(field, model, schema){
-            return this.renderer.render(model.get(field), field,  model, schema);
+        format:function(field, idx, model, schema){
+            return this.renderer.render(model.get(field),  field,  model, idx, schema.renderer);
 //            return schema && schema.format ? schema.format(field, model, schema) : model.get(field);
         },
         _fields:{},
-        _format:function(field){
+        _format:function(field, idx){
             var schema = field in this._fields ? this._fields[field] : (this._fields[field] = this.schema(field, this.model));
-            return this.format(field, this.model, schema)
+            return this.format(field, idx, this.model, schema)
         },
         schema:function(field, model){
             if (!(model || field))
@@ -72,8 +72,8 @@ define([
             'paginate-change .pager_table':'doPage',
             'sorter-change .sortable':'onSort'
         },
-        initialize:function () {
-            this.rendere = new Renderer({});
+        renderer:new Renderer({}),
+        initialize:function (options) {
             if (!this.template) {
                 throw new Error('template must be defined');
             }

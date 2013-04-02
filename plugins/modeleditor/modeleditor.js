@@ -113,7 +113,28 @@ EditPlugin.prototype.routes = function () {
         });
 
     }.bind(this));
-    this.app.put(base + '/admin/list/:modelName', function (req,re,next){
+    this.app.put(base + '/admin/list/:type', function (req,res,next){
+        var type = req.params.type;
+        console.log('putting', req.params.type);
+        if(!this.conf) this.conf = {};
+        if (!this.conf.modelPaths) this.conf.modelPaths = {};
+        var conf = this.conf.modelPaths[type] || (this.conf.modelPaths[type] = {});
+        conf.list_fields = req.body.list;
+        this.save(this.conf,
+            function(e,o){
+                if (e)
+                    return res.send({
+                        status:1,
+                        errors:e
+                    });
+                return res.send({
+                    status:0,
+                    payload:{
+                        id:type
+                    }
+                });
+            }
+        )
 
     }.bind(this));
 

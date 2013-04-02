@@ -1,7 +1,7 @@
 define(['jquery'], function ($) {
     var id = 0;
     var Renderer = function (config) {
-        this.config = config || {};
+        this.config = [];
     }
 
     define('renderer/default', function () {
@@ -12,13 +12,14 @@ define(['jquery'], function ($) {
         }
     });
     Renderer.prototype.add = function (obj) {
-        if (obj && obj.property)
-            this.config[obj.property] = obj;
+        if (obj)
+        this.config.push(obj);
     };
     var re = /\./g;
-    Renderer.prototype.render = function (value, property, model, options) {
-        var conf = this.config[property];
+    Renderer.prototype.render = function (value, property, model, idx, options) {
+        var conf = this.config[idx];
         var type = conf ? conf.renderer : 'default'
+        options = conf ? conf.config  : options;
         var nodeId = 'render-' + type.replace(re, '_') + '-' + property.replace(re, '_') + "-" + (id++);
         require(['renderer/' + type], function (render) {
             render(options).apply({

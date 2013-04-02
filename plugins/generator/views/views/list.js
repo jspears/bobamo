@@ -10,13 +10,13 @@ define([
 ], function (_, View, collection, Renderer, Text, tableTemplate, tableItemTemplate) {
     "use strict";
     var renderer = new Renderer();
-    //setup renderers ${nl()} {{each(i,l) model.list_fields}} renderer.add({{json model.renderer(i)}}); {{/each}}
+    //setup renderers ${nl()} {{each(i,l) model.list_fields}} renderer.add({{json i.property ? i : model.renderer(i)}});${nl()} {{/each}}
 
     return View.extend({
         collection: collection,
         template: _.template(tableTemplate),
         listItemTemplate: _.template(tableItemTemplate),
-        renderer: renderer,
+        renderer:renderer,
         config: {
             title: '${model.title}',
             modelName: '${model.modelName}',

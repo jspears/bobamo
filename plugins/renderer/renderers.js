@@ -18,6 +18,9 @@ module.exports = [
                 type:'TextArea',
                 validators:[{type:'required'}]
             }
+        },
+        defaults:{
+            template:'<%=value%>'
         }
     },
     {   name: 'Boolean',

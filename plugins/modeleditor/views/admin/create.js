@@ -80,8 +80,7 @@ define([
         fieldsets:[
             {legend:'Model Info', fields:['modelName', 'description']},
             {legend:'Properties', fields:['schema']},
-            {legend:'Display', fields:['display']},
-            {legend:'Views', fields:['fieldsets', 'list_fields']}
+            {legend:'Display', fields:['display']}
         ],
         template:_.template(template),
         model:Model,
@@ -205,9 +204,12 @@ define([
             });
 
         },
+        listUrl:function(){
+            return '#/modeleditor/views/admin/list';
+        },
         createForm:function (opts) {
             opts._root = this;
-            opts.model.schema.fieldsets.model.prototype.allPaths = opts.model.schema.list_fields.options = function () {
+            opts.model.schema.fieldsets.model.prototype.allPaths  = function () {
                 var paths = [];
 
                 function onPathFux(prev) {
@@ -243,17 +245,6 @@ define([
 
             form.on('modelName:change', enabled);
 
-            form.on('schema:add', function (c1, c2, c3) {
-                console.log('value', c3.value.name);
-                var editor = form.fields.list_fields.editor
-                editor.addItem(c3.value.name);
-            });
-            form.on('schema:remove', function (c1, c2, c3) {
-                var lf = form.fields.list_fields;
-                //Remove each item that matches the name of the path that is being removed.   Ugly, but setValue does
-                // not work, because list does not remove things from the items list.   A bug in my book, but this works.
-                _.each(_.where(lf.editor.items, {value:c3.value.name}), lf.editor.removeItem, lf.editor);
-            });
             var self = this;
             var retry = 0;
             var first = false;
