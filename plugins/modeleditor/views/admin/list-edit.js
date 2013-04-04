@@ -7,17 +7,18 @@ define(['Backbone', 'Backbone.Form/form-model',
     'text!modeleditor/views/templates/admin/list-edit.html',
     'libs/jquery/jquery.busy', //added to $
     'libs/editors/reorder-list-editor', //added to Form.editors
-    'libs/editors/dyna-nested-model-editor'
+    'libs/editors/dyna-nested-model-editor',
+    'libs/editors/typeahead-editor'
 
 ], function (B, Form, EditView, inflection, Renderer, jqtpl, modal, template) {
     var pslice = Array.prototype.slice;
 
     Form.editors.Blank = Form.editors.Text.extend({
-        tagName:'div',
-        setValue:function(val){
+        tagName: 'div',
+        setValue: function (val) {
             this.value = val;
         },
-        getValue:function(){
+        getValue: function () {
             return this.value;
         }
 
@@ -40,9 +41,9 @@ define(['Backbone', 'Backbone.Form/form-model',
     rendererCollection.fetch();
     var RenderModel = B.Model.extend({
         url: '${baseUrl}/modeleditor/admin',
-        options: {
-            fieldsets: ['property', 'title', 'renderer', 'config']
-        },
+        fieldsets: [
+            {fields: ['property', 'title', 'renderer', 'config']}
+        ],
         toString: function () {
             return  '<div><h3>' + this.get('title') + '</h3>' +
                 '<small>' +
@@ -61,7 +62,7 @@ define(['Backbone', 'Backbone.Form/form-model',
                 config.editor.remove();
                 var data = form.getValue().config;
                 if (Model.prototype.schema) {
-                    var configModel = new NestedModel({schema: {model: Model}, value:data, key: config.key, idPrefix: renderer}).render();
+                    var configModel = new NestedModel({schema: {model: Model}, value: data, key: config.key, idPrefix: renderer}).render();
                     $el.replaceWith(configModel.el);
                     config.editor = configModel;
                 } else {
@@ -82,14 +83,8 @@ define(['Backbone', 'Backbone.Form/form-model',
         createForm: function (opt) {
             var form = this.form = new Form(opt);
             console.log('createForm', this);
-            var crenderer = this.get('renderer');
-                form.on('render', this.renderConfig, this)
-                form.on('renderer:change', this.renderConfig, this)
-//            form.schema.config.renderer = 'renderer/views/admin/'+this.get('renderer')+'/edit';
-//            form.on('renderer:change', function(){
-//                var renderer = form.getValue().renderer;
-//                form.fields.config.editor.render('renderer/views/admin/'+renderer+'/edit')
-//            }, this);
+            form.on('render', this.renderConfig, this)
+            form.on('renderer:change', this.renderConfig, this)
             return form;
         },
         schema: {
@@ -108,7 +103,7 @@ define(['Backbone', 'Backbone.Form/form-model',
                 type: 'Text'
             },
             property: {
-                type: 'Text',
+                type: 'TypeAhead',
                 validators: [
                     {type: 'required'}
                 ]
@@ -151,7 +146,7 @@ define(['Backbone', 'Backbone.Form/form-model',
         doPreview: function (View, table, tableItem) {
             if (this.preView)
                 this.preView.remove();
-            var config = this.createConfig(table,tableItem);
+            var config = this.createConfig(table, tableItem);
             var NView = View.extend(config);
             var v = this.preView = new NView();
             v.render({
@@ -159,8 +154,8 @@ define(['Backbone', 'Backbone.Form/form-model',
             });
             this.$preview.busy('remove');
         },
-        onSuccess:function(){
-          EditView.prototype.onSuccess.apply(this, pslice.call(arguments))
+        onSuccess: function () {
+            EditView.prototype.onSuccess.apply(this, pslice.call(arguments))
             var id = this.modelInstance.id;
             require(['views/' + id + '/list',
                 'text!templates/' + id + '/table.html.raw',
@@ -168,10 +163,10 @@ define(['Backbone', 'Backbone.Form/form-model',
 
             ], this.doModify.bind(this));
         },
-        doModify:function(View, table, tableItem){
-            _.extend(View.prototype,  this.createConfig(table,tableItem));
+        doModify: function (View, table, tableItem) {
+            _.extend(View.prototype, this.createConfig(table, tableItem));
         },
-        createConfig:function(table, tableItem){
+        createConfig: function (table, tableItem) {
             var list = this.form.getValue().list;
             var obj = {
                 model: {
@@ -194,11 +189,19 @@ define(['Backbone', 'Backbone.Form/form-model',
             return {
                 template: _.template(jqtpl.render(table, obj)),
                 listItemTemplate: _.template(jqtpl.render(tableItem, obj)),
-                renderer:renderer
+                renderer: renderer
             }
         },
+        createModel:function(opts){
+            var model = new this.model(opts);
+            model.schema.list.model.prototype.schema.property.url = '${pluginUrl}/admin/properties/'+opts.id+'?'
 
+
+            return model;
+
+        },
         render: function (obj) {
+
             EditView.prototype.render.call(this, obj);
             this.form.on('change', this.onPreview, this);
             this.form.on('render', this.onPreview, this);

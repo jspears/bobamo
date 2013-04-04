@@ -1,4 +1,4 @@
-var Plugin = require('../../lib/plugin-api'), util = require('util'), App = require('../../lib/display-model'), EditModel = require('./edit-display-model'), _u = require('underscore'), mongoose = require('../../index').mongoose, schemautil = require('../../lib/schema-util');
+var Plugin = require('../../lib/plugin-api'), util = require('util'), App = require('../../lib/display-model'), EditModel = require('./edit-display-model'), _u = require('underscore'), mongoose = require('../../index').mongoose;
 
 var EditPlugin = function () {
     Plugin.apply(this, arguments);
@@ -56,10 +56,10 @@ EditPlugin.prototype.configure = function (conf) {
     return null;
 }
 EditPlugin.prototype.routes = function () {
-
+    var pm = this.pluginManager;
     this.app.all(this.pluginUrl + '*', function (req, res, next) {
-        var editModel = new EditModel(this.pluginManager.appModel, {
-            editors:this.pluginManager.editors
+        var editModel = new EditModel(pm.appModel, {
+            editors:pm.editors
         });
         this.local(res, 'plugin', this);
         this.local(res, 'editModel', editModel);
@@ -69,6 +69,32 @@ EditPlugin.prototype.routes = function () {
 
     var base = this.pluginUrl;
     var jsView = this.baseUrl + 'js/views/' + this.name;
+    this.app.get(base + '/admin/properties/:modelName', function(req,res,next){
+        var q = Object.keys(req.query).pop().replace('&','').split('.');
+        var modelPaths = pm.appModel.modelPaths;
+        var schema = modelPaths[req.params.modelName] && modelPaths[req.params.modelName].schema;
+        var i=0;
+        for (var l= q.length;i<l;i++){
+            var part = q[i];
+            if (part in schema){
+                if (schema[part].ref){
+                    schema =  modelPaths[schema[part].ref].schema;
+                }else if (schema[part].schema){
+                    schema = schema[part].schema;
+                }else if (schema[part].subSchema){
+                    schema = schema[part].subSchema;
+                }else{
+                    schema = {};
+                    schema[part] = true;
+                    break;
+                }
+            }else{
+                break;
+            }
+        }
+        q.splice(i);
+        res.send(Object.keys(schema).map(function(v){ return q.concat(v).join('.')}))
+    });
     this.app.get(this.pluginUrl + '/views/admin/:type?/:view', function (req, res, next) {
         var view = 'admin/' + req.params.view;
 
@@ -89,7 +115,8 @@ EditPlugin.prototype.routes = function () {
         });
         var pm = this.pluginManager;
         this.generate(res, view);
-    }.bind(this))
+    }.bind(this));
+
     this.app.get(base + '/admin/list/:type', function (req,res,next){
         var pm = this.pluginManager;
         var appModel = pm.appModel;
@@ -204,22 +231,6 @@ EditPlugin.prototype.routes = function () {
         });
 
     }.bind(this));
-//    this.app.get(base + '/admin/types/:dbType', function(req,res){
-//            var dbType = req.params.dbType || 'mongoose';
-//            var types = [];
-//            _u.each(this.pluginManager.plugins, function(v,k){
-//               if (_u.isFunction(v.types)){
-//                  var ret = v.types(dbType)
-//                if (ret && ret.length){
-//                    types = types.concat(ret);
-//                }
-//               }
-//            });
-//            res.send({
-//                status:0,
-//                payload:types
-//            })
-//        }, this);
 
     this.app.get(base + '/admin/types/schemas', function (req, res) {
         //TODO abstract this in the displayModel
@@ -249,7 +260,14 @@ EditPlugin.prototype.routes = function () {
      * exactly than use it otherwise add it to the list.  if there are no types
      * it is assumed usable for all types.
      */
-
+    this.app.get(base + '/admin/editors', function(req,res, next){
+       res.send({
+           status:0,
+           payload:pm.editors.map(function(v){
+               return v.name
+           })
+       })
+    });
     this.app.get(base + '/admin/editors/:type', function (req, res) {
         var editors = [];
         var type = req.params.type;
@@ -275,12 +293,19 @@ EditPlugin.prototype.routes = function () {
         })
 
     }.bind(this));
-
+    this.app.get(base+'/admin/editor/:name', function(req,res,next){
+        var name = req.params.name;
+        var editor = _u(pm.editors).findWhere({name:name});
+        res.send({
+            status:0,
+            payload:editor
+        })
+    })
     this.app.post(base + '/admin/editorsFor', function (req, res, next) {
         var body = req.body;
         res.send({
             status:0,
-            payload:this.pluginManager.editorsFor(body.path, body.property, this.pluginManager.schemaFor(body.schema))
+            payload:pm.editorsFor(body.path, body.property, pm.schemaFor(body.schema))
         })
     }.bind(this))
 
@@ -292,12 +317,12 @@ EditPlugin.prototype.routes = function () {
         res.send({
             status:0,
             payload:model
-
-
-
-
-
-
+        })
+    }.bind(this));
+    this.app.get(base + '/admin/form/:modelName', function (req, res) {
+        res.send({
+            status:0,
+            payload:{edit_fields:pm.appModel.modelPaths[req.params.modelName].fieldsets}
         })
     }.bind(this));
 
@@ -308,7 +333,6 @@ EditPlugin.prototype.routes = function () {
             payload:editModel.modelPaths[req.params.modelName].schemaFor()
         })
     }.bind(this));
-
     function native(type) {
         if (type == 'Number') return Number;
         if (type == 'String') return String;

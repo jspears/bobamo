@@ -114,11 +114,12 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
                 $.ajax({
                     url: url,
                     success: function (resp) {
-                        resp.payload.push({
+                        resp = resp.payload || resp;
+                        resp.push({
                             label: 'None',
                             val: ""
-                        })
-                        cb(resp.payload || resp);
+                        });
+                        cb( resp);
                     }
                 })
             });

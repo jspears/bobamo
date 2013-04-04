@@ -26,12 +26,10 @@ define([
             this.model.bind("change", this.render, this);
             this.model.bind("destroy", this.close, this);
             this.sort = [];
-      //      _.bind(this.format, this);
             return this;
         },
         format:function(field, idx, model, schema){
             return this.renderer.render(model.get(field),  field,  model, idx, schema.renderer);
-//            return schema && schema.format ? schema.format(field, model, schema) : model.get(field);
         },
         _fields:{},
         _format:function(field, idx){
