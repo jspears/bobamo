@@ -78,31 +78,45 @@ MongoosePlugin.prototype.configure = function (rconf) {
     if (!this.options.mongoose)
         this.options.mongoose = require('mongoose');
     if (rconf) {
-        var errors, resolve = Q.resolve(), conf = rconf && rconf.connection, all = [conf];
+        this.conf = rconf;
+        var errors, resolve = Q.resolve(), conf = rconf && rconf.connection;
+        var all = [];
+        if (conf) all.push(conf);
         if (rconf.connections)
             all = all.concat(rconf.connections);
-        console.log('all ',all)
-        all.forEach(function (conf, i) {
-            resolve = resolve.then(connect.call(this, conf, i), function (conf) {
-            }.bind(this), function (e) {
-                errors = errors || {};
-                if (i == 0) {
-                    errors['connection'] = e.message;
-                } else {
-                    (errors['connections'] || (errors['connections'] = []))[i - 1] = e.message;
-                }
+        if (all.length) {
 
+
+            console.log('all ', all)
+
+            all.forEach(function (conf, i) {
+                resolve = resolve.then(connect.call(this, conf, i), function (conf) {
+                }.bind(this), function (e) {
+                    errors = errors || {};
+                    if (i == 0) {
+                        errors['connection'] = e.message;
+                    } else {
+                        (errors['connections'] || (errors['connections'] = []))[i - 1] = e.message;
+                    }
+
+                });
+            }, this);
+            return resolve.then(function () {
+                if (errors)
+                    return errors;
+                return null;
             });
-        }, this);
-        return resolve.then(function () {
-            if (errors)
-                return errors;
-            return null;
-        });
-    } else {
-        this.conf.connection = this.runningConf('connection').shift(),
-            this.conf.connections = this.runningConf('connections').slice(1)
+        }
     }
+
+    this.conf.connection = this.runningConf('connection').shift(),
+    this.conf.connections = this.runningConf('connections').slice(1)
+    if (!this.conf.connection) {
+        return {
+            connection: 'No Connection Configured'
+        }
+    }
+
 
 };
 

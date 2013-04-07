@@ -8,3 +8,4 @@ module.exports.DisplayModel = require('./lib/display-model');
 module.exports.FinderModel = require('./lib/finder-model');
 module.exports.inflection = require('./lib/inflection');
 module.exports.Q = require('q');
+module.exports.moment = require('moment');

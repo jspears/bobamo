@@ -1,4 +1,4 @@
-var crypto = require('crypto'), mongoose = require('../../../bobamo').mongoose, Schema = mongoose.Schema, ImageInfo = require('../../plugins/imageupload/ImageInfo');
+var crypto = require('crypto'), mongoose = require('bobamo').mongoose, Schema = mongoose.Schema, ImageInfo = require('bobamo/plugins/imageupload/ImageInfo');
 var RoleSchema = new Schema({
     name:{type:String},
         read:{type:Boolean},

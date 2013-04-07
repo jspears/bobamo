@@ -2,11 +2,11 @@
  * Module dependencies.
  */
 
-require('bobamo/examples/model/User');
-require('bobamo/examples/model/Group');
 //require('bobamo/examples/model/Employee');
 
 var bobamo    = require('bobamo'), mongoose= bobamo.mongoose;
+//require('bobamo/examples/model/User');
+//require('bobamo/examples/model/Group');
 
 var app = bobamo.app({
     //uri:'mongodb://localhost/bobamo_development',

@@ -4,9 +4,9 @@ var bobamo = require('../../index'),
     Spec = require('./Spec'),
     su = require('./swag-utils')
     ;
-var swagger = require("swagger-node-express/Common/node/swagger");
+var swagger = require("./lib/swagger");
 var util = require('../../lib/util');
-var param = require("swagger-node-express/Common/node/paramTypes");
+var param = require("./lib/paramTypes");
 var url = require("url");
 var swe = swagger.errors;
 var Model = bobamo.DisplayModel;

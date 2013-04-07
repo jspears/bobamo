@@ -92,11 +92,7 @@ function score(types, obj, v, t, i) {
  * @returns {Renderer}
  */
 RendererPlugin.prototype.determineRenderer = function (schema, property) {
-    if (property && property.property)
-        return property;
-
     var prop = Array.isArray(property) ? property.concat() : property.split('.');
-
     var obj = schema;
     while ((obj = obj[prop.shift()] )&& prop.length  && obj.subSchema && (obj = obj.subSchema));
    return this.rendererForProp(obj);
@@ -238,7 +234,7 @@ RendererPlugin.prototype.routes = function () {
         }
         if (!schema || Object.keys(schema).length == 0){
             schema = {
-               config:{type:'Hidden', value:'', help:'No configuration for "'+id+'"'}
+               config:{type:'Hidden', help:'No configuration for "'+id+'"'}
             };
         }
         _.extend(model, {schema: schema}, {defaults:defaults});

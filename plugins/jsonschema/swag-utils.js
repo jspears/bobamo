@@ -1,4 +1,4 @@
-var param = require("swagger-node-express/Common/node/paramTypes"), _u = require('underscore');
+var param = require("./lib/paramTypes"), _u = require('underscore');
 var typeRe =/List\[([^\]]*)\]/;
 var builtin_types = 'byte boolean int long float double string Date void'.split(' ');
 

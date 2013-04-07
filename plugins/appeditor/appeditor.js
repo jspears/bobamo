@@ -35,6 +35,8 @@ AppEditorPlugin.prototype.appModel = function () {
 };
 
 AppEditorPlugin.prototype.configure = function (conf) {
+
+    conf = conf || {};
     var appModel = this.pluginManager.appModel;
     if (this.conf){
         conf.revisions = this.conf.revisions;

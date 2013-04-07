@@ -39,8 +39,8 @@ define([
     return Backbone.View.extend({
         tagName: 'div',
         events: {
-//            'click button.save': 'onSave',
-//            'click button.cancel': 'onCancel',
+           'click button.save': 'onSave',
+            'click button.cancel': 'onCancel',
             'click ul.error-list li': 'onErrorItemClick'
 //            'click .next': 'onNext',
 //            'click .previous': 'onPrevious'
@@ -174,10 +174,13 @@ define([
             return this;
         },
         doCancel: function () {
-            window.location.hash = this.listUrl();
+            var listUrl = this.listUrl();
+            if (listUrl)
+            window.location.hash = listUrl;
         },
         listUrl:function(){
-            return _.template('#/views/<%=modelName%>/list', this.config);
+            if (this.config && this.config.modelName)
+                return _.template('#/views/<%=modelName%>/list', this.config);
         },
         createModel: function (opts) {
             return new this.model(opts);
@@ -235,7 +238,7 @@ define([
             if (!$div.length)
                 $div = $('<div class="form-actions btn-toolbar"></div>');
             btns = _.isArray(btns) ? { right: btns } : btns;
-            var events = {};
+            var events = this.events;
             _.each(btns, function (buttons, k) {
                 buttons = _.isArray(buttons) ? buttons : [buttons];
 

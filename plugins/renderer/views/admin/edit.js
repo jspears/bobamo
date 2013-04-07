@@ -5,7 +5,10 @@ define(['underscore', 'Backbone', 'libs/bobamo/edit', 'text!renderer/templates/e
     var Model = B.Model.extend({
         idAttribute: '_id',
         url: rootUrl,
-        schema: jsonModel.schema,
+        schema: jsonModel.schema || {
+            type:'ReadOnly',
+            template:'No configuration options for {{model.id}}'
+        },
         fields:jsonModel.fields,
         defaults:jsonModel.defaults || {},
         parse: function (p) {
