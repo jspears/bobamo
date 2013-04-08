@@ -200,10 +200,10 @@ RendererPlugin.prototype.routes = function () {
     //noinspection JSUnresolvedVariable
     var generate = this.generate;
     var save = function (req, res, next) {
-        console.log('post', req.body);
-        var _id = req.body._id;
+        console.log('post', req.body, req.params.id);
+        var _id = req.body._id || req.params.id;
         delete req.body._id;
-        this.conf[_id] = {};
+        this.conf[_id] = req.body;
         this.save(this.conf, function () {
             res.send({
                 status: 0
@@ -247,23 +247,25 @@ RendererPlugin.prototype.routes = function () {
             payload: this.listRenderers()
         })
     }.bind(this));
-    this.app.put(pluginUrl + '/admin/renderer/:id/:name', function (req, res, next) {
-        delete req.body.status;
-        delete req.body._id;
-        var key = 'renderer/' + req.params.name
-        this.conf[key] = {
-            ref: req.params.id,
-            defaults: req.body.defaults,
-            name: req.params.name
-        }
-        this.save(this.conf, function () {
-            res.send({
-                status: 0,
-                payload: {id: req.params.id, title: key}
+    var saveRef =  function (req, res, next) {
+            delete req.body.status;
+            delete req.body._id;
+            var key = 'renderer/' + req.params.name
+            this.conf[key] = {
+                ref: req.params.id,
+                defaults: req.body.defaults,
+                name: req.params.name
+            }
+            this.save(this.conf, function () {
+                res.send({
+                    status: 0,
+                    payload: {id: req.params.id, title: key}
 
+                })
             })
-        })
-    }.bind(this));
+        }.bind(this);
+    this.app.post(pluginUrl + '/admin/renderer/:id/:name', saveRef);
+    this.app.put(pluginUrl + '/admin/renderer/:id/:name', saveRef);
     this.app.put(pluginUrl + '/admin/renderer/:id', function (req, res, next) {
         var key = req.params.id;
 
@@ -277,6 +279,7 @@ RendererPlugin.prototype.routes = function () {
     }.bind(this));
 
     this.app.put(pluginUrl + '/admin/renderer', save);
+    this.app.post(pluginUrl + '/admin/renderer/:id', save);
     this.app.get(pluginUrl + '/renderers', function (req, res, next) {
         res.send({
             status: 0,

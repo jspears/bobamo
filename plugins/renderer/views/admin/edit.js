@@ -21,9 +21,9 @@ define(['underscore', 'Backbone', 'libs/bobamo/edit', 'text!renderer/templates/e
         model: Model,
         template: _.template(template),
         fieldsets: jsonModel.fieldsets,
-        events: _.extend({}, EditView.prototype.events, {
-            'click .saveas': 'onSaveAs'
-        }),
+//        events: _.extend({}, EditView.prototype.events, {
+//            'click .saveas': 'onSaveAs'
+//        }),
         buttons: {
             left: [
                 {html: 'Cancel', type: 'a', href: "#views/renderer/admin/list" }
@@ -31,6 +31,7 @@ define(['underscore', 'Backbone', 'libs/bobamo/edit', 'text!renderer/templates/e
             right: [
                 {
                     html: 'Save As...',
+                    clsNames:'saveas',
                     events: {
                         'click .saveas': 'onSaveAs'
                     }

@@ -11,5 +11,5 @@
         <%=item.get('description')%>
     </p>
     <a href="<%=item.get('url')%>" target="_blank"><%= item.get('url') %></a>
-    <a href="#/renderer/views/admin/<%=item.id%>/edit" class="btn btn-primary pull-right"><i class="icon-wrench"></i> Configure</a>
+    <a href="#/renderer/views/admin/<%=item.id%>/edit?id=<%=item.id%>" class="btn btn-primary pull-right"><i class="icon-wrench"></i> Configure</a>
 </td>
