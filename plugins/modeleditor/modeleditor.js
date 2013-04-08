@@ -412,15 +412,17 @@ EditPlugin.prototype.routes = function () {
         var persistPlugin = this.pluginManager.loadedPlugins[model.dbType || 'mongoose'];
 
         var modelName = model.modelName;
+        if (!this.conf.modelPaths){
+            this.conf.modelPaths = {};
+        }
 
-
-        if (!persistPlugin.modelFor(modelName) || (this._appModel && this._appModel.models && this._appModel.models[modelName] && this._appModel.models[modelName].configurable)) {
+        if (!persistPlugin.modelFor(modelName) || (this.conf && this.conf.modelPaths && this.conf.modelPaths[modelName] && this.conf.modelPaths[modelName].configurable)) {
             req.body.configurable = true;
             persistPlugin.updateSchema(modelName, model.schema);
         }
-        this._appModel.modelPaths[modelName] = model;
+        this.conf.modelPaths[modelName] = model;
         this.save({
-            modelPaths:this._appModel.modelPaths
+            modelPaths:this.conf.modelPaths
         }, function () {
             res.send({
                 status:0,
