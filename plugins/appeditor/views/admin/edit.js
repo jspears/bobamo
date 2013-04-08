@@ -46,6 +46,7 @@ define([
 //            {'legend': 'Plugins', fields:['plugins']},
             {'legend': 'Authors', fields: ['authors']}
         ],
+        buttons: _.omit(EditView.prototype.buttons, 'left'),
         template: _.template(template),
         model: Model,
         isWizard: true,

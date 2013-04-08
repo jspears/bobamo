@@ -1,4 +1,4 @@
-define(['underscore', 'Backbone', 'Backbone.Form', 'csvimport/mapping-form', 'modeleditor/js/form-model'], function (_, B, Form, MappingForm) {
+define(['underscore', 'Backbone', 'Backbone.Form', 'csvimport/mapping-form', 'Backbone.Form/form-model'], function (_, B, Form, MappingForm) {
     return B.Model.extend({
         parse:function (resp) {
             var p = resp && resp.payload || resp;

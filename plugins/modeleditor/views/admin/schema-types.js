@@ -1,3 +1,3 @@
 define(function(){
-    return {{json schemaTypes() }} || [];
+    return //${nl}{{json schemaTypes() }} || [];
 });

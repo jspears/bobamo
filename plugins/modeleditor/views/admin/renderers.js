@@ -1,6 +1,6 @@
 define(['Backbone','underscore'], function (B, _) {
 
-    var renderers = {{json pluginManager.renderers}};
+    var renderers //=${nl}{{json pluginManager.renderers}};
 
     var schema = {};
     _.each(renderers, function(arr,k){
