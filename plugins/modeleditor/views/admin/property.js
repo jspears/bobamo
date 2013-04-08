@@ -1,18 +1,7 @@
-define([ 'Backbone', 'Backbone.Form/form-model', 'modeleditor/views/admin/fieldset', 'modeleditor/views/admin/editors', 'modeleditor/views/admin/mongoose-types', 'exports', 'underscore', 'Backbone.Form', 'libs/editors/typeahead-editor'], function (b, Form, Fieldset, Editors, MongooseType, exports, _) {
+define([ 'Backbone', 'Backbone.Form/form-model', 'modeleditor/views/admin/fieldset', 'modeleditor/editor-selector', 'modeleditor/views/admin/mongoose-types', 'exports', 'underscore', 'Backbone.Form', 'libs/editors/typeahead-editor'],
+    function (b, Form, Fieldset, editorSelector, MongooseType, exports, _) {
     "use strict";
-    function editorsFor(val) {
-        var editors = [];
-        _.each(Editors, function (v, k) {
-            if (v && v.types) {
-
-                if (~v.types.indexOf(val))
-                    editors.push(k);
-            } else {
-                editors.push(k)
-            }
-        });
-        return editors;
-    }
+    var Editors = editorSelector.Editors, editorsFor = editorSelector.editorsFor, editorFor = editorSelector.editorFor;
 
     var Property = b.Model.extend({
 
@@ -80,23 +69,10 @@ define([ 'Backbone', 'Backbone.Form/form-model', 'modeleditor/views/admin/fields
             function onSchema(c1, c2, field) {
                 var val = field && field.$el.val();
                 console.log('onSchema', val);
-                var first, second, third, pos = -1;
-                _.each(Editors, function (v, k) {
-                    if (k == val)
-                        first = k;
-                    else if (v && v.types) {
-                        var idx = v.types.indexOf(val);
-                        if (idx > pos) {
-                            third = k;
-                            pos = idx;
-
-                        }
-                    }
-                });
                 var editor =  form.fields.type.editor;
                 editor.setOptions(
                     function (cb) {
-                        editor.value = first || second || third || 'Text';
+                        editor.value = editorFor(val);
                         cb(editorsFor(val));
                         onType();
                     });
