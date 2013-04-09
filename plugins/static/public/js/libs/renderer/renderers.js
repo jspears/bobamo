@@ -18,7 +18,7 @@ define(['jquery'], function ($) {
     var re = /\./g;
     Renderer.prototype.render = function (value, property, model, idx, options) {
         var conf = this.config[idx];
-        var type = conf ? conf.renderer : 'default'
+        var type = conf && conf.renderer ? conf.renderer : 'default'
         options = conf ? conf.config  : options;
         var nodeId = 'render-' + type.replace(re, '_') + '-' + property.replace(re, '_') + "-" + (id++);
         require(['renderer/' + type], function (render) {
