@@ -16,16 +16,16 @@ define([
 
     function onModel(body) {
         var editors = {};
-        var model = _.extend({schema:{}}, body.display, _.omit(body, 'schema'));
+        var model = _.extend({schema: {}}, body.display, _.omit(body, 'schema'));
 
         function onPath(obj) {
             return function (v, k) {
 
                 var p = _.omit(v, 'persistence', 'editor');
-                var schemaType = ( v.persistence || v).schemaType ;
+                var schemaType = ( v.persistence || v).schemaType;
                 var editor = _.omit(v.editor && v.editor[v.type], 'editor');
                 var persistence = v.persistence ? _.omit(v.persistence[schemaType], 'persistence', 'editor') : {};
-                var nobj = obj[v.name] = _.extend({schemaType:schemaType}, p, editor, _.omit(persistence, 'validators'));
+                var nobj = obj[v.name] = _.extend({schemaType: schemaType}, p, editor, _.omit(persistence, 'validators'));
 
                 var paths = nobj.schema;
                 delete nobj.schema;
@@ -34,7 +34,9 @@ define([
                     editors[v.type] = true;
                 if (v.multiple) {
                     nobj.listType = v.schemaType;
-                    if (!nobj.type) nobj.type = 'List';
+                    nobj.type = 'List';
+                    if (obj.type)
+                        nobj.itemType = nobj.type
                 }
                 if (schemaType == 'Object')
                     return   _.each(paths, onPath((nobj.subSchema = {})));
@@ -42,7 +44,7 @@ define([
                 if (persistence.validators) {
                     nobj.validators = _.map(persistence.validators, function (vv, kk) {
                         var type = vv.type;
-                        return _.extend({type:type, message:vv.message}, vv.configure[type]);
+                        return _.extend({type: type, message: vv.message}, vv.configure[type]);
                     });
                 }
             }
@@ -61,7 +63,6 @@ define([
     }
 
 
-
     function schemaWalk(schema, callback) {
         _.each(schema, function (v, k) {
             if (callback(v, k) === false)
@@ -73,75 +74,75 @@ define([
     }
 
     return EditView.extend({
-        events:_.extend({
-            'click .preview':'onPreviewClick',
-            'click .previewSchema':'onPreviewSchema'
+        events: _.extend({
+            'click .preview': 'onPreviewClick',
+            'click .previewSchema': 'onPreviewSchema'
         }, EditView.prototype.events),
-        fieldsets:[
-            {legend:'Model Info', fields:['modelName', 'description']},
-            {legend:'Properties', fields:['schema']},
-            {legend:'Display', fields:['display']}
+        fieldsets: [
+            {legend: 'Model Info', fields: ['modelName', 'description']},
+            {legend: 'Properties', fields: ['schema']},
+            {legend: 'Display', fields: ['display']}
         ],
-        template:_.template(template),
-        model:Model,
-        render:function (opts) {
+        template: _.template(template),
+        model: Model,
+        render: function (opts) {
             opts = opts || {};
             opts.modelName = opts.id;
             EditView.prototype.render.apply(this, Array.prototype.slice.call(arguments, 0));
             return this;
         },
-        wizOptions:{
-            fieldset:'> div.form-container > form.form-horizontal > fieldset'
+        wizOptions: {
+            fieldset: '> div.form-container > form.form-horizontal > fieldset'
         },
-        onPreviewSchema:function () {
+        onPreviewSchema: function () {
             var model = this.presave()
             var content = JSON.stringify(model, null, "\t");
             var rows = content.split("\n").length;
             new Modal({
-                content:'<textarea style="width:100%;height:100%;overflow: hidden;" rows="' + rows + '">' + content + '</textarea>',
-                title:'Schema Preview of [' + model.modelName + ']',
-                animate:true
+                content: '<textarea style="width:100%;height:100%;overflow: hidden;" rows="' + rows + '">' + content + '</textarea>',
+                title: 'Schema Preview of [' + model.modelName + ']',
+                animate: true
             }).open();
             return false;
         },
-        previewCB:function (model) {
+        previewCB: function (model) {
             return _.bind(function (resp) {
                 var View = EditView.extend({
-                    fieldsets:model.fieldsets || {
-                        fields:_.keys(model.schema)
+                    fieldsets: model.fieldsets || {
+                        fields: _.keys(model.schema)
                     },
-                    template:_.template(resp),
-                    collection:new Backbone.Collection(),
-                    model:Backbone.Model.extend(model),
-                    onSave:function () {
+                    template: _.template(resp),
+                    collection: new Backbone.Collection(),
+                    model: Backbone.Model.extend(model),
+                    onSave: function () {
                         var errors = this.form.validate();
                         if (!errors)
                             alert('Save is unavailable in preview')
                         return false;
                     },
-                    config:{
-                        title:model.title,
-                        plural:model.plural,
-                        modelName:model.modelName
+                    config: {
+                        title: model.title,
+                        plural: model.plural,
+                        modelName: model.modelName
                     }
                 });
 
 
                 require(model.includes, function () {
                     new Modal({
-                        content:new View(),
-                        animate:true
+                        content: new View(),
+                        animate: true
                     }).open();
                 })
             }, this);
         },
-        presave:function () {
+        presave: function () {
 
 
             var model = onModel(this.form.getValue());
             if (model.fieldsets && !model.fieldsets.length)
                 model.fieldsets = [
-                    {fields:_.keys(model.schema)}
+                    {fields: _.keys(model.schema)}
                 ];
             else
                 _.each(model.fieldsets, function (fieldset) {
@@ -154,20 +155,20 @@ define([
             console.log('postfixup', model);
             return model;
         },
-        onSuccessRefresh:function (resp) {
+        onSuccessRefresh: function (resp) {
             this.onSuccess.apply(this, _.toArray(arguments));
             if (resp.status == 0)
                 new Modal({
-                    title:'Save Success',
-                    content:'<h2>To view changes press ok to refresh browser</h2>',
-                    animate:true
+                    title: 'Save Success',
+                    content: '<h2>To view changes press ok to refresh browser</h2>',
+                    animate: true
                 }).open(function () {
                         window.location.hash = "";
                         window.location.reload();
                     });
         },
-        url:'${pluginUrl}/admin/backbone',
-        onSave:function (e) {
+        url: '${pluginUrl}/admin/backbone',
+        onSave: function (e) {
             e.preventDefault();
             $('.error-list').empty().hide();
             $('.success-list').empty().hide();
@@ -177,10 +178,10 @@ define([
             var save = this.presave();
             if (!(errors)) {
                 $.ajax({
-                    url:this.url,
-                    type:'PUT',
-                    data:save,
-                    success:_.bind(this.onSuccessRefresh, this)
+                    url: this.url,
+                    type: 'PUT',
+                    data: save,
+                    success: _.bind(this.onSuccessRefresh, this)
 
                 });
                 //this.form.model.save(save, {error:this.onError});
@@ -189,27 +190,27 @@ define([
             }
 
         },
-        onPreviewClick:function (e) {
+        onPreviewClick: function (e) {
             e.preventDefault();
 
             var model = this.presave()
             console.log('click preview', model);
             var url = "${baseUrl}templates/" + model.modelName + "/edit.html";
             $.ajax({
-                type:'POST',
-                url:url,
-                data:model,
-                success:this.previewCB(model),
-                dataType:'text'
+                type: 'POST',
+                url: url,
+                data: model,
+                success: this.previewCB(model),
+                dataType: 'text'
             });
 
         },
-        listUrl:function(){
+        listUrl: function () {
             return '#/modeleditor/views/admin/list';
         },
-        createForm:function (opts) {
+        createForm: function (opts) {
             opts._root = this;
-            opts.model.schema.fieldsets.model.prototype.allPaths  = function () {
+            opts.model.schema.fieldsets.model.prototype.allPaths = function () {
                 var paths = [];
 
                 function onPathFux(prev) {
@@ -286,8 +287,8 @@ define([
                 enabled();
                 onValidModelName();
 //                setTimeout(onValidModelName,200);
-                form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft:'160px'})
-                    .siblings('label').css({display:'block'}).parents('.controls').css({marginLeft:0}).siblings('label').css({display:'none'});
+                form.$el.find('> fieldset').furthestDecendant('.controls').css({marginLeft: '160px'})
+                    .siblings('label').css({display: 'block'}).parents('.controls').css({marginLeft: 0}).siblings('label').css({display: 'none'});
 
 
                 //      editor.setOptions(paths)
@@ -295,9 +296,9 @@ define([
 
             return form;
         },
-        config:{
-            title:'Model',
-            plural:'Models'
+        config: {
+            title: 'Model',
+            plural: 'Models'
         }
     });
 
