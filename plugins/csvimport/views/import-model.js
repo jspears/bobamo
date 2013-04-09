@@ -16,15 +16,17 @@ define(['underscore', 'Backbone', 'Backbone.Form', 'libs/bobamo/edit', 'views/mo
             var resp = r.payload || r;
             this.model.set(resp);
             console.log('update', resp, this);
-            var se = this.fields.schema.editor, lfe = this.fields.list_fields.editor, me = this.fields.mapping.editor;
-            _.each([se, lfe, me], function (e) {
+            var se = this.fields.schema.editor,
+                //lfe = this.fields.list_fields.editor,
+                me = this.fields.mapping.editor;
+            _.each([se, me], function (e) {
                 _.invoke(e.items, 'remove');
                 e.items = [];
             });
             _.each(resp.properties, se.addItem, se);
-            _.each(resp.properties, function(v){
-                this.addItem(v.name);
-            }, lfe);
+//            _.each(resp.properties, function(v){
+//                this.addItem(v.name);
+//            }, lfe);
 
             if (resp.mapping)
                 _.each(resp.mapping, function(v){

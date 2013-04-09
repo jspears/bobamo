@@ -207,7 +207,7 @@ CsvPlugin.prototype.routes = function () {
         var modelName = req.params.modelName || inflection.camelize(req.files.import.name.replace(/\.{0,7}$/, ''), false);
         var m = pluginManager.appModel.modelPaths[modelName];
         m = m && m.schema;
-        var read = fs.createReadStream(req.files.file.path);
+        var read = fs.createReadStream(req.files.import.path);
         this.readHeader(read, function (err, resp) {
             if (err) {
                 console.log('error', err);
