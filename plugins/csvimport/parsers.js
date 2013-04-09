@@ -91,6 +91,18 @@ module.exports  = [
         }
     },
     {
+        type:'JSON',
+        parser:function(){
+            return function(value){
+                try {
+                    return JSON.parse(value)
+                }catch(e){
+                    console.log('error parsing', value);
+                }
+            }
+        }
+    },
+    {
         type:'Regex',
         types:['String'],
         schema:{

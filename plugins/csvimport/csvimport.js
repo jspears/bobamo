@@ -203,11 +203,12 @@ CsvPlugin.prototype.routes = function () {
 
     }.bind(this));
     function onConfigureFromFile(req, res) {
-        var conf = req.params.configuration || req.body.configuration || 'Default';
-        var modelName = req.params.modelName || inflection.camelize(req.files.import.name.replace(/\.{0,7}$/, ''), false);
+        var conf = req.params.configuration || req.body.configuration || 'Default'
+        var file = req.files.file || req.files.import;
+        var modelName = req.params.modelName || inflection.camelize(file.name.replace(/\.{0,7}$/, ''), false);
         var m = pluginManager.appModel.modelPaths[modelName];
         m = m && m.schema;
-        var read = fs.createReadStream(req.files.import.path);
+        var read = fs.createReadStream(file.path);
         this.readHeader(read, function (err, resp) {
             if (err) {
                 console.log('error', err);
