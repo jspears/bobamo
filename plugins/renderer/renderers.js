@@ -12,6 +12,15 @@ module.exports = [
         name: 'Hidden'
     },
     {
+        name:'Collection',
+        schema:{
+            collection:{
+                type:'Select',
+                collection:'modeleditor/views/admin/schema-collection'
+            }
+        }
+    },
+    {
         name :'Template',
         schema:{
             template:{
