@@ -39,8 +39,8 @@ define([
     return Backbone.View.extend({
         tagName: 'div',
         events: {
-           'click button.save': 'onSave',
-            'click button.cancel': 'onCancel',
+//           'click button.save': 'onSave',
+//            'click button.cancel': 'onCancel',
             'click ul.error-list li': 'onErrorItemClick'
 //            'click .next': 'onNext',
 //            'click .previous': 'onPrevious'
