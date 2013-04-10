@@ -55,6 +55,45 @@ EditPlugin.prototype.configure = function (conf) {
     Plugin.prototype.configure.call(this, conf);
     return null;
 }
+/**
+ * Looks up a model and a path.  withuot a model it returns all and
+ * without a path.
+ * with a path it just returns the subpaths.  If there is no
+ * modelName and there is a path it guesses the first part of the
+ * path is modelName = path.split('.').shift()
+ * @param modelName
+ * @param path
+ * @returns {*|Array}
+ */
+EditPlugin.prototype.lookup = function(modelName, path){
+    var q = path && path.split('.') || [];
+    modelName = modelName || q && q.shift();
+    var modelPaths = this.pluginManager.appModel.modelPaths;
+    if (!modelName)
+        return Object.keys(modelPaths);
+    var schema = modelPaths[modelName] && modelPaths[modelName].schema;
+    var i=0;
+    for (var l= q.length;i<l;i++){
+        var part = q[i];
+        if (part in schema){
+            if (schema[part].ref){
+                schema =  modelPaths[schema[part].ref].schema;
+            }else if (schema[part].schema){
+                schema = schema[part].schema;
+            }else if (schema[part].subSchema){
+                schema = schema[part].subSchema;
+            }else{
+                schema = {};
+                schema[part] = true;
+                break;
+            }
+        }else{
+            break;
+        }
+    }
+    q.splice(i);
+    return Object.keys(schema).map(function(v){ return q.concat(v).join('.')});
+}
 EditPlugin.prototype.routes = function () {
     var pm = this.pluginManager;
     this.app.all(this.pluginUrl + '*', function (req, res, next) {
@@ -69,31 +108,11 @@ EditPlugin.prototype.routes = function () {
 
     var base = this.pluginUrl;
     var jsView = this.baseUrl + 'js/views/' + this.name;
-    this.app.get(base + '/admin/properties/:modelName', function(req,res,next){
-        var q = Object.keys(req.query).pop().replace('&','').split('.');
-        var modelPaths = pm.appModel.modelPaths;
-        var schema = modelPaths[req.params.modelName] && modelPaths[req.params.modelName].schema;
-        var i=0;
-        for (var l= q.length;i<l;i++){
-            var part = q[i];
-            if (part in schema){
-                if (schema[part].ref){
-                    schema =  modelPaths[schema[part].ref].schema;
-                }else if (schema[part].schema){
-                    schema = schema[part].schema;
-                }else if (schema[part].subSchema){
-                    schema = schema[part].subSchema;
-                }else{
-                    schema = {};
-                    schema[part] = true;
-                    break;
-                }
-            }else{
-                break;
-            }
-        }
-        q.splice(i);
-        res.send(Object.keys(schema).map(function(v){ return q.concat(v).join('.')}))
+    var lookup = this.lookup.bind(this);
+    this.app.get(base + '/admin/properties/:modelName?', function(req,res,next){
+        var q = Object.keys(req.query).pop();
+        q = q && q.replace('&','') || '';
+        res.send(lookup(req.params.modelName, q));
     });
     this.app.get(this.pluginUrl + '/views/admin/:type?/:view', function (req, res, next) {
         var view = 'admin/' + req.params.view;
