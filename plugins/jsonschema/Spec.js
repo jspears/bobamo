@@ -32,12 +32,15 @@ var Spec = function (args, finder, path) {
         }
     })
     this.__defineGetter__('params', function () {
+
         var method = this.method || 'GET';
         var parameters = [];
         if (display.hidden)
             return;
-        var defP = util.find('params', args) || util.find('parameters', args)
+        var defP = finder.display && (finder.display.params || finder.display.parameters) || util.find('params', args) || util.find('parameters', args)
+        console.log('Spec->params', finder.name, defP);
         if (defP) {
+
             return defP;
         }
         if (method == 'GET') {

@@ -300,6 +300,7 @@ module.exports = function SwaggerToMarkdown(options) {
         f.$write(this.$build_markdown_header('About', 2));
         f.$write('<table><thead>' +
             '<tr><th colspan="3">Authors: ' + (options.authors ? options.authors.join(', ') : '' ) + '</th></tr>' +
+            '<tr><th colspan="3">Revisions</th></tr>'+
             '<tr><th>Date</th><th>Version</th><th>Notes</th></tr></thead><tbody>');
 
         if (options.modified) {

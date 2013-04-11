@@ -146,7 +146,7 @@ module.exports = {
 //                "path":"/" + k,            "parameters":[param.path("id", "ID of " + v.modelName, "string")],
 
 
-            "notes":"updates a " + K + " in the store",
+            "notes":"Updates a " + K + " in the store",
             "httpMethod":"PUT",
             "summary":"Update an existing " + v.title.toLowerCase() +(summary || ''),
             "parameters":[param.path("id", "ID of " + v.modelName, "string"), param.post(k, v.title + " object that needs to be added to the store")],
@@ -226,7 +226,7 @@ module.exports = {
         var K = inflection.capitalize(k);
         return  {
             //   "path":"/{id}",
-            "notes":"updates a " + v.title + " in the store",
+            "notes":"Updates a " + v.title + " in the store",
             "httpMethod":"GET",
             "summary":"Return an existing " + v.title+ (summary),
             "parameters":[param.path("id", "ID of " + v.modelName, "string")],
@@ -240,7 +240,7 @@ module.exports = {
         var summary = (v.methods && v.methods.remove && v.methods.remove.summary || '');
         return {
             //"path":"/" + k + "/{id}",
-            "notes":"removes a " + v.modelName + " from the store",
+            "notes":"Removes a " + v.modelName + " from the store",
             "httpMethod":"DELETE",
             "summary":"Remove an existing " + v.modelName+ (summary | ''),
             "parameters":[param.path("id", "ID of " + v.modelName + " that needs to be removed", "string")],
