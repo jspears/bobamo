@@ -29,7 +29,7 @@ define([
             return this;
         },
         format:function(field, idx, model, schema){
-            return this.renderer.render(model.get(field),  field,  model, idx, schema.renderer);
+            return this.renderer.render(model.get(field),  field,  model, idx, schema && schema.renderer);
         },
         _fields:{},
         _format:function(field, idx){
@@ -123,6 +123,18 @@ define([
                 if (!v.direction) return;
                 sort.push([v.field, v.direction].join(':'));
             });
+            var populate = [];
+            _.each(this.renderer.config, function(v){
+                console.log('renderer',v);
+                if (v.property && ~v.property.indexOf('.')){
+                    var mangle = v.property.split('.');
+                    mangle.pop();
+                    populate.push(mangle.join('.'))
+                }
+            });
+            if (populate.length)
+                data.populate = populate.join(',');
+
             this.collection.params = data;
             data.sort = sort.join(',');
             this.collection.fetch({data:data, success:_.bind(this._fetch, this)});
