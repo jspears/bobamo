@@ -315,7 +315,7 @@ define([
             }, this);
             this.doFormRender(id);
             this.drawButtons();
-            $(this.options.container).html($el);
+            $(opts && opts.container || this.options.container).html($el);
             return this;
         }
     });

@@ -4,7 +4,7 @@ define(['Backbone', 'Backbone.Form/form-model',
     'libs/renderer/renderers',
     'libs/jquery/jqtpl',
     'backbone-modal',
-    'text!modeleditor/views/templates/admin/list-edit.html',
+    'text!modeleditor/views/templates/admin/form-edit.html',
     'libs/jquery/jquery.busy', //added to $
     'libs/editors/reorder-list-editor', //added to Form.editors
     'libs/editors/dyna-nested-model-editor'
@@ -23,77 +23,6 @@ define(['Backbone', 'Backbone.Form/form-model',
 
     })
     var NestedModel = Form.editors.NestedModel;
-//    var RenderModel = B.Model.extend({
-//        url: '${baseUrl}/modeleditor/admin/model',
-//        parse:function(){
-//
-//        },
-//        toString: function () {
-//            return  '<div><h3>' + this.get('title') + '</h3>' +
-//                '<small>' +
-//                this.get('property')
-//                + ' renderer: ' + (this.get('renderer') || 'Default');
-//            +'</small></div>'
-//        },
-//        renderConfig: function () {
-//            var editor = this.form.getValue().editor;
-//            var form = this.form;
-//            require(['json-data:modeleditor/admin/editor/' + editor], function (editorConf) {
-//                var fields = form.fields, config = fields.config;
-//                var $el = config.editor.$el;
-//                config.editor.remove();
-//                var data = form.getValue().config;
-//                if (Model.prototype.schema) {
-//                    var configModel = new Form.editors.Object({schema:editorConf.schema, value: data, key: config.key, idPrefix: editor}).render();
-//                    $el.replaceWith(configModel.el);
-//                    config.editor = configModel;
-//                } else {
-//                    config.editor = {
-//                        remove: function () {
-//                        },
-//                        getValue: function () {
-//                            return null
-//                        },
-//                        $el: $el.replaceWith('<div>No Configuration for "' + editor + '"</div>')
-//                    }
-//                }
-//            });
-//        },
-//
-//        createForm: function (opt) {
-//            var form = this.form = new Form(opt);
-//            console.log('createForm', this);
-//            form.on('render', this.renderConfig, this)
-//            form.on('type:change', this.renderConfig, this)
-//            return form;
-//        },
-//        schema: {
-//            type: {
-//                type: 'Select',
-//                options: '${pluginUrl}/admin/editors'
-//            },
-//
-//            config: {
-//                type: 'Blank',
-//                title: 'Configure Editor',
-//                fieldClass: 'form-vertical'
-//
-//            },
-//            title: {
-//                type: 'Text'
-//            },
-//            help: {
-//                type: 'TextArea'
-//
-//            },
-//            property: {
-//                type: 'Text',
-//                validators: [
-//                    {type: 'required'}
-//                ]
-//            }
-//        }
-//    })
 
     var schema = {
         isWizzard: {
@@ -209,7 +138,7 @@ define(['Backbone', 'Backbone.Form/form-model',
         onPreview: function (e) {
             if (e && e.preventDefault)
                 e.preventDefault();
-            this.$preview = this.$el.find('.preview-content');
+            this.$preview = this.$el.find('.preview-container');
             this.$preview.busy({
                 img: 'img/ajax-loader.gif',
                 title: 'Previewing...'
@@ -225,11 +154,12 @@ define(['Backbone', 'Backbone.Form/form-model',
                 this.preView.remove();
             var config = this.createConfig(template);
             var NView = View.extend(config);
+            this.$preview.empty();
             var v = this.preView = new NView();
-            v.render({
-                container: this.$preview
-            });
+            v.render();
+
             this.$preview.busy('remove');
+            this.$preview.html(v.$el);
         },
         onSuccess: function () {
             EditView.prototype.onSuccess.apply(this, pslice.call(arguments))
@@ -241,13 +171,21 @@ define(['Backbone', 'Backbone.Form/form-model',
         doModify: function (View, table, tableItem) {
             _.extend(View.prototype, this.createConfig(table, tableItem));
         },
-        createConfig: function (table, tableItem) {
-            var list = this.form.getValue().list;
+        createConfig: function (formtemplate) {
+            var fieldsets = this.form.getValue().fieldsets;
+            var schema = {};
+            var fieldset = []
+            fieldsets.forEach(function(fset){
+                fieldset.push({
+                    legend:fset.legend,
+                    fields:fset.fields.map(function(v){
+                        schema[v.property] =v;
+                        return v.property;
+                    })
+                })
+            });
             var obj = {
                 model: {
-                    fields: list.map(function (v) {
-                        return v.property;
-                    }),
                     pathFor: function (property) {
                         for (var i = 0, l = list.length; i < l; i++) {
                             var itm = list[i];
@@ -260,18 +198,16 @@ define(['Backbone', 'Backbone.Form/form-model',
                 }
             };
             return {
-                template: _.template(jqtpl.render(template, obj)),
-                fieldsets: [
-                    {fields: obj.model.fields}
-                ]
-
+                template: _.template(jqtpl.render(formtemplate, obj)),
+                fieldsets:fieldset,
+                schema:schema
             }
         },
 
         render: function (obj) {
             EditView.prototype.render.call(this, obj);
-//            this.form.on('change', this.onPreview, this);
-//            this.form.on('render', this.onPreview, this);
+            this.form.on('change', this.onPreview, this);
+            this.form.on('render', this.onPreview, this);
             return this;
         },
         listUrl: function () {
