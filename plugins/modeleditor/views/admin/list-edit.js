@@ -103,7 +103,7 @@ define(['Backbone', 'Backbone.Form/form-model',
                 type: 'Text'
             },
             property: {
-                type: 'TypeAhead',
+                type: 'Typeahead',
                 validators: [
                     {type: 'required'}
                 ]
