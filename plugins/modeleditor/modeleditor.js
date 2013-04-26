@@ -466,9 +466,11 @@ EditPlugin.prototype.routes = function () {
                 delete obj[k];
             }
         });
-        var sobj = {modelPaths:{}};
-        sobj.modelPaths[req.params.id] = obj;
-        this.save(sobj, function (err, data) {
+        var sobj = this.conf.modelPaths || (this.conf.modelPaths = {});
+        var pobj = sobj[req.params.id]|| (sobj[req.params.id] = {});
+        _u.extend(pobj, req.body);
+
+        this.save(pobj, function (err, data) {
             if (err)
                 return next(err);
             res.send({

@@ -24,7 +24,9 @@ define(['Backbone', 'Backbone.Form/form-model',
 
     })
     var NestedModel = Form.editors.NestedModel;
-
+    var undef = function(v){
+        return v !== void(0);
+    }
     var schema = {
         isWizzard: {
             type: 'Checkbox',
@@ -96,7 +98,7 @@ define(['Backbone', 'Backbone.Form/form-model',
                                 },
                                 property: {
                                     type: 'Typeahead',
-                                    url : '${pluginUrl}/admin/properties/?',
+                                    url: '${pluginUrl}/admin/properties/?',
                                     validators: [
                                         {type: 'required'}
                                     ]
@@ -118,7 +120,117 @@ define(['Backbone', 'Backbone.Form/form-model',
             listItemTemplate: 'listItemReorder'
         }
     };
+
+    function swapItems(list, a, b) {
+        list[a] = list.splice(b, 1, list[a])[0];
+        return list;
+    }
+
+    function currentProperty($e) {
+        var $parent = $e.parents('.control-group');
+        return $parent.length ? $parent[0].className.replace(/.*field-([^\s]*).*/, "$1") : null;
+    }
+
+    function currentAction($e) {
+        return $e.length ? $e[0].className.replace(/.*toolbar-([^\s]*).*/, "$1") : null;
+    }
+
+    var ToolBarView = B.View.extend({
+        events: {
+            'click .btn': 'onAction'
+        },
+        className: 'btn-toolbar toolbar',
+        onAction: function (e) {
+            if (e) e.preventDefault();
+            var $e = $(e.currentTarget);
+            this.trigger(currentAction($e) + '-property', currentProperty($e));
+        },
+
+        render: function onToolbarRender() {
+
+            this.$el.html('<div class="btn-group"><button class="btn btn-mini toolbar-edit"><i class="icon-edit"/></button><button class="btn btn-mini toolbar-remove"><i class="icon-remove"/></button><button class="btn btn-mini toolbar-up"><i class="icon-arrow-up"/></button><button class="btn btn-mini toolbar-down"><i class="icon-arrow-down"/></button></div>');
+            return this;
+        }
+    })
+
     return EditView.extend({
+        upProperty: function (property) {
+            if (this.findField(property, function (vv, idx, v) {
+                swapItems(v.fields, idx - 1, idx );
+            })) {
+                this.onPreview();
+
+            }
+        },
+        downProperty: function (property) {
+            if (this.findField(property, function (vv, idx, v) {
+                swapItems(v.fields, idx + 1, idx);
+            })) {
+                this.onPreview();
+            }
+        },
+        editProperty: function (property) {
+            var refFields =this.form.fields.fieldsets.editor.schema.model.prototype.schema.fields
+
+            var data, didx, fields;
+            this.findField(property, function(vv,idx,v){
+                data = vv;
+                didx = idx;
+                fields = v.fields;
+            })
+            var modelInstance = new refFields.model(data);
+            var opts = {model:modelInstance};
+            var form =  modelInstance.createForm(opts);
+
+            var modal = this.modal = new Form.editors.List.Modal.ModalAdapter({
+                content: form,
+                animate: true
+            });
+            modal.open();
+            modal.on('ok', function onEdit(){
+                fields[didx] = form.getValue();
+                this.onPreview();
+            }, this);
+        },
+        removeProperty: function (property) {
+            if (this.findField(property, function (vv, kk, v) {
+                v.fields.splice(kk, 1);
+            })) {
+                this.onPreview();
+            }
+        },
+        findField: function (property, callback) {
+            var ret = false
+            _.each(this.modelInstance.get('fieldsets'), function (v, k) {
+                _.each(v.fields, function (vv, kk) {
+                    if (vv && vv.property === property) {
+                        callback(vv, kk, v);
+                        return !(ret = true);
+                    }
+                });
+                return !ret;
+            });
+            return ret;
+        },
+        events: {
+            'mouseenter .preview-container .control-group': 'hoverIn',
+            'mouseleave .preview-container .control-group': 'hoverOut'
+
+        },
+        hoverIn: function (e) {
+            if (!this.toolbar) {
+                this.toolbar = new ToolBarView().render();
+                this.toolbar.on('edit-property', this.editProperty, this);
+                this.toolbar.on('remove-property', this.removeProperty, this);
+                this.toolbar.on('up-property', this.upProperty, this);
+                this.toolbar.on('down-property', this.downProperty, this);
+            }
+            $(e.currentTarget).prepend(this.toolbar.$el);
+        },
+        hoverOut: function (e) {
+            if (this.toolbar)
+                this.toolbar.$el.detach();
+        },
         model: B.Model.extend({
             schema: schema,
             urlRoot: '${pluginUrl}/admin/model',
@@ -167,6 +279,10 @@ define(['Backbone', 'Backbone.Form/form-model',
 
         },
         doPreview: function (View, template) {
+            if (this.toolbar) {
+                this.toolbar.remove();
+                delete this.toolbar;
+            }
             if (this.preView)
                 this.preView.remove();
             var config = this.createConfig(template);
@@ -195,7 +311,7 @@ define(['Backbone', 'Backbone.Form/form-model',
             fieldsets.forEach(function (fset) {
                 fieldset.push({
                     legend: fset.legend,
-                    fields: fset.fields.map(function (v) {
+                    fields: fset.fields.filter(undef).map(function (v) {
                         schema[v.property] = v;
                         return v.property;
                     })
@@ -233,9 +349,9 @@ define(['Backbone', 'Backbone.Form/form-model',
         listUrl: function () {
             return "#${pluginUrl}/views/admin/list"
         },
-        createModel:function(opts){
+        createModel: function (opts) {
             var model = new this.model(opts);
-            model.schema.fieldsets.model.prototype.schema.fields.model.prototype.schema.property.url  = '${pluginUrl}/admin/properties/'+opts.id+'?'
+            model.schema.fieldsets.model.prototype.schema.fields.model.prototype.schema.property.url = '${pluginUrl}/admin/properties/' + opts.id + '?'
 
 
             return model;

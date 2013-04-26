@@ -127,6 +127,8 @@ define([
             _.each(this.renderer.config, function(v){
                 console.log('renderer',v);
                 if (v.property && ~v.property.indexOf('.')){
+                    //TODO - Mongoose throws an exception if you populate a non IdRef  fix mers so that it doesn't
+                    // send it.
                     var mangle = v.property.split('.');
                     mangle.pop();
                     populate.push(mangle.join('.'))

@@ -19,12 +19,12 @@ module.exports = function SwaggerToMarkdown(options) {
         return _lines.join('');
     }
     var f = {
-        $write:function () {
+        $write: function () {
             for (var i = 0, l = arguments.length; i < l; i++) {
                 _lines.push(arguments[i]);
             }
         },
-        $writeln:function () {
+        $writeln: function () {
             var args = Array.prototype.slice.call(arguments, 0);
             args.push('\n');
             this.$write.apply(this, args)
@@ -262,15 +262,29 @@ module.exports = function SwaggerToMarkdown(options) {
             f.$writeln(str.join('\n'));
         }
         var b = args.filter(filter('body'));
+
+        function writeModels(name, models) {
+            var model = name && models && models[name];
+            if (!model) {
+                console.error('no model named [' + name + ']');
+                return;
+            }
+            self.$write_json(f, model);
+            f.$writeln('');
+            model && model.properties && Object.keys(model.properties).forEach(function (key) {
+                var v = model.properties[key];
+                var ref = v && v.items && v.items.$ref;
+                if (ref)
+                    writeModels(ref, models);
+            });
+
+        }
+
         if (b.length) {
             f.$write(self.$build_markdown_header("Body Parameters", 5));
             b.forEach(function (arg) {
-                var model = self.models[arg.dataType];
-                if (model) {
-                    self.$write_json(f, model);
-                    f.$writeln('');
-                }
-            })
+                writeModels(arg.dataType, self.models);
+            });
         }
 
         var p = args.filter(filter('path'));
@@ -300,19 +314,19 @@ module.exports = function SwaggerToMarkdown(options) {
         f.$write(this.$build_markdown_header('About', 2));
         f.$write('<table><thead>' +
             '<tr><th colspan="3">Authors: ' + (options.authors ? options.authors.join(', ') : '' ) + '</th></tr>' +
-            '<tr><th colspan="3">Revisions</th></tr>'+
+            '<tr><th colspan="3">Revisions</th></tr>' +
             '<tr><th>Date</th><th>Version</th><th>Notes</th></tr></thead><tbody>');
 
         if (options.modified) {
-            f.$write('<tr><td>' + moment(options.modified).format("MM/DD/YYYY") + '</td><td>'+api_version+'</td><td>'+(options.description || 'current api')+'</td></tr>');
+            f.$write('<tr><td>' + moment(options.modified).format("MM/DD/YYYY") + '</td><td>' + api_version + '</td><td>' + (options.description || 'current api') + '</td></tr>');
         }
-        if (options.revisions){
-            options.revisions.forEach(function(v,k){
-                f.$write('<tr><td>' + moment(new Date(v.modified)).format("MM/DD/YYYY") + '</td><td>'+
+        if (options.revisions) {
+            options.revisions.forEach(function (v, k) {
+                f.$write('<tr><td>' + moment(new Date(v.modified)).format("MM/DD/YYYY") + '</td><td>' +
                     v.version
-                    +'</td><td>' +
+                    + '</td><td>' +
                     (v.description || '')
-                    +'</td></tr>');
+                    + '</td></tr>');
 
             });
         }

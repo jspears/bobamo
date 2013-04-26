@@ -22,6 +22,7 @@ module.exports = {
         var noId = true;//hasIdCallback && hasIdCallback(m); // !(pluginManager.appModel.modelPaths[m.modelName || m]);
         var model = m.schema;
         var description = m.description || m.help || m.title;
+        var transactional = m.transactional === false  ? false :  true;
         var jsonSchema = {
             //    "id":"http://some.site.somewhere/entry-schema#",
             "$schema":"http://json-schema.org/draft-04/schema#",
@@ -29,7 +30,7 @@ module.exports = {
             id:m.modelName,
             required:[],
             description:description,
-            properties:(function () {
+            properties:transactional ? (function () {
                 return _u.extend({
                     _v:{
                         type:'number',
@@ -42,7 +43,7 @@ module.exports = {
                         description:'Identifier for "' + m.modelName + '"'
                     }
                 });
-            })()
+            })() :{}
         };
         var walkJson = function (schema, properties, required) {
             _u.each(schema, function eachWalkJson(v, ok) {
