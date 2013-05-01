@@ -17,7 +17,7 @@ var Model = bobamo.DisplayModel;
 
 
 module.exports = {
-    modelToSchema:function doModelToSchema(m, models, hasIdCallback) {
+    modelToSchema:function doModelToSchema(m, models, hasIdCallback, excludeDerived) {
         if (!models) models = {};
         var noId = true;//hasIdCallback && hasIdCallback(m); // !(pluginManager.appModel.modelPaths[m.modelName || m]);
         var model = m.schema;
@@ -48,7 +48,7 @@ module.exports = {
         var walkJson = function (schema, properties, required) {
             _u.each(schema, function eachWalkJson(v, ok) {
                 var k = ok.split('.').pop();
-                if (!v) {
+                if (!v || excludeDerived && v.derived) {
                     console.log('walkSchema v is null for', k);
                     return true;
                 }
@@ -143,6 +143,8 @@ module.exports = {
     update:function (v, k) {
         var summary = (v.methods && v.methods.update && v.methods.update.summary || '');
         var K = inflection.capitalize(k);
+        var pa = param.post(k+"Request", v.title + " object that needs to be added to the store")
+        pa.dataTypeModel = v;
         return {
 //                "path":"/" + k,            "parameters":[param.path("id", "ID of " + v.modelName, "string")],
 
@@ -150,10 +152,11 @@ module.exports = {
             "notes":"Updates a " + K + " in the store",
             "httpMethod":"PUT",
             "summary":"Update an existing " + v.title.toLowerCase() +(summary || ''),
-            "parameters":[param.path("id", "ID of " + v.modelName, "string"), param.post(k, v.title + " object that needs to be added to the store")],
+            "parameters":[param.path("id", "ID of " + v.modelName, "string"), pa],
             "errorResponses":[swe.invalid('id'), swe.notFound(k), swe.invalid('input')],
             "allowMultiple":false,
             "paramType":"body",
+
             responseClass:"void",
             "nickname":"update"
         }
@@ -162,14 +165,17 @@ module.exports = {
         var summary = (v.methods && v.methods.create && v.methods.create.summary || '');
 
         var K = inflection.capitalize(k);
+        var pa = param.post(k+"Request", v.title + " object that needs to be added to the store");
+        pa.dataTypeModel = v;
         return {
             "notes":"adds a " + K + " to the store",
             "summary":"Add a new " + K + " to the store "+(summary || ''),
             "httpMethod":"POST",
-            "parameters":[param.post(k, v.title + " object that needs to be added to the store")],
+            "parameters":[pa],
             "errorResponses":[swe.invalid('input')],
             "nickname":"add",
             "dataType":k,
+//            "dataTypeModel":v,
             "allowMultiple":false,
             "paramType":"body",
             responseClass:"void"

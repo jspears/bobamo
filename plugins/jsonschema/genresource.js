@@ -63,7 +63,8 @@ module.exports.resourceFor = function(model, swagUrl, version, resolver){
                 var pType = su.typeNotBuiltin(v.dataType);
                 if (pType){
                     if (!doc.models[pType]){
-                        doc.models[pType] = swagger.modelToSchema(v.dataTypeModel || resolver(pType),doc.models);
+                        doc.models[pType] = swagger.modelToSchema(v.dataTypeModel || resolver(pType),doc.models, v.transactional, true);
+                        doc.models[pType].id = pType;
                         delete v.dataTypeModel;
                     }
                 }

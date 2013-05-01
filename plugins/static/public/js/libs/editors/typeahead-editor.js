@@ -1,5 +1,6 @@
 define(['Backbone.Form', 'jquery', 'underscore', 'libs/bootstrap/js/bootstrap-typeahead'], function (Form, $, _) {
     "use strict";
+    var pslice = Array.prototype.slice;
     var editors = Form.editors;
     var Select = editors.Select;
     var Item = function (itm) {
@@ -44,6 +45,9 @@ define(['Backbone.Form', 'jquery', 'underscore', 'libs/bootstrap/js/bootstrap-ty
             cb(_.map(opt, function (v) {
                 return new Item(v)
             }));
+        },
+        setValue:function(value){
+          return Select.prototype.setValue.apply(this, pslice.call(arguments));
         },
         setOptions: function(options, opt, cb) {
             var self = this;

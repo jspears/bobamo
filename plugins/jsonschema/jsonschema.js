@@ -5,7 +5,6 @@ var bobamo = require('../../index'),
     Model = bobamo.DisplayModel,
     path = require('path'),
     fs = require('fs'),
-    SwaggerToMarkdown = require('./genmarkdown'),
     generateClient = require('./generate-client'),
     u = require('../../lib/util'), _u = require('underscore'),
     PluginApi = bobamo.PluginApi, util = require('util');
@@ -23,7 +22,7 @@ var JsonSchemaPlugin = function () {
     this.conf = _u.extend({ }, defaultConf);
 }
 util.inherits(JsonSchemaPlugin, PluginApi);
-
+JsonSchemaPlugin.prototype.SwaggerToMarkdown = require('./genmarkdown');
 
 JsonSchemaPlugin.prototype.modelToSchema = function (model, models) {
     model = _u.isString(model) ? this.pluginManager.appModel.modelFor(model) : model;
@@ -257,7 +256,7 @@ JsonSchemaPlugin.prototype.resource = function (modelName) {
 }
 JsonSchemaPlugin.prototype.markdown = function () {
     var appModel = this.pluginManager.appModel;
-    return new SwaggerToMarkdown({
+    return new this.SwaggerToMarkdown({
         apiname: this.pluginManager.appModel.title,
         basePath: this.swaggerUrl(),
         resourcefile: this.resource(),

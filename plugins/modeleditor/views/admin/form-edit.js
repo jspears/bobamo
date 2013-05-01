@@ -1,5 +1,6 @@
 define(['Backbone', 'Backbone.Form/form-model',
     'libs/bobamo/edit',
+    'libs/bobamo/toolbar',
     'libs/util/inflection',
     'libs/renderer/renderers',
     'libs/jquery/jqtpl',
@@ -10,7 +11,7 @@ define(['Backbone', 'Backbone.Form/form-model',
     'libs/editors/dyna-nested-model-editor',
     'libs/editors/typeahead-editor'
 
-], function (B, Form, EditView, inflection, Renderer, jqtpl, modal, template) {
+], function (B, Form, EditView, ToolbarView, inflection, Renderer, jqtpl, modal, template) {
     "use strict";
     var pslice = Array.prototype.slice;
     Form.editors.Blank = Form.editors.Text.extend({
@@ -24,9 +25,73 @@ define(['Backbone', 'Backbone.Form/form-model',
 
     })
     var NestedModel = Form.editors.NestedModel;
-    var undef = function(v){
+    var undef = function (v) {
         return v !== void(0);
     }
+    var EditProperty = B.Model.extend({
+        toString: function () {
+            return this.get('property');
+        },
+        renderConfig: function () {
+            var val = this;
+            var editor = val.type || this.get('type') || 'Blank';
+            var form = this.form;
+
+            function onRenderEditor(editorConf) {
+                var schema = editorConf && editorConf.payload && editorConf.payload.schema
+                var fields = form.fields, config = fields.config;
+                var $el = config.editor.$el;
+                config.editor.remove();
+                var data = form.getValue().config;
+                var configModel = new Form.editors.Object({schema: {subSchema: schema}, value: data, key: config.key, idPrefix: editor}).render();
+                $el.replaceWith(configModel.el);
+                config.editor = configModel;
+
+            }
+
+            if (editor !== 'Blank')
+                require(['json-data!modeleditor/admin/editor/' + editor], onRenderEditor);
+            else
+                onRenderEditor({payload: {schema: {
+                    config: {
+                        schemaType: 'Blank',
+                        type: 'Blank',
+                        help: '<div>No Configuration for "' + editor + '"</div>'
+                    }
+                }}});
+        },
+
+        createForm: function (opts) {
+            opts = opts || {};
+            if (!opts.model) opts.model = this;
+            var form = this.form = new Form(opts);
+            form.on('render', this.renderConfig, this);
+            form.on('type:change', this.renderConfig, this);
+            return form;
+        },
+        schema: {
+            title: {
+                type: 'Text'
+            },
+            property: {
+//                type: 'Typeahead',
+                type: 'Text',
+                url: '${pluginUrl}/admin/properties/?',
+                validators: [
+                    {type: 'required'}
+                ]
+            },
+
+            config: {
+                type: 'Blank',
+                fieldClass: 'form-vertical'
+            },
+            type: {
+                type: 'Select',
+                url: '${pluginUrl}/admin/editors'
+            }
+        }
+    });
     var schema = {
         isWizzard: {
             type: 'Checkbox',
@@ -52,68 +117,7 @@ define(['Backbone', 'Backbone.Form/form-model',
                         itemType: 'NestedModel',
                         listItemTemplate: 'listItemReorder',
                         idAttribute: 'property',
-                        model: B.Model.extend({
-                            toString: function () {
-                                return this.get('property');
-                            },
-                            renderConfig: function () {
-                                var val = this.form.getValue();
-                                var editor = val.type || this.get('type') || 'Blank';
-                                var form = this.form;
-
-                                function onRenderEditor(editorConf) {
-                                    var schema = editorConf && editorConf.payload && editorConf.payload.schema
-                                    var fields = form.fields, config = fields.config;
-                                    var $el = config.editor.$el;
-                                    config.editor.remove();
-                                    var data = form.getValue().config;
-                                    var configModel = new Form.editors.Object({schema: {subSchema: schema}, value: data, key: config.key, idPrefix: editor}).render();
-                                    $el.replaceWith(configModel.el);
-                                    config.editor = configModel;
-
-                                }
-
-                                if (editor !== 'Blank')
-                                    require(['json-data!modeleditor/admin/editor/' + editor], onRenderEditor);
-                                else
-                                    onRenderEditor({payload: {schema: {
-                                        config: {
-                                            schemaType: 'Blank',
-                                            type: 'Blank',
-                                            help: '<div>No Configuration for "' + editor + '"</div>'
-                                        }
-                                    }}});
-                            },
-
-                            createForm: function (opts) {
-
-                                var form = this.form = new Form(opts);
-                                form.on('render', this.renderConfig, this);
-                                form.on('type:change', this.renderConfig, this);
-                                return form;
-                            },
-                            schema: {
-                                title: {
-                                    type: 'Text'
-                                },
-                                property: {
-                                    type: 'Typeahead',
-                                    url: '${pluginUrl}/admin/properties/?',
-                                    validators: [
-                                        {type: 'required'}
-                                    ]
-                                },
-
-                                config: {
-                                    type: 'Blank',
-                                    fieldClass: 'form-vertical'
-                                },
-                                type: {
-                                    type: 'Select',
-                                    url: '${pluginUrl}/admin/editors'
-                                }
-                            }
-                        })
+                        model: EditProperty
                     }
                 }
             }),
@@ -126,37 +130,12 @@ define(['Backbone', 'Backbone.Form/form-model',
         return list;
     }
 
-    function currentProperty($e) {
-        var $parent = $e.parents('.control-group');
-        return $parent.length ? $parent[0].className.replace(/.*field-([^\s]*).*/, "$1") : null;
-    }
 
-    function currentAction($e) {
-        return $e.length ? $e[0].className.replace(/.*toolbar-([^\s]*).*/, "$1") : null;
-    }
-
-    var ToolBarView = B.View.extend({
-        events: {
-            'click .btn': 'onAction'
-        },
-        className: 'btn-toolbar toolbar',
-        onAction: function (e) {
-            if (e) e.preventDefault();
-            var $e = $(e.currentTarget);
-            this.trigger(currentAction($e) + '-property', currentProperty($e));
-        },
-
-        render: function onToolbarRender() {
-
-            this.$el.html('<div class="btn-group"><button class="btn btn-mini toolbar-edit"><i class="icon-edit"/></button><button class="btn btn-mini toolbar-remove"><i class="icon-remove"/></button><button class="btn btn-mini toolbar-up"><i class="icon-arrow-up"/></button><button class="btn btn-mini toolbar-down"><i class="icon-arrow-down"/></button></div>');
-            return this;
-        }
-    })
 
     return EditView.extend({
         upProperty: function (property) {
             if (this.findField(property, function (vv, idx, v) {
-                swapItems(v.fields, idx - 1, idx );
+                swapItems(v.fields, idx - 1, idx);
             })) {
                 this.onPreview();
 
@@ -170,24 +149,24 @@ define(['Backbone', 'Backbone.Form/form-model',
             }
         },
         editProperty: function (property) {
-            var refFields =this.form.fields.fieldsets.editor.schema.model.prototype.schema.fields
-
+//            var refFields =this.form.fields.fieldsets.editor.schema.model.prototype.schema.fields
             var data, didx, fields;
-            this.findField(property, function(vv,idx,v){
+            this.findField(property, function (vv, idx, v) {
                 data = vv;
                 didx = idx;
                 fields = v.fields;
             })
-            var modelInstance = new refFields.model(data);
-            var opts = {model:modelInstance};
-            var form =  modelInstance.createForm(opts);
+            if (data && !data.conf) data.config = data;
+            var modelInstance = new EditProperty(data);
+            var opts = {model: modelInstance};
+            var form = modelInstance.createForm();
 
             var modal = this.modal = new Form.editors.List.Modal.ModalAdapter({
                 content: form,
                 animate: true
             });
             modal.open();
-            modal.on('ok', function onEdit(){
+            modal.on('ok', function onEdit() {
                 fields[didx] = form.getValue();
                 this.onPreview();
             }, this);
@@ -219,7 +198,7 @@ define(['Backbone', 'Backbone.Form/form-model',
         },
         hoverIn: function (e) {
             if (!this.toolbar) {
-                this.toolbar = new ToolBarView().render();
+                this.toolbar = new ToolbarView().render();
                 this.toolbar.on('edit-property', this.editProperty, this);
                 this.toolbar.on('remove-property', this.removeProperty, this);
                 this.toolbar.on('up-property', this.upProperty, this);
@@ -283,8 +262,10 @@ define(['Backbone', 'Backbone.Form/form-model',
                 this.toolbar.remove();
                 delete this.toolbar;
             }
-            if (this.preView)
+            if (this.preView) {
                 this.preView.remove();
+                delete this.preView;
+            }
             var config = this.createConfig(template);
             var NView = View.extend(config);
             this.$preview.empty();
@@ -305,7 +286,7 @@ define(['Backbone', 'Backbone.Form/form-model',
             _.extend(View.prototype, this.createConfig(table, tableItem));
         },
         createConfig: function (formtemplate) {
-            var fieldsets = this.form.getValue().fieldsets;
+            var fieldsets = this.modelInstance.get('fieldsets');
             var schema = {};
             var fieldset = []
             fieldsets.forEach(function (fset) {

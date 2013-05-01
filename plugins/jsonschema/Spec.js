@@ -55,7 +55,7 @@ var Spec = function (args, finder, path) {
                         dataType:Swag.fromType(vv.schemaType || vv.type) || 'string',
                         description:vv.help || vv.description,
                         name:kk,
-                        paramType:'query',
+                        paramType:display.paramType || 'query',
                         required:required});
                 });
 
@@ -114,7 +114,7 @@ var Spec = function (args, finder, path) {
             return rc;
         }
         rc = this.responseModel().modelName;
-        return (this.method == 'POST' || this.method == 'DELETE') ?  'void' :  display.single ? rc : "List[" + rc + "]";
+        return (this.method == 'POST' || this.method == 'DELETE') ?  'void' :  display.multiple !== false ? rc : "List[" + rc + "]";
     });
 
     this.__defineGetter__('nickname', function () {

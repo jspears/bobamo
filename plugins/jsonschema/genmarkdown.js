@@ -65,11 +65,14 @@ module.exports = function SwaggerToMarkdown(options) {
 
         }
 
-        apis && apis.forEach(function (resource, index) {
+
+        apis && apis.sort(function(a,b){
+            return a.path > b.path ? 1 : a.path== b.path ? 0 : -1;
+        }).forEach(function (resource, index) {
             f.$write(self.$build_markdown_header(
                 self.$extract_resource_name(resource.path), 2
             ))
-            if (resource.description);
+            if (resource.description)
             f.$writeln(resource.description + "\n\n");
             // (Array.isArray(specifications) ? specifications : [specifications]).forEach(function(spec){
             var spec = findSpec(resource);
@@ -93,9 +96,27 @@ module.exports = function SwaggerToMarkdown(options) {
         this.$writeln('** ' + k + ' ' + v.dataType);
         this.$write_prop(v.properties, self);
     }
+    function sortDeep(a,b){
+        if (!(a || a.length)) return -1;
+        if (!(b && b.length)) return 1;
+        var pos = 0;
+        var ap = a[0],bp = b[0];
+        while(ap !== void(0) && bp !== void(0) ){
+            if (ap !== bp)
+                return ap > bp ? 1 : ap < bp ? -1  :0;
+            pos++;
+            ap = a[pos], bp = b[pos]
+
+        }
+
+        return ap > bp ? 1 : ap < bp ? -1  :0;
+
+    }
     this.$write_specification = function (f, base_path, resource, specification) {
         var apis = specification.apis;
-        return apis && apis.map(function (method) {
+        return apis && apis.sort(function(a,b){
+            return sortDeep(a && a.path.split('/'), b && b.path);
+        }).map(function (method) {
             return method["operations"].map(function (operation) {
                 return self.$write_operation(f, base_path, resource, operation, method["path"])
             })
@@ -269,6 +290,7 @@ module.exports = function SwaggerToMarkdown(options) {
                 console.error('no model named [' + name + ']');
                 return;
             }
+            f.$writeln('Type '+name+"\n");
             self.$write_json(f, model);
             f.$writeln('');
             model && model.properties && Object.keys(model.properties).forEach(function (key) {
@@ -281,6 +303,7 @@ module.exports = function SwaggerToMarkdown(options) {
         }
 
         if (b.length) {
+            f.$writeln('');
             f.$write(self.$build_markdown_header("Body Parameters", 5));
             b.forEach(function (arg) {
                 writeModels(arg.dataType, self.models);
@@ -289,14 +312,15 @@ module.exports = function SwaggerToMarkdown(options) {
 
         var p = args.filter(filter('path'));
         if (p.length) {
+            f.$writeln('');
             f.$write(this.$build_markdown_header("Path Parameters", 5));
-            var str = ['<table><thead><tr><th>Name</th><th>Data Type</th><th>Description</th><th>Default Values</th></tr></thead><tbody>']
+            var str = ['<table><thead><tr><th>Name</th><th>Data Type</th><th>Description</th></tr></thead><tbody>']
             p.forEach(function (argument) {
                 str.push('<tr><td>' +
                     (argument.required ? '*' : '') +
                     '{' + argument.name + '}'
 
-                    + '</td><td>' + argument.dataType + '</td><td>' + (argument.description || '') + '</td><td>' + (argument.allowableValues && argument.allowableValues.join(', ') || argument.defaultValue || '') + '</td></tr>')
+                    + '</td><td>' + argument.dataType + '</td><td>' + (argument.description || '') + '</td></tr>')
             });
             str.push('</tbody></table>');
             f.$writeln(str.join('\n'));
@@ -337,7 +361,9 @@ module.exports = function SwaggerToMarkdown(options) {
             'Although the service design at this point is intended to support no more beyond the scope of ' + options.apiname);
         f.$writeln("\n")
         f.$write(this.$build_markdown_header("JSON Schema", 2));
-        f.$writeln('The content of JSON request/response are specified as [JSON Schemas](http://json-schema.org/latest/json-schema-core.html). JSON Schema is to JSON as XML Schema is to XML, effectively a formal content for a documents structure expressed in the format itself. JSON Schema lends itself to being easily human readable which can significantly help with services design discussions.       The service contracts expressed in this document use version 4 of the JSON schema draft. There are a number of validators available for Java, Node and Ruby.\n')
+        f.$writeln('The content of JSON request/response are specified as [JSON Schemas](http://json-schema.org/latest/json-schema-core.html). JSON Schema is to JSON as XML Schema is to XML, effectively a formal content for a documents structure expressed in the format itself. JSON Schema lends itself to being easily human readable which can significantly help with services design discussions.       The service contracts expressed in this document use version 4 of the JSON schema draft. There are a number of validators available for Java, Node and Ruby. ' +
+            'The service contracts are written following the Swagger specification. Occasionally there are discrepancies between strict json-schema and Swagger, in which case we follow the Swagger specification'+
+            '\n')
 
         f.$writeln(this.$build_markdown_header("Services\n", 1));
 
