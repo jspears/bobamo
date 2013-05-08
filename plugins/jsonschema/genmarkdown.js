@@ -1,3 +1,5 @@
+var moment = require('moment'), J=require('../../lib/stringify');
+
 function $titlelize(str) {
     return Array.prototype.splice.call(arguments, 0).map(function (str) {
         return ("" + str).split(/[^a-zA-Z0-9]/).filter(function (v) {
@@ -7,7 +9,6 @@ function $titlelize(str) {
             }).join(' ');
     }).join(' ')
 }
-var moment = require('moment');
 
 module.exports = function SwaggerToMarkdown(options) {
     var resources = options.resourcefile;
@@ -69,10 +70,13 @@ module.exports = function SwaggerToMarkdown(options) {
         apis && apis.sort(function(a,b){
             return a.path > b.path ? 1 : a.path== b.path ? 0 : -1;
         }).forEach(function (resource, index) {
+            f.$write("\n\n\n\n----\n\n");
             f.$write(self.$build_markdown_header(
                 self.$extract_resource_name(resource.path), 2
             ))
+
             if (resource.description)
+
             f.$writeln(resource.description + "\n\n");
             // (Array.isArray(specifications) ? specifications : [specifications]).forEach(function(spec){
             var spec = findSpec(resource);
@@ -86,7 +90,7 @@ module.exports = function SwaggerToMarkdown(options) {
         return this;
     };
     this.$write_json = function (f, model) {
-        f.$writeln('\n```javascript\n' + JSON.stringify(model, null, 4) + '\n```\n');
+        f.$writeln('\n```javascript\n' + J.stringify(model, 4) + '\n```\n');
     }
     this.$write_model = function (f, model, modelName) {
         f.$writeln(self.$build_markdown_header(modelName, 2) + "\n");
@@ -118,6 +122,7 @@ module.exports = function SwaggerToMarkdown(options) {
             return sortDeep(a && a.path.split('/'), b && b.path);
         }).map(function (method) {
             return method["operations"].map(function (operation) {
+
                 return self.$write_operation(f, base_path, resource, operation, method["path"])
             })
         });

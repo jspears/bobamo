@@ -81,7 +81,7 @@ define(['Backbone.Form', 'jquery', 'underscore', 'libs/bootstrap/js/bootstrap-ty
 
         render:function () {
             this.$el.attr('type', this.options.dataType || this.dataType);
-            this.$el.val(this.options.value);
+            this.$el.val(this.value || this.options.value);
             var self = this;
             var $el = this.$el.parent();
             var schema = this.schema;

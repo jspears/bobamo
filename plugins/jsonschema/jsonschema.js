@@ -6,7 +6,7 @@ var bobamo = require('../../index'),
     path = require('path'),
     fs = require('fs'),
     generateClient = require('./generate-client'),
-    u = require('../../lib/util'), _u = require('underscore'),
+    u = require('../../lib/util'), J=require('../../lib/stringify'), _u = require('underscore'),
     PluginApi = bobamo.PluginApi, util = require('util');
 var defaultConf = {
     scala: process.env['SCALA_HOME'],
@@ -156,7 +156,7 @@ JsonSchemaPlugin.prototype.filters = function () {
             var pdc = require('node-pandoc');
             var docType = type.replace(docRe, "$1");
             // console.log('markdown', md);
-            var opts = []
+            var opts = [ '--data-dir='+process.cwd()+'/', '-S']
             var conf = _u.extend({title: appModel.title}, this.conf, req.query, req.body);
             if (conf.pandoc_template)
                 opts.push('--template=' + process.cwd() + '/' + conf.pandoc_template);

@@ -167,6 +167,7 @@ module.exports = {
         var K = inflection.capitalize(k);
         var pa = param.post(k+"Request", v.title + " object that needs to be added to the store");
         pa.dataTypeModel = v;
+        v.schema = _u.omit(v.schema, '_id', '_v')
         return {
             "notes":"adds a " + K + " to the store",
             "summary":"Add a new " + K + " to the store "+(summary || ''),

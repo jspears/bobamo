@@ -12,7 +12,7 @@ var swe = swagger.errors;
 
 var Spec = function (args, finder, path) {
     var display = finder.display || {};
-    var _responseModel;
+    var _responseModel, _requestModel;
     this.responseModel = function () {
         if (_responseModel)
             return _responseModel;
@@ -23,6 +23,7 @@ var Spec = function (args, finder, path) {
         _responseModel = new Model(modelName, [display.responseModel])
         return  _responseModel;
     }
+
     this.__defineGetter__('errorResponses', function () {
         var errorResponses = util.find(errorResponses, args);
         if (errorResponses && errorResponses.length) {
