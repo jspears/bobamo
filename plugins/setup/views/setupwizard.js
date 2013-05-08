@@ -41,6 +41,9 @@ define(includes, function (_, B, Form, Edit, Modal, template) {
         fieldsets: fieldsets,
         createTemplate: _.template('<i class="icon-globe"></i> <%=title%>'),
         isWizard: true,
+        events:{
+            'click .save':'onSave'
+        },
         buttons: {
 //            'right': [
 //                {
