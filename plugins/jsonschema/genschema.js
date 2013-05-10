@@ -48,8 +48,12 @@ module.exports = {
         var walkJson = function (schema, properties, required) {
             _u.each(schema, function eachWalkJson(v, ok) {
                 var k = ok.split('.').pop();
-                if (!v || excludeDerived && v.derived) {
+                if (!v){
                     console.log('walkSchema v is null for', k);
+                    return true;
+                }
+                if (excludeDerived && v.derived) {
+                    console.log('property is derived', k);
                     return true;
                 }
                 var subJson = properties[k] || (properties[k] = {});

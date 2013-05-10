@@ -161,7 +161,6 @@ module.exports = function SwaggerToMarkdown(options) {
     this.$write_response = function (f, operation) {
 
         var typeRe = /List\[([^\]]*)\]/;
-        f.$writeln('Type: ' + operation.responseClass);
         var type = operation.responseClass.replace(typeRe, '$1');
         this.$write_model_safe(f, type);
     }
@@ -175,6 +174,7 @@ module.exports = function SwaggerToMarkdown(options) {
         var m = self.models[type];
         if (m && !written[type]) {
             written[type] = true
+            f.$writeln(">**Type:** "+type);
             this.$write_json(f, m);
             each(m.properties, function (v, k) {
 
@@ -238,7 +238,7 @@ module.exports = function SwaggerToMarkdown(options) {
 
     this.$write_errors = function (f, errors) {
         if (!(errors && errors.length)) {
-            f.$write("* None\n");
+            f.$write(">*None Defined*\n");
             return null;
         }
 
@@ -295,7 +295,7 @@ module.exports = function SwaggerToMarkdown(options) {
                 console.error('no model named [' + name + ']');
                 return;
             }
-            f.$writeln('Type '+name+"\n");
+            f.$writeln('>**Type:** '+name+"\n");
             self.$write_json(f, model);
             f.$writeln('');
             model && model.properties && Object.keys(model.properties).forEach(function (key) {

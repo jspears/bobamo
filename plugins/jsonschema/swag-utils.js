@@ -29,10 +29,11 @@ module.exports = {
 
             if (t == 'datetime' || t == 'date')
                 return 'Date'
-
+            if ( t == 'checkbox')
+                return 'boolean'
 
             if (t == 'integer' || t == 'int')
-                return 'int';
+                return 'integer';
 
             if (t == 'list' || t == 'array')
                 return 'array';

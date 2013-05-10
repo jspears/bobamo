@@ -40,12 +40,12 @@ module.exports.resourceFor = function(model, swagUrl, version, resolver){
            return swagger[method].call(swagger, model, modelName);
     }
     _u.each(_u.flatten([
-//        isAllowed('find'),
-//        isAllowed('findById'),
-//        isAllowed('create'),
-        isAllowed('update')
-//        isAllowed('remove'),
-//        swagger.finders(model, modelName)
+        isAllowed('find'),
+        isAllowed('findById'),
+        isAllowed('create'),
+        isAllowed('update'),
+        isAllowed('remove'),
+        swagger.finders(model, modelName)
 
     ]), function forEachOperation(ret,v) {
         if (!ret){

@@ -156,7 +156,7 @@ JsonSchemaPlugin.prototype.filters = function () {
             var pdc = require('node-pandoc');
             var docType = type.replace(docRe, "$1");
             // console.log('markdown', md);
-            var opts = [ '--data-dir='+process.cwd()+'/', '-S']
+            var opts = [ '--data-dir='+process.cwd()+'/', '--variable=CWD:'+process.cwd()]
             var conf = _u.extend({title: appModel.title}, this.conf, req.query, req.body);
             if (conf.pandoc_template)
                 opts.push('--template=' + process.cwd() + '/' + conf.pandoc_template);
@@ -174,7 +174,6 @@ JsonSchemaPlugin.prototype.filters = function () {
                 var ext = docType;
                 var fileName = bobamo.inflection.hyphenize((appModel.title + ' ' + appModel.version).replace(/\s*/, '')) + '.' + ext;
                 if (em) {
-                    ext = em.ext;
                     res.setHeader('Content-Type', em.contentType);
                 } else {
                     res.setHeader("Content-Transfer-Encoding", "binary");
