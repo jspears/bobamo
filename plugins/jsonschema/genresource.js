@@ -63,8 +63,16 @@ module.exports.resourceFor = function(model, swagUrl, version, resolver){
                 var pType = su.typeNotBuiltin(v.dataType);
                 if (pType){
                     if (!doc.models[pType]){
-                        doc.models[pType] = swagger.modelToSchema(v.dataTypeModel || resolver(pType),doc.models, v.transactional, true);
+                        var _v = ret.httpMethod === 'POST';
+                        var _model = doc.models[pType] = swagger.modelToSchema( v.dataTypeModel || resolver(pType),doc.models, v.transactional, true, _v);
+
                         doc.models[pType].id = pType;
+                        if (_v && _model){
+                            delete _model.properties._id;
+                            delete _model.properties._v;
+                            delete _model.properties.__v;
+
+                        }
                         delete v.dataTypeModel;
                     }
                 }
@@ -78,9 +86,9 @@ module.exports.resourceFor = function(model, swagUrl, version, resolver){
                 doc.models[rName].id = rName;
             }
         }
-        function resolve(){
+        function resolve(transaction, hasId, version){
             Object.keys(doc.models).filter(function(v){ return !doc.models[v]}).forEach(function(k){
-                doc.models[k] = swagger.modelToSchema(resolver(k), doc.models);
+                doc.models[k] = swagger.modelToSchema(resolver(k), doc.models, transaction, hasId, version);
                 doc.models[k].id = k;
                 resolve();
             });

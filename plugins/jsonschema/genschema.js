@@ -17,12 +17,13 @@ var Model = bobamo.DisplayModel;
 
 
 module.exports = {
-    modelToSchema:function doModelToSchema(m, models, hasIdCallback, excludeDerived) {
+    modelToSchema:function doModelToSchema(m, models, hasIdCallback, excludeDerived, excludeVersion) {
         if (!models) models = {};
         var noId = true;//hasIdCallback && hasIdCallback(m); // !(pluginManager.appModel.modelPaths[m.modelName || m]);
         var model = m.schema;
         var description = m.description || m.help || m.title;
         var transactional = m.transactional === false  ? false :  true;
+
         var jsonSchema = {
             //    "id":"http://some.site.somewhere/entry-schema#",
             "$schema":"http://json-schema.org/draft-04/schema#",
@@ -30,20 +31,19 @@ module.exports = {
             id:m.modelName,
             required:[],
             description:description,
-            properties:transactional ? (function () {
-                return _u.extend({
+            properties: _u.extend(excludeVersion  ? {} : {
                     _v:{
-                        type:'number',
+                        type:'integer',
                         description:'Version identifier for current record, needed for optimistic locking'
                     }
 
-                }, noId ? {} : {
+                }, excludeVersion ? {} : {
                     _id:{
-                        type:'string',
+                        type:'number',
                         description:'Identifier for "' + m.modelName + '"'
                     }
-                });
-            })() :{}
+                })
+
         };
         var walkJson = function (schema, properties, required) {
             _u.each(schema, function eachWalkJson(v, ok) {
@@ -71,7 +71,7 @@ module.exports = {
                     if (ref) {
                         if (!models[ref]) {
                             var sm = new Model(ref, [v]);
-                            models[ref] = this.modelToSchema(sm, models, hasIdCallback);
+                            models[ref] = this.modelToSchema(sm, models, hasIdCallback, hasIdCallback, excludeDerived, excludeVersion);
                         }
                         if (multiple) {
                             subJson.items = {
@@ -147,12 +147,11 @@ module.exports = {
     update:function (v, k) {
         var summary = (v.methods && v.methods.update && v.methods.update.summary || '');
         var K = inflection.capitalize(k);
-        var pa = param.post(k+"Request", v.title + " object that needs to be added to the store")
+        var pa = param.post(k+"PutRequest", v.title + " will update the "+ K+" store")
         pa.dataTypeModel = v;
+        pa.paramType = 'body';
+
         return {
-//                "path":"/" + k,            "parameters":[param.path("id", "ID of " + v.modelName, "string")],
-
-
             "notes":"Updates a " + K + " in the store",
             "httpMethod":"PUT",
             "summary":"Update an existing " + v.title.toLowerCase() +(summary || ''),
@@ -160,7 +159,7 @@ module.exports = {
             "errorResponses":[swe.invalid('id'), swe.notFound(k), swe.invalid('input')],
             "allowMultiple":false,
             "paramType":"body",
-
+            "dataType":k,
             responseClass:"void",
             "nickname":"update"
         }
@@ -169,9 +168,8 @@ module.exports = {
         var summary = (v.methods && v.methods.create && v.methods.create.summary || '');
 
         var K = inflection.capitalize(k);
-        var pa = param.post(k+"Request", v.title + " object that needs to be added to the store");
+        var pa = param.post(k+"PostRequest", v.title + " object that needs to be added to the "+ K+" store");
         pa.dataTypeModel = v;
-        v.schema = _u.omit(v.schema, '_id', '_v')
         return {
             "notes":"adds a " + K + " to the store",
             "summary":"Add a new " + K + " to the store "+(summary || ''),
@@ -180,7 +178,6 @@ module.exports = {
             "errorResponses":[swe.invalid('input')],
             "nickname":"add",
             "dataType":k,
-//            "dataTypeModel":v,
             "allowMultiple":false,
             "paramType":"body",
             responseClass:"void"

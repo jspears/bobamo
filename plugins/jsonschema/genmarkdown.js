@@ -129,11 +129,11 @@ module.exports = function SwaggerToMarkdown(options) {
     };
 
     this.$write_operation = function (f, base_path, resource, operation, path) {
-        f.$writeln(this.$build_markdown_header(operation.httpMethod + ' ' + path + "\n", 2));
+        f.$writeln(this.$build_markdown_header(operation.httpMethod + ' ' + path + "\n", 3));
         if (!(operation.summary && operation.nickname)) {
             f.$write(this.$build_markdown_header("[Please add operation summary information to the summary section]\n\n", 4))
         } else {
-            f.$write(this.$build_markdown_header((operation.summary || operation.nickname) + "\n", 4))
+            f.$write((operation.summary || operation.nickname) + "\n")
         }
 
         if (!operation.notes) {
@@ -144,12 +144,14 @@ module.exports = function SwaggerToMarkdown(options) {
         f.$writeln('');
         f.$write(this.$build_markdown_header("Definition", 4));
         f.$write("\n\n");
+        f.$write(">**Example:**")
         this.$write_code_block(f, operation.httpMethod + " " + path);
         f.$write("\n\n");
         this.$write_arguments(f, operation.parameters);
         f.$write("\n\n");
 
         f.$write(this.$build_markdown_header("Response Schema", 4));
+
         this.$write_response(f, operation);
         f.$write("\n\n");
 
@@ -162,6 +164,10 @@ module.exports = function SwaggerToMarkdown(options) {
 
         var typeRe = /List\[([^\]]*)\]/;
         var type = operation.responseClass.replace(typeRe, '$1');
+//        f.$writeln('>**'+operation.responseClass.replaceAll('[', '[[').replaceAll(']',']]')+"**\n");
+        if (typeRe.test(operation.responseClass))
+            f.$writeln("List[["+type+"]]\n");
+        f.$writeln(">**")
         this.$write_model_safe(f, type);
     }
     /**
@@ -264,19 +270,42 @@ module.exports = function SwaggerToMarkdown(options) {
             return v.paramType == type;
         }
     };
+    this.$write_param_header = function(str){
+        f.$write(this.$build_markdown_header(str, 5));
+    }
+    function writeModels(name, models) {
+        var model = name && models && models[name];
+        if (!model) {
+            console.error('no model named [' + name + ']');
+            return;
+        }
+        f.$writeln('>**Type:** '+name+"\n");
+        self.$write_json(f, model);
+        f.$writeln('');
+        model && model.properties && Object.keys(model.properties).forEach(function (key) {
+            var v = model.properties[key];
+            var ref = v && v.items && v.items.$ref;
+            if (ref)
+                writeModels(ref, models);
+        });
 
+    }
+    function sortOp(a,b){
+        if (!a) return 0;
+        if (!b) return -1;
+        return a.name > b.name ? 1 : a.name == b.name ? 0 : -1;
+    }
     this.$write_arguments = function (f, args) {
-        f.$write(this.$build_markdown_header("Request Parameters", 4));
 
         if (!(args && args.length)) {
-            f.$write("* None\n");
+            self.$write_param_header("No Parameters");
             return null;
         }
-        var q = args.filter(filter('query'));
+        var q = args.filter(filter('query')).sort(sortOp);
 
         if (q.length) {
             var str = ['<table><thead><tr><th>Name</th><th>Data Type</th><th>Description</th><th>Default Values</th></tr></thead><tbody>']
-            f.$write(this.$build_markdown_header("Query Parameters", 5));
+            self.$write_param_header("Query Parameters");
             q.forEach(function (argument) {
                 str.push('<tr><td>' +
                     (argument.required ? '*' : '') +
@@ -289,33 +318,17 @@ module.exports = function SwaggerToMarkdown(options) {
         }
         var b = args.filter(filter('body'));
 
-        function writeModels(name, models) {
-            var model = name && models && models[name];
-            if (!model) {
-                console.error('no model named [' + name + ']');
-                return;
-            }
-            f.$writeln('>**Type:** '+name+"\n");
-            self.$write_json(f, model);
-            f.$writeln('');
-            model && model.properties && Object.keys(model.properties).forEach(function (key) {
-                var v = model.properties[key];
-                var ref = v && v.items && v.items.$ref;
-                if (ref)
-                    writeModels(ref, models);
-            });
 
-        }
 
         if (b.length) {
             f.$writeln('');
-            f.$write(self.$build_markdown_header("Body Parameters", 5));
+            self.$write_param_header("Body Parameters");
             b.forEach(function (arg) {
                 writeModels(arg.dataType, self.models);
             });
         }
 
-        var p = args.filter(filter('path'));
+        var p = args.filter(filter('path')).sort(sortOp);
         if (p.length) {
             f.$writeln('');
             f.$write(this.$build_markdown_header("Path Parameters", 5));
@@ -343,12 +356,9 @@ module.exports = function SwaggerToMarkdown(options) {
         f.$write(this.$build_markdown_header('About', 2));
         f.$write('<table><thead>' +
             '<tr><th colspan="3">Authors: ' + (options.authors ? options.authors.join(', ') : '' ) + '</th></tr>' +
-            '<tr><th colspan="3">Revisions</th></tr>' +
+            '<tr><th colspan="3">Revisions <small>(Current API: '+api_version+')</small> </th></tr>' +
             '<tr><th>Date</th><th>Version</th><th>Notes</th></tr></thead><tbody>');
 
-        if (options.modified) {
-            f.$write('<tr><td>' + moment(options.modified).format("MM/DD/YYYY") + '</td><td>' + api_version + '</td><td>' + (options.description || 'current api') + '</td></tr>');
-        }
         if (options.revisions) {
             options.revisions.forEach(function (v, k) {
                 f.$write('<tr><td>' + moment(new Date(v.modified)).format("MM/DD/YYYY") + '</td><td>' +
@@ -370,6 +380,9 @@ module.exports = function SwaggerToMarkdown(options) {
             'The service contracts are written following the Swagger specification. Occasionally there are discrepancies between strict json-schema and Swagger, in which case we follow the Swagger specification'+
             '\n')
 
+        if (options.specification){
+            f.$writeln(options.specification);
+        }
         f.$writeln(this.$build_markdown_header("Services\n", 1));
 
         return f.$write("\n\n");
