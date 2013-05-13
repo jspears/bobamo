@@ -3,6 +3,9 @@ if (typeof define !== 'function') {
 }
 define(['underscore'], function (_) {
     "use strict";
+    function message(ctx, type){
+        return ctx.errMessages && ctx.errMessages[type] || validators && validators.errMessages && validators.errMessages[type] || ctx.message;
+    }
     var helpers = {
         compileTemplate:function (str) {
             //Store user's template options
@@ -57,7 +60,7 @@ define(['underscore'], function (_) {
             var vals = _.isString(e) ? e.split(',') : e;
             options = _.extend({
                 type:'enum',
-                message:validators.errMessages && validators.errMessages['enum'] || validators['enum'].message
+                message:message(this, 'enum')
             }, options);
             return function onEnum(value) {
                 //Don't check empty values (add a 'required' validator for this)
@@ -85,7 +88,7 @@ define(['underscore'], function (_) {
 
             options = _.extend({
                 type:'minlength',
-                message:this.errMessages.minlength
+                message:message(this, 'minlength')
             }, options);
             var val = parseInt(options.minlength);
             return function onMinLength(value, attrs) {
@@ -113,7 +116,7 @@ define(['underscore'], function (_) {
 
             options = _.extend({
                 type:'maxlength',
-                message:this.errMessages.maxlength
+                message:message(this, 'maxlength')
             }, options);
             var val = parseInt(options.maxlength);
             return function onMaxLength(value, attrs) {
@@ -144,7 +147,7 @@ define(['underscore'], function (_) {
             check(options, 'min');
             options = _.extend({
                 type:'min',
-                message:this.errMessages.min
+                message:message(this, 'min')
             }, options);
             var val = parseFloat(options.min);
             return function min(value, attrs) {
@@ -170,7 +173,7 @@ define(['underscore'], function (_) {
             check(options, 'regexp');
             options = _.extend({
                 type:'regexp',
-                message:this.errMessages && this.errMessages.regexp
+                message:message(this, 'regexp')
             }, options);
             var re = new RegExp(options.regexp);
             return function regexp(value, attrs) {
@@ -198,7 +201,7 @@ define(['underscore'], function (_) {
 
             options = _.extend({
                 type:'max',
-                message:this.errMessages.max
+                message:message(this, 'max')
             }, options);
 
             var val = parseFloat(options.max);
@@ -221,7 +224,7 @@ define(['underscore'], function (_) {
 
             options = _.extend({
                 type:'required',
-                message:this.errMessages && this.errMessages.required
+                message:message(this, 'required')
             }, options);
 
             return function (value) {
@@ -243,7 +246,7 @@ define(['underscore'], function (_) {
             check(options, 'match');
             options = _.extend({
                 type:'match',
-                message:this.errMessages && this.errMessages.match
+                message:message(this, 'match')
             }, options);
             return function (value, attrs) {
                 if (empty(value))
@@ -268,7 +271,7 @@ define(['underscore'], function (_) {
             check(options, 'minitems');
             options = _.extend({
                 type:'minitems',
-                message:this.errMessages && this.errMessages.minitems
+                message:message(this, 'minitems')
             }, options);
             return function (value) {
                 if (empty(value))
@@ -291,7 +294,7 @@ define(['underscore'], function (_) {
             check(options, 'maxitems');
             options = _.extend({
                 type:'maxitems',
-                message:this.errMessages && this.errMessages.maxitems
+                message:message(this, 'maxitems')
             }, options);
             return function (value) {
                 if (empty(value))

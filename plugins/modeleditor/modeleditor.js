@@ -429,8 +429,7 @@ EditPlugin.prototype.routes = function () {
             })
         })
     }.bind(this));
-    var appModel = this.pluginManager.appModel;
-    this.app.put(base + '/admin/backbone/:modelName?', function (req, res) {
+    var saveBackboneModel= function(req,res){
         var model = req.body;
         var persistPlugin = this.pluginManager.loadedPlugins[model.dbType || 'mongoose'];
 
@@ -452,7 +451,9 @@ EditPlugin.prototype.routes = function () {
                 payload: {modelName: modelName}
             })
         })
-    }.bind(this));
+    }.bind(this);
+    this.app.put(base + '/admin/backbone/:modelName?', saveBackboneModel);
+    this.app.post(base + '/admin/backbone/:modelName?', saveBackboneModel);
     this.app.put(base + '/admin/view/:form/:model', function (req, res, next) {
         console.log('req form', req.params.form, req.params.model);
         res.send({
