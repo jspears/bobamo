@@ -30,6 +30,5 @@ define(['app', 'Backbone', 'underscore'], function (App, B, _) {
     });
     var state = new LoginStateModel();
     state.fetch();
-    //state.set({{html JSON.strigify(user)}})
     return state;
 });

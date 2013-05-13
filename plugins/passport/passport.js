@@ -1,103 +1,175 @@
-var PluginApi = require('../../index').PluginApi, util = require('util'), _u = require('underscore'), LocalStrategy = require('passport-local').Strategy, passport = require('passport'), crypto = require('crypto'), Model = require('../../lib/display-model');
+var bobamo = require('../../index'), PluginApi = bobamo.PluginApi, mongoose = bobamo.mongoose,
+    util = require('util'), _u = require('underscore'),  passport = require('passport'), crypto = require('crypto'), Model = require('../../lib/display-model');
 
-
+var defaultConf = {
+    usernameField:'username',
+    passwordField:'password',
+    idField:'_id',
+    strategy:'passport-local',
+    hash:'sha1'
+};
 var PassportPlugin = function () {
     PluginApi.apply(this, arguments);
-    if (!this.options.authModel) {
-        throw new Error("authModel option is required");
-    }
-    this.usernameField = this.options.usernameField || 'username';
-    this.passwordField = this.options.passwordField || 'password';
+    this._install;
+    this.conf = defaultConf;
 
-    this.app.use(passport.initialize());
-    this.app.use(passport.session());
-
-
-    passport.use(this.options.strategy || new LocalStrategy(
-        function (username, password, done) {
-            var obj = {};
-            obj[this.usernameField] = username;
-            obj[this.passwordField] = password;
-            this.options.authModel.findOne(obj, function (err, u) {
-                console.log('err', err, 'found', obj, u != null);
-                done(err, u);
-            });
-        }.bind(this)
-    ));
-    passport.serializeUser(function (user, done) {
-        done(null, user._id);
-    });
-
-    passport.deserializeUser(function (id, done) {
-        this.options.authModel.findOne({_id:id}, function (err, user) {
-            done(err, user);
-        });
-    }.bind(this));
-    this.conf = _u.extend({model:this.options.authModel.modelName});
-    _u.each(['usernameField', 'passwordField', 'hash', 'digest'], function (k) {
-        this.conf[k] = this.options[k]
-    }, this)
-
-    this._appModel = {  header:{
-        'passport-menu':{
-            'passport':{
-                label:'Login',
-                href:'#/login'
+    this._appModel = {  header: {
+        'passport-menu': {
+            'passport': {
+                label: 'Login',
+                href: '#/login'
 
             }
         },
-        'admin-menu':{
-            'passport':{
-                label:'Configure Passport',
-                href:'#views/configure/passport'
+        'admin-menu': {
+            'passport': {
+                label: 'Configure Passport',
+                href: '#views/configure/passport'
             }
         }
     }};
 }
-
 util.inherits(PassportPlugin, PluginApi);
+PassportPlugin.prototype.findByUsernamePassword = function(username, password, done){
+    var obj = {};
+    obj[this.conf.usernameField] = username;
+    obj[this.conf.passwordField] = password;
+    var u = _.first(_.where(this.conf.users, {username:username, _password:this.doEncrypt(password)}));
+    if (u){
+        u._id = u.username;
+        return done(null, u);
+    }
+    mongoose.model(this.authModel).findOne(obj, function (err, u) {
+        console.log('err', err, 'found', obj, u != null);
+        done(err, u);
+    });
+}
+PassportPlugin.prototype.findById = function(id, done){
+    var u = _.first(_.where(this.conf.users, {username:id}));
+    if (u)
+        return done(null, u);
+    mongoose.model(this.authModel).findOne({
+        _id:id
+    }, function (err, u) {
+        console.log('err', err, 'found', obj, u != null);
+        done(err, u);
+    });
+}
+PassportPlugin.prototype.identify = function(user, done){
+    done(null, user[this.conf.idField]);
+}
+PassportPlugin.prototype.registerSave = function(){
+    var conf = this.conf;
+    var doEncrypt = this.doEncrypt.bind(this);
+    mongoose.schema(this.conf.authModel).pre('save', function (next) {
+        var password = this._doc[conf.passwordField];
+        if (password && password !== 'password') {
+            this.password = doEncrypt(password)
+        }
+        next();
+    });
+}
+
+PassportPlugin.prototype.install = function (strategy) {
+    if (this._install && this._install !== strategy) {
+        console.error('changing strategy this requires a restart\n');
+    }
+    if (this._install)
+        return;
+    strategy = strategy || 'password-local';
+    var Strategy;
+    try {
+        Strategy = require(strategy).Strategy;
+    }catch(e){
+        var error = {strategy:'Strategy could not be installed '+strategy+' run\n npm '+strategy };
+        return error;
+    }
+    this._install = strategy || true;
+    this.app.use(passport.initialize());
+    this.app.use(passport.session());
+
+    passport.use(strategy || new Strategy(this.findByUsernamePassword.bind(this)));
+    passport.serializeUser(this.identify.bind(this));
+    passport.deserializeUser(this.findById.bind(this));
+    this.registerSave();
+}
+
+PassportPlugin.prototype.configure = function (options) {
+    if (!options.authModel)
+        return {errors: [
+            {authModel: 'is required'}
+        ]}
+    _.each(options.user, function(u){
+        if (u.password)
+            u._password = this.doEncrypt(u.password, options.hash, options.digest);
+        delete u.password;
+    }, this);
+    _u.each(['usernameField', 'passwordField', 'idField', 'authModel', 'hash', 'digest', 'authModel', 'strategy'], function (k) {
+        this[k] = options[k]
+    },this.conf);
+    return this.install(options.strategy);
+
+}
+
 PassportPlugin.prototype.appModel = function () {
     return  this._appModel;
 }
 PassportPlugin.prototype.admin = function () {
     return new Model('passport', [
         {
-            schema:{
-                usernameField:{
-                    type:'Text',
-                    placeholder:this.usernameField || 'username',
-                    help:'The Field in the model to use as the unique identifier'
+            schema: {
+                usernameField: {
+                    type: 'Text',
+                    placeholder: this.usernameField || 'username',
+                    validators: [
+                        {type: 'required'}
+                    ],
+                    help: 'The Field in the model to use as the unique identifier'
                 },
-                passwordField:{
-                    type:'Text',
-                    placeholder:this.passwordField || 'password',
-                    help:'The field to use as a the password'
+                passwordField: {
+                    type: 'Text',
+                    placeholder: this.passwordField || 'password',
+                    validators: [
+                        {type: 'required'}
+                    ],
+                    help: 'The field to use as a the password'
                 },
-                hash:{
-                    type:'Select',
-                    options:['sha1', 'md5', 'sha256', 'sha512', 'none'],
-                    help:'Encode the hashed passsword (none) is not recommended'
+                hash: {
+                    type: 'Select',
+                    options: ['sha1', 'md5', 'sha256', 'sha512', 'none'],
+                    help: 'Encode the hashed passsword (none) is not recommended'
                 },
-                encoding:{
-                    type:'Select',
-                    options:['base64', 'hex'],
-                    help:'Encoding of the password base64 works just fine'
+                encoding: {
+                    type: 'Select',
+                    options: ['base64', 'hex'],
+                    help: 'Encoding of the password base64 works just fine'
                 },
-                model:{
-                    type:'Select',
-                    single:true,
-                    collection:'views/modeleditor/admin/schema-collection',
-                    help:'Which Schema to use as the user model'
+                authModel: {
+                    type: 'Select',
+                    single: true,
+                    validators: [
+                        {type: 'required'}
+                    ],
+                    collection: 'views/modeleditor/admin/schema-collection',
+                    help: 'Which Schema to use as the user model'
+                },
+                users:{
+                    type:'List',
+                    itemType:'Object',
+                    subSchema:{
+                        username:'Text',
+                        password:'Password'
+                    }
                 }
             },
-            url:this.pluginUrl + '/admin/configure',
-            fieldsets:[
-                {legend:"Passport Plugin", fields:['usernameField', 'passwordField', 'hash', 'encoding', 'model']}
+            url: this.pluginUrl + '/admin/configure',
+            fieldsets: [
+                {legend: "Passport Plugin", fields: ['usernameField', 'passwordField', 'hash', 'encoding', 'model']}
             ],
-            defaults:this.conf, //_u.extend({model:this.options.authModel.modelName}, this.config),
-            plural:'Passport',
-            title:'Passport Plugin',
-            modelName:'passport'
+            defaults: this.conf, //_u.extend({model:this.options.authModel.modelName}, this.config),
+            plural: 'Passport',
+            title: 'Passport Plugin',
+            modelName: 'passport'
         }
     ]);
 
@@ -109,11 +181,11 @@ PassportPlugin.prototype.ensureAuthenticated = function (req, res, next) {
 //    next();
     if (req.isAuthenticated && req.isAuthenticated())
         return  next();
-    res.send({status:1, message:'Not Authenticated'})
+    res.send({status: 1, message: 'Not Authenticated'})
 }
-PassportPlugin.prototype.doEncrypt = function (password) {
-    var hash = this.options.hash || 'sha1';
-    var digest = this.options.digest || 'base64';
+PassportPlugin.prototype.doEncrypt = function (password, hash, digest) {
+    var hash = hash || this.conf.hash || 'sha1';
+    var digest = digest || this.conf.digest || 'base64';
     return crypto.createHash(hash).update(password).digest(digest);
 }
 PassportPlugin.prototype.encryptCredentials = function (req, res, next) {
@@ -126,8 +198,8 @@ PassportPlugin.prototype.encryptCredentials = function (req, res, next) {
 };
 PassportPlugin.prototype.onAuth = function (req, res) {
     res.send({
-        status:0,
-        payload:req.user
+        status: 0,
+        payload: req.user
     });
 }
 PassportPlugin.prototype.logOut = function (req, res, next) {
@@ -138,38 +210,39 @@ PassportPlugin.prototype.logOut = function (req, res, next) {
 PassportPlugin.prototype.filters = function () {
     var app = this.app;
     var username = this.usernameField;
+    var appModel = this.pluginManager.appModel;
     app.get(this.baseUrl + '*', function (req, res, next) {
         res.locals('appModel', this.pluginManager.appModel)
         res.locals('user', req.user);
         var u = req.user;
         var obj = (u) ?
             {
-                label:u[username],
-                iconCls:'icon-user',
-                items:[
+                label: u[username],
+                iconCls: 'icon-user',
+                items: [
 
                     {
-                        label:'Edit Profile',
-                        href:'#/' + this.options.authModel.modelName + '/edit?id=' + u._id
+                        label: 'Edit Profile',
+                        href: '#/' + this.options.authModel.modelName + '/edit?id=' + u._id
                     },
                     {
-                        label:'Change Password',
-                        iconCls:'icon-lock',
-                        href:'#/passport/change_password'
+                        label: 'Change Password',
+                        iconCls: 'icon-lock',
+                        href: '#/passport/change_password'
                     },
                     {
-                        clsNames:'divider'
+                        clsNames: 'divider'
                     },
                     {
-                        label:'Logout',
-                        href:'/logout'
+                        label: 'Logout',
+                        href: '/logout'
                     }
                 ]
             }
                 :
             {
-                label:'Login',
-                href:'#/login'
+                label: 'Login',
+                href: '#/login'
             }
             ;
         this._appModel.header['passport-menu'].passport = obj
@@ -222,9 +295,9 @@ PassportPlugin.prototype.routes = function () {
         var body = req.body;
         if (!req.user) {
             return res.send({
-                status:0,
-                payload:{
-                    error:'Not Logged In'
+                status: 0,
+                payload: {
+                    error: 'Not Logged In'
                 }
             })
         }
@@ -232,9 +305,9 @@ PassportPlugin.prototype.routes = function () {
         if (hasLength(body.password, body.confirm_password, body.new_password)) {
             if (req.user.password != this.doEncrypt(body.password))
                 return res.send({
-                    status:0,
-                    error:{
-                        password:'Incorrect Password'
+                    status: 0,
+                    error: {
+                        password: 'Incorrect Password'
                     }
                 });
 
@@ -248,17 +321,17 @@ PassportPlugin.prototype.routes = function () {
                 return next();
             }
             return res.send({
-                status:0,
-                error:{
-                    new_password:'Password does not match'
+                status: 0,
+                error: {
+                    new_password: 'Password does not match'
                 }
             });
 
         }
         return res.send({
-            status:0,
-            error:{
-                new_password:'Password does not valid'
+            status: 0,
+            error: {
+                new_password: 'Password does not valid'
             }
         });
 
@@ -268,7 +341,7 @@ PassportPlugin.prototype.routes = function () {
 }
 PassportPlugin.prototype.authenticate = function (req, res, next) {
     var passfield = this.options.passwordField || 'password';
-    var authenticate = passport.authenticate('local', { failureRedirect:this.pluginUrl + '/check' });
+    var authenticate = passport.authenticate('local', { failureRedirect: this.pluginUrl + '/check' });
     if (req.body[passfield]) {
         this.encryptCredentials(req, res, function (err) {
             if (err) return next(err);

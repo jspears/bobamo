@@ -524,7 +524,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                     util.defaultOrSet(defaults, 'validators', []).push(v[0]);
 
                 } else {
-                    console.warn('can only handle client side regex/required/min/max validators for now', v)
+                   //: console.warn('can only handle client side regex/required/min/max validators for now', v)
                 }
             }
         })

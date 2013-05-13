@@ -31,13 +31,13 @@ module.exports = {
             id:m.modelName,
             required:[],
             description:description,
-            properties: _u.extend(excludeVersion  ? {} : {
+            properties: _u.extend(!transactional || excludeVersion  ? {} : {
                     _v:{
                         type:'integer',
                         description:'Version identifier for current record, needed for optimistic locking'
                     }
 
-                }, excludeVersion ? {} : {
+                }, !transactional || excludeVersion ? {} : {
                     _id:{
                         type:'number',
                         description:'Identifier for "' + m.modelName + '"'
@@ -45,6 +45,12 @@ module.exports = {
                 })
 
         };
+
+        if (!excludeVersion){
+            jsonSchema.required.push('_id');
+            jsonSchema.required.push('_v');
+        }
+
         var walkJson = function (schema, properties, required) {
             _u.each(schema, function eachWalkJson(v, ok) {
                 var k = ok.split('.').pop();
@@ -67,7 +73,7 @@ module.exports = {
                 var ref = v.modelName || v.ref;
 
                 if (v.subSchema) {
-                    if (!ref && multiple) ref = inflection.classJoin([m.modelName].concat(k.split('.')).join(' '));
+                    if (!ref && multiple) ref = inflection.classJoin([m.transaction].concat(k.split('.')).join(' '));
                     if (ref) {
                         if (!models[ref]) {
                             var sm = new Model(ref, [v]);

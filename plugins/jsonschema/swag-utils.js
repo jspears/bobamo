@@ -46,7 +46,7 @@ module.exports = {
     },
     params:function (v) {
         var p = [
-            param.q('skip', 'number of records to skip', 'int', false, false, null, 0),
+            param.q('skip',   'number of records to skip',    'int', false, false, null, 0),
             param.q('limit', 'limit the number of records', 'int', false, false, null, 10)
         ]
         var filters = [], sort = [], populate = [];
@@ -58,8 +58,8 @@ module.exports = {
             var type = vv.schemaType;
             if (type == 'Date' || type == 'Number' || type == 'String') {
                 filters.push(param.q('filter[' + k + ']', 'filter '+type +' fields on ' + k + ' supports &gt;, &lt; modifiers', 'string', false, false));
-                sort.push(param.q('sort[' + k + ']', 'sort on ' + k + ' direction ascending 1, descending -1', 'int', false, false, [1, -1], 1));
-            } else {
+                sort.push(param.q('sort[' + k + ']', 'sort on ' + k + ' direction ascending 1, descending -1', 'int', false, false, [1,  -1]));
+            } else if (vv.subSchema){
                 populate.push(k)
             }
 

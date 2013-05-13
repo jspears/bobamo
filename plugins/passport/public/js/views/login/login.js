@@ -1,4 +1,4 @@
-define(['Backbone', 'jquery', 'underscore', 'passport/login-state', 'text!passport/tpl/login.html'], function (Backbone, $, _, loginState, loginTmpl) {
+define(['Backbone', 'jquery', 'underscore', 'passport/views/login-state', 'text!passport/views/tpl/login.html'], function (Backbone, $, _, loginState, loginTmpl) {
 
     var LoginView = Backbone.View.extend({
         el:        '#content',
