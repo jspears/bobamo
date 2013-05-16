@@ -219,7 +219,8 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
 
         $.when.apply($, wait).then(_.bind(function (args) {
             var $fieldsetContainer = $('.bbf-tmp', $form);
-            $fieldsetContainer.append.apply($fieldsetContainer, obj);
+            var $append =$(obj.legend || obj).add(obj.fields);
+            $fieldsetContainer.append($append);
             $fieldsetContainer.children().unwrap();
 
             //Set the template contents as the main element; removes the wrapper element

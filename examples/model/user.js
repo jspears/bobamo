@@ -1,4 +1,4 @@
-var crypto = require('crypto');
+
 module.exports = function (bobamo) {
 
     var mongoose = bobamo.mongoose, Schema = mongoose.Schema
@@ -70,22 +70,12 @@ module.exports = function (bobamo) {
         method: 'POST', list_fields: ['username', 'twitter']
     }
     function sha1b64(password) {
-        return crypto.createHash('sha1').update(password).digest('base64');
+        return require('crypto').createHash('sha1').update(password).digest('base64');
     }
-
-//UserSchema.virtual('password').set(
-//    function (password) {
-//        this.set('_password', sha1b64(password));
-//    }).get(function () {
-//        return this.get('_password');
-//    });
 
     UserSchema.pre('save', function (next) {
 
-        var _this = this;
-        if (this._doc.password && this._doc.password != 'password') {
-            this.password = sha1b64(_this._doc.password)
-        }
+
         if (this.isNew)
             this.created_at = Date.now();
         else

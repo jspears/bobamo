@@ -87,13 +87,13 @@ define([
                 }
                 var fields = this.form.fields;
                 var fField = null;
-                _.each(errors.error && errors.error.errors || errors, function (v, k) {
+                _.each(errors.error && (errors.error.errors || errors.error) || errors, function (v, k) {
                     var path = v.path || k;
                     var field = fields[path];
                     if (field && field.$el)
                         field.$el.addClass('error');
                     var $e = $(
-                        replacer('<li><span class="alert-heading pointer">"{path}" is in error: </span>{message}</li>', _.extend({path: path}, v))).data({'scroll-to': field && field.$el, field: path});
+                        replacer('<li><span class="alert-heading pointer">"{path}" is in error: </span>{message}</li>', _.extend({path: path, message: v.message || v}, v))).data({'scroll-to': field && field.$el, field: path});
                     fField = path;
                     $error.prepend($e);
                 }, this);

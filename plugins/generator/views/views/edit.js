@@ -12,7 +12,7 @@ define([
     , function (_,EditView, collection, Model, template) {
     "use strict";
 
-    var fieldsets //= ${nl}{{json model.fieldsetsFor() }};
+    var fieldsets // ${nl}={{json model.fieldsetsFor() }};
     return EditView.extend({
         fieldsets:fieldsets,
         template:_.template(template),
