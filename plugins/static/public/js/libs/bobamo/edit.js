@@ -135,6 +135,9 @@ define([
         prepare: function () {
 
         },
+        onSaveAs:function(){
+            console.log('not implemented');
+        },
         onSave: function (e) {
             if (e && e.preventDefault)
                 e.preventDefault();

@@ -13,7 +13,6 @@ var PassportPlugin = function () {
     this._install;
     this.conf = defaultConf;
     this.app.use(passport.initialize());
-    this.app.use(passport.session());
 
     this._appModel = {  header: {
         'passport-menu': {
@@ -54,15 +53,21 @@ PassportPlugin.prototype.findByUsernamePassword = function (username, password, 
     });
 }
 PassportPlugin.prototype.findById = function (id, done) {
+    console.log('findById', id);
     var u = _.first(_.where(this.conf.users, {username: id}));
     if (u)
         return done(null, u);
     var obj = {};
     obj[this.conf.idField] = id;
+    if (this.conf.authModel){
     mongoose.model(this.conf.authModel).findOne(obj, function (err, u) {
         console.log('err', err, 'found', obj, u != null);
+
         done(err, u);
     });
+    }else{
+        done(null)
+    }
 }
 
 PassportPlugin.prototype.identify = function (user, done) {
@@ -98,6 +103,7 @@ PassportPlugin.prototype.install = function (strategy) {
     }
     this._install = strategy;
     try {
+        this.app.use(passport.session());
 
         passport.use(strategy, new Strategy(this.findByUsernamePassword.bind(this)));
         passport.serializeUser(this.identify.bind(this));
@@ -112,10 +118,12 @@ PassportPlugin.prototype.install = function (strategy) {
 
 PassportPlugin.prototype.configure = function (options) {
     options = _u.extend({}, defaultConf, options);
-    if (!options.authModel)
-        return {errors: [
-            {authModel: 'is required'}
-        ]}
+    if (!(options.users || options.authModel))
+        return {
+        users:{
+            message:'Need at least one user'
+        }
+    }
     _.each(options.users, function (u) {
         if (u.password)
             u._password = this.doEncrypt(u.password, options.hash, options.digest);
@@ -164,9 +172,6 @@ PassportPlugin.prototype.admin = function () {
                 authModel: {
                     type: 'Select',
                     single: true,
-                    validators: [
-                        {type: 'required'}
-                    ],
                     collection: 'views/modeleditor/admin/schema-collection',
                     help: 'Which Schema to use as the user model'
                 },

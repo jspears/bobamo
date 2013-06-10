@@ -220,7 +220,7 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
         $.when.apply($, wait).then(_.bind(function (args) {
             var $fieldsetContainer = $('.bbf-tmp', $form);
             var $append =[].concat(obj.legend || obj)
-                if (obj.fields) $append.push(obj.fields);
+                if (obj.fields) $append = $append.concat(obj.fields);
             $fieldsetContainer.append.apply($fieldsetContainer, $append);
             $fieldsetContainer.children().unwrap();
 
