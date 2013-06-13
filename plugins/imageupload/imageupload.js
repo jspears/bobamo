@@ -37,6 +37,7 @@ var options = {
 };
 var ImageUploadPlugin = function () {
     Plugin.apply(this, arguments);
+
     this.defaults = options;
     var dir = process.cwd();
     if (!options.directory)
@@ -140,32 +141,35 @@ ImageUploadPlugin.prototype.renderers = function () {
 ImageUploadPlugin.prototype.admin = function () {
     return this._admin;
 }
-ImageUploadPlugin.prototype._admin = new Model('imageupload', [
-    {
-        schema: {
-            convert: {
-                type: 'Text',
-                help: 'Path to imagemagick\'s convert, this value can only be changed by editing the bobamo.conf',
-                placeholder: this.defaults.paths.convert
+ImageUploadPlugin.prototype._admin = function(){
+    return new Model('imageupload', [
+        {
+            schema: {
+                convert: {
+                    type: 'Text',
+                    help: 'Path to imagemagick\'s convert, this value can only be changed by editing the bobamo.conf',
+                    placeholder: this.defaults.paths.convert
+                },
+                identify: {
+                    type: 'Text',
+                    help: 'Path to imagemagick\'s identify, this value can only be changed by editing the bobamo.conf',
+                    placeholder: this.defaults.paths.identify
+                }
             },
-            identify: {
-                type: 'Text',
-                help: 'Path to imagemagick\'s identify, this value can only be changed by editing the bobamo.conf',
-                placeholder: this.defaults.paths.identify
-            }
-        },
-        url: this.pluginUrl + 'views/admin/configure',
-        fieldsets: [
-            {legend: "ImageUpload Plugin", fields: ['convert', 'identify']}
-        ],
-        plural: 'ImageUpload',
-        title: 'ImageUpload Plugin',
-        modelName: 'imageupload'
-    }
-]);
+            url: this.pluginUrl + 'views/admin/configure',
+            fieldsets: [
+                {legend: "ImageUpload Plugin", fields: ['convert', 'identify']}
+            ],
+            plural: 'ImageUpload',
+            title: 'ImageUpload Plugin',
+            modelName: 'imageupload'
+        }
+    ]);
+}
 
 
-ImageUploadPlugin.prototype.configure = function (conf, cb) {
+
+ImageUploadPlugin.prototype.configure = function (conf) {
     _u.extend(this.defaults, conf);
     if (!this.defaults.directory) {
         this.defaults.directory = path.join(path.dirname(module.filename), 'images', 'full');

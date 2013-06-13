@@ -10,7 +10,7 @@ var bobamo    = require('bobamo'), mongoose= bobamo.mongoose;
 
 var app = bobamo.app({
     //uri:'mongodb://localhost',
-    plugin:['jsonschema', 'csvimport','renderer', 'passport'
+    plugin:['jsonschema', 'csvimport','renderer', 'passport', 'imageupload','acl'
     ]});
 
 app.get('/', function(req,res){ res.render('redir_index.html', {layout:false})});

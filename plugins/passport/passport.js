@@ -15,13 +15,7 @@ var PassportPlugin = function () {
     this.app.use(passport.initialize());
 
     this._appModel = {  header: {
-        'passport-menu': {
-            'passport': {
-                label: 'Login',
-                href: '#/login'
 
-            }
-        },
         'admin-menu': {
             'passport': {
                 label: 'Configure Passport',
@@ -268,11 +262,6 @@ PassportPlugin.prototype.filters = function () {
                 href: '#/login'
             }
             ;
-        this._appModel.header['passport-menu'].passport = obj
-//        _u.each(_u.keys(this.passportMenu), function(v){
-//              delete this.passportMenu[v];
-//        }, this)
-//        _u.extend(this.passportMenu, obj);
 
         next();
     }.bind(this)

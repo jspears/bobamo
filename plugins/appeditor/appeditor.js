@@ -16,9 +16,8 @@ AppEditorPlugin.prototype.admin = function () {
             version: {type: 'Text', help: 'Version of application'},
             description: {
                 type: 'TextArea',
-                validators: [
-                    {type: 'required'}
-                ]},
+                help:'Description of application'}
+                ,
             authors: {
                 type: 'List',
                 help: 'People who have contributed, email "Justin Spears" &lt;speajus@gmail.com&gt;'
@@ -66,11 +65,6 @@ AppEditorPlugin.prototype.configure = function (conf) {
         if (!errors)
             errors = {};
         errors.title = 'Is required';
-    }
-    if (!conf.description) {
-        if (!errors)
-            errors = {};
-        errors.description = 'Is required';
     }
     return errors;
 }

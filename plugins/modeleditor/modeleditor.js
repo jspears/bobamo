@@ -130,7 +130,7 @@ EditPlugin.prototype.routes = function () {
         this.local(res, 'model', editModel.modelPaths[req.params.type]);
         this.local(res, 'pluginUrl', this.pluginUrl);
         this.local(res, 'schemaTypes', function () {
-            return _u.map(mongoose.SchemaTypes, function (v, k) {
+            return _u.map(mongoose.Schema.Types, function (v, k) {
                 var disp = v.prototype.display
 
                 return _u.extend({schemaType: k}, disp);
