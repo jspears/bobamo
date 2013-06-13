@@ -138,7 +138,7 @@ var Spec = function (args, finder, path) {
     this.__defineGetter__('summary', function () {
         if (finder && finder.display && finder.display.summary)
             return finder.display.summary;
-        return finder.help || finder.description || 'About ' + finder.title;
+        return finder.help || finder.description || finder.title;
 
     });
 }

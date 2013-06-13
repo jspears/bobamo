@@ -46,7 +46,7 @@ module.exports = {
 
         };
 
-        if (!excludeVersion){
+        if (!transactional || excludeVersion){
             jsonSchema.required.push('_id');
             jsonSchema.required.push('_v');
         }

@@ -97,7 +97,6 @@ module.exports = function SwaggerToMarkdown(options) {
         this.$write_json(f, model);
     }
     this.$write_model_table = function (f, model, modelName) {
-        console.log('$write_model_table', modelName);
         try {
             f.$writeln('\n<table><thead><tr><th>*</th><th>Property</th><th>Type</th><th>Description</th></tr></thead><tbody>');
             each(model.properties, function (v,k) {
@@ -148,18 +147,17 @@ module.exports = function SwaggerToMarkdown(options) {
 
     this.$write_operation = function (f, base_path, resource, operation, path) {
         f.$writeln(this.$build_markdown_header(operation.httpMethod + ' ' + path + "\n", 3));
-        if (!(operation.summary && operation.nickname)) {
-            f.$write(this.$build_markdown_header("[Please add operation summary information to the summary section]\n\n", 4))
-        } else {
-            f.$write((operation.summary || operation.nickname) + "\n")
-        }
+        if (operation.summary){
+            f.$writeln(this.$build_markdown_header("Summary\n", 4));
+            f.$writeln('\n'+operation.summary);
 
-        if (!operation.notes) {
-            f.$write("[Please add operation information to the notes section]\n\n")
-        } else {
-            f.$write(operation.notes + "\n\n");
+        }
+        if (operation.notes){
+            f.$writeln(this.$build_markdown_header("Notes\n", 4));
+            f.$write(operation.notes  + "\n\n");
         }
         f.$writeln('');
+
         f.$write(this.$build_markdown_header("Definition", 4));
         f.$write("\n\n");
         f.$write(">**Example:**")
@@ -372,6 +370,7 @@ module.exports = function SwaggerToMarkdown(options) {
             'The service contracts are written following the Swagger specification. Occasionally there are discrepancies between strict json-schema and Swagger, in which case we follow the Swagger specification' +
             '\n')
 
+        f.$writeln('\n<!--PROLOG-->');
         if (options.specification) {
             f.$writeln(options.specification);
         }
