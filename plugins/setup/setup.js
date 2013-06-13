@@ -67,7 +67,7 @@ SetupPlugin.prototype._configure = function (conf) {
     var sconf =this.conf = {};
     var self = this;
     var pm = this.pluginManager;
-    return Q.allResolved(pm.reconfigure.map(function (k) {
+    return Q.allSettled(pm.reconfigure.map(function (k) {
         var plugin = this[k];
         if (self === plugin)
              return;
@@ -99,7 +99,7 @@ SetupPlugin.prototype.save = function (conf, callback) {
         nconf[name] = conf;
         cb(null, null);
     }
-    Q.allResolved(pm.reconfigure.map(function(k){
+    Q.allSettled(pm.reconfigure.map(function(k){
         var d= Q.defer();
             //pass in the conf, get out the new conf
         this[k].save(conf[k], d.makeNodeResolver());
