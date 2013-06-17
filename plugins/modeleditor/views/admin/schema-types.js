@@ -1,3 +1,4 @@
 define(function(){
-    return //${nl}{{json schemaTypes() }} || [];
+    var types//${nl} = {{json schemaTypes() }} || [];
+    return types;
 });

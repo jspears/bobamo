@@ -52,13 +52,12 @@ PassportPlugin.prototype.findByUsernamePassword = function (username, password, 
     }
 }
 PassportPlugin.prototype.findById = function (id, done) {
-    console.log('findById', id);
     var u = _.first(_.where(this.conf.users, {username: id}));
     if (u)
         return done(null, u);
-    var obj = {};
-    obj[this.conf.idField] = id;
     if (this.conf.authModel) {
+        var obj = {};
+        obj[this.conf.idField] = id;
         mongoose.model(this.conf.authModel).findOne(obj, function (err, u) {
             console.log('err', err, 'found', obj, u != null);
 

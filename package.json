@@ -7,7 +7,7 @@
     "dependencies": {
         "jqtpl": "latest",
         "mongoose": "latest",
-        "mers": ">= 0.4.1",
+        "mers": "latest",
         "underscore": "latest",
         "less": "latest",
         "express": ">=3",
