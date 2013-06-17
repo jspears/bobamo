@@ -1,4 +1,4 @@
-define(['Backbone'], function(B){
+define(['Backbone'], function(Backbone){
     var Model = Backbone.Model.extend({
         urlRoot:'${pluginUrl}/admin',
         schema:{

@@ -69,6 +69,36 @@ var Items = function(appModel, pluginManager){
 
         return
     });
+    this.__defineGetter__('admin-menu', function(){
+        var menu = {};
+        pluginManager.forEach(function(plugin){
+            if (plugin.name == 'generator')
+                return;
+            var appModel = plugin.appModel();
+            if (appModel && appModel.header && appModel.header['admin-menu'])
+                return;
+            var m = plugin.admin();
+            if (m){
+                if (Array.isArray(m)){
+                    console.log('multiple admin modules not supported yet');
+                    m = m[0];
+                    _.each(m, function(v){
+                        menu[plugin.name+'-admin-'+ v.modelName] = {
+                            label: v.title || 'Configure '+ m.title,
+                            href: v.href || '#views/configure/'+plugin.name+'/'+ v.modelName,
+                            iconCls: v.iconCls
+                        }
+                    });
+                }
+                if (m)
+                    menu[plugin.name+'-admin'] = {
+                        label:'Configure '+ m.title,
+                        href:'#views/configure/'+plugin.name
+                    }
+            }
+        })
+        return menu;
+    });
 
 }
 GeneratorPlugin.prototype.appModel = function(){
@@ -166,10 +196,22 @@ GeneratorPlugin.prototype.routes = function (options) {
             payload:model
         })
     }.bind(this));
-
     app.get(base + 'js/views/configure/:view.:format', function (req, res, next) {
+        var plugin = this.pluginManager.loadedPlugins[req.params.view]
+        var model = plugin.admin();
+
         this.generate(res, 'views/configure.js', _u.extend({
-            plugin:this.pluginManager.loadedPlugins[req.params.view]
+            plugin:plugin,
+            model:plugin.admin()
+        },req.params), next);
+    }.bind(this));
+    app.get(base + 'js/views/configure-model/:view.:format', function (req, res, next) {
+        var plugin = this.pluginManager.loadedPlugins[req.params.view]
+        var model = plugin.admin();
+
+        this.generate(res, 'views/configure-model.js', _u.extend({
+            plugin:plugin,
+            model:plugin.admin()
         },req.params), next);
     }.bind(this));
 

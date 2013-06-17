@@ -1,22 +1,22 @@
-<div class="edit-form ${model.modelName}">
+<div class="edit-form ${model && model.modelName}">
     <ul style="display:none" class="unstyled error-list alert-error"></ul>
     <ul style="display:none" class="unstyled success-list"></ul>
     <div class="form-wrap ">
         <div class="form-container"></div>
     </div>
-    <div class="form-actions">
-        <div class="btn-group pull-left">
-            <a class="btn cancel" href="#/views/${collection}/list"><b class="icon-list"/>List</a>
-            <button class="btn cancel">Cancel</button>
-        </div>
-        <div class="space btn-group pull-left" style="padding-left:2em;padding-right:2em">&nbsp;</div>
-        <div class="btn-group pull-left">
-            <a class="btn previous">Previous</a>
-            <a class="btn next">Next</a>
-        </div>
-        <button class="btn pull-right btn-primary save finish">Save</button>
+    <div class="form-actions btn-toolbar">
+        <!--<div class="btn-group pull-left">-->
+            <!--<a class="btn cancel" href="#/views/${collection}/list"><b class="icon-list"/>List</a>-->
+            <!--<button class="btn cancel">Cancel</button>-->
+        <!--</div>-->
+        <!--<div class="space btn-group pull-left" style="padding-left:2em;padding-right:2em">&nbsp;</div>-->
+        <!--<div class="btn-group pull-left" style="display:none">-->
+            <!--<a class="btn previous">Previous</a>-->
+            <!--<a class="btn next">Next</a>-->
+        <!--</div>-->
+        <!--<button class="btn pull-right btn-primary save finish">Save</button>-->
 
-        <div style="clear:right"></div>
+        <div class="clearfix"></div>
     </div>
 
 </div>

@@ -114,11 +114,12 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
                 $.ajax({
                     url: url,
                     success: function (resp) {
-                        resp.payload.push({
+                        resp = resp.payload || resp;
+                        resp.push({
                             label: 'None',
                             val: ""
-                        })
-                        cb(resp.payload || resp);
+                        });
+                        cb( resp);
                     }
                 })
             });
@@ -218,7 +219,9 @@ define(['Backbone.FormOrig', 'underscore', 'libs/util/inflection',
 
         $.when.apply($, wait).then(_.bind(function (args) {
             var $fieldsetContainer = $('.bbf-tmp', $form);
-            $fieldsetContainer.append.apply($fieldsetContainer, obj);
+            var $append =[].concat(obj.legend || obj)
+                if (obj.fields) $append = $append.concat(obj.fields);
+            $fieldsetContainer.append.apply($fieldsetContainer, $append);
             $fieldsetContainer.children().unwrap();
 
             //Set the template contents as the main element; removes the wrapper element

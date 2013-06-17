@@ -26,17 +26,15 @@ define([
             this.model.bind("change", this.render, this);
             this.model.bind("destroy", this.close, this);
             this.sort = [];
-      //      _.bind(this.format, this);
             return this;
         },
-        format:function(field, model, schema){
-            return this.renderer.render(model.get(field), field,  model, schema);
-//            return schema && schema.format ? schema.format(field, model, schema) : model.get(field);
+        format:function(field, idx, model, schema){
+            return this.renderer.render(model.get(field),  field,  model, idx, schema && schema.renderer);
         },
         _fields:{},
-        _format:function(field){
+        _format:function(field, idx){
             var schema = field in this._fields ? this._fields[field] : (this._fields[field] = this.schema(field, this.model));
-            return this.format(field, this.model, schema)
+            return this.format(field, idx, this.model, schema)
         },
         schema:function(field, model){
             if (!(model || field))
@@ -72,8 +70,8 @@ define([
             'paginate-change .pager_table':'doPage',
             'sorter-change .sortable':'onSort'
         },
-        initialize:function () {
-            this.rendere = new Renderer({});
+        renderer:new Renderer({}),
+        initialize:function (options) {
             if (!this.template) {
                 throw new Error('template must be defined');
             }
@@ -125,6 +123,20 @@ define([
                 if (!v.direction) return;
                 sort.push([v.field, v.direction].join(':'));
             });
+            var populate = [];
+            _.each(this.renderer.config, function(v){
+                console.log('renderer',v);
+                if (v.property && ~v.property.indexOf('.')){
+                    //TODO - Mongoose throws an exception if you populate a non IdRef  fix mers so that it doesn't
+                    // send it.
+                    var mangle = v.property.split('.');
+                    mangle.pop();
+                    populate.push(mangle.join('.'))
+                }
+            });
+            if (populate.length)
+                data.populate = populate.join(',');
+
             this.collection.params = data;
             data.sort = sort.join(',');
             this.collection.fetch({data:data, success:_.bind(this._fetch, this)});

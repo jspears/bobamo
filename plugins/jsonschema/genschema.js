@@ -4,9 +4,9 @@ var bobamo = require('../../index'),
     Spec = require('./Spec'),
     su = require('./swag-utils')
     ;
-var swagger = require("swagger-node-express/Common/node/swagger");
+var swagger = require("./lib/swagger");
 var util = require('../../lib/util');
-var param = require("swagger-node-express/Common/node/paramTypes");
+var param = require("./lib/paramTypes");
 var url = require("url");
 var swe = swagger.errors;
 var Model = bobamo.DisplayModel;
@@ -17,11 +17,13 @@ var Model = bobamo.DisplayModel;
 
 
 module.exports = {
-    modelToSchema:function doModelToSchema(m, models, hasIdCallback) {
+    modelToSchema:function doModelToSchema(m, models, hasIdCallback, excludeDerived, excludeVersion) {
         if (!models) models = {};
         var noId = true;//hasIdCallback && hasIdCallback(m); // !(pluginManager.appModel.modelPaths[m.modelName || m]);
         var model = m.schema;
         var description = m.description || m.help || m.title;
+        var transactional = m.transactional === false  ? false :  true;
+
         var jsonSchema = {
             //    "id":"http://some.site.somewhere/entry-schema#",
             "$schema":"http://json-schema.org/draft-04/schema#",
@@ -29,26 +31,35 @@ module.exports = {
             id:m.modelName,
             required:[],
             description:description,
-            properties:(function () {
-                return _u.extend({
+            properties: _u.extend(!transactional || excludeVersion  ? {} : {
                     _v:{
-                        type:'number',
+                        type:'integer',
                         description:'Version identifier for current record, needed for optimistic locking'
                     }
 
-                }, noId ? {} : {
+                }, !transactional || excludeVersion ? {} : {
                     _id:{
-                        type:'string',
+                        type:'number',
                         description:'Identifier for "' + m.modelName + '"'
                     }
-                });
-            })()
+                })
+
         };
+
+        if (!transactional || excludeVersion){
+            jsonSchema.required.push('_id');
+            jsonSchema.required.push('_v');
+        }
+
         var walkJson = function (schema, properties, required) {
             _u.each(schema, function eachWalkJson(v, ok) {
                 var k = ok.split('.').pop();
-                if (!v) {
+                if (!v){
                     console.log('walkSchema v is null for', k);
+                    return true;
+                }
+                if (excludeDerived && v.derived) {
+                    console.log('property is derived', k);
                     return true;
                 }
                 var subJson = properties[k] || (properties[k] = {});
@@ -62,11 +73,11 @@ module.exports = {
                 var ref = v.modelName || v.ref;
 
                 if (v.subSchema) {
-                    if (!ref && multiple) ref = inflection.classJoin([m.modelName].concat(k.split('.')).join(' '));
+                    if (!ref && multiple) ref = inflection.classJoin([m.transaction].concat(k.split('.')).join(' '));
                     if (ref) {
                         if (!models[ref]) {
                             var sm = new Model(ref, [v]);
-                            models[ref] = this.modelToSchema(sm, models, hasIdCallback);
+                            models[ref] = this.modelToSchema(sm, models, hasIdCallback, hasIdCallback, excludeDerived, excludeVersion);
                         }
                         if (multiple) {
                             subJson.items = {
@@ -142,17 +153,19 @@ module.exports = {
     update:function (v, k) {
         var summary = (v.methods && v.methods.update && v.methods.update.summary || '');
         var K = inflection.capitalize(k);
+        var pa = param.post(k+"PutRequest", v.title + " will update the "+ K+" store")
+        pa.dataTypeModel = v;
+        pa.paramType = 'body';
+
         return {
-//                "path":"/" + k,            "parameters":[param.path("id", "ID of " + v.modelName, "string")],
-
-
-            "notes":"updates a " + K + " in the store",
+            "notes":"Updates a " + K + " in the store",
             "httpMethod":"PUT",
             "summary":"Update an existing " + v.title.toLowerCase() +(summary || ''),
-            "parameters":[param.path("id", "ID of " + v.modelName, "string"), param.post(k, v.title + " object that needs to be added to the store")],
+            "parameters":[param.path("id", "ID of " + v.modelName, "string"), pa],
             "errorResponses":[swe.invalid('id'), swe.notFound(k), swe.invalid('input')],
             "allowMultiple":false,
             "paramType":"body",
+            "dataType":k,
             responseClass:"void",
             "nickname":"update"
         }
@@ -161,11 +174,13 @@ module.exports = {
         var summary = (v.methods && v.methods.create && v.methods.create.summary || '');
 
         var K = inflection.capitalize(k);
+        var pa = param.post(k+"PostRequest", v.title + " object that needs to be added to the "+ K+" store");
+        pa.dataTypeModel = v;
         return {
             "notes":"adds a " + K + " to the store",
             "summary":"Add a new " + K + " to the store "+(summary || ''),
             "httpMethod":"POST",
-            "parameters":[param.post(k, v.title + " object that needs to be added to the store")],
+            "parameters":[pa],
             "errorResponses":[swe.invalid('input')],
             "nickname":"add",
             "dataType":k,
@@ -226,7 +241,7 @@ module.exports = {
         var K = inflection.capitalize(k);
         return  {
             //   "path":"/{id}",
-            "notes":"updates a " + v.title + " in the store",
+            "notes":"Updates a " + v.title + " in the store",
             "httpMethod":"GET",
             "summary":"Return an existing " + v.title+ (summary),
             "parameters":[param.path("id", "ID of " + v.modelName, "string")],
@@ -240,7 +255,7 @@ module.exports = {
         var summary = (v.methods && v.methods.remove && v.methods.remove.summary || '');
         return {
             //"path":"/" + k + "/{id}",
-            "notes":"removes a " + v.modelName + " from the store",
+            "notes":"Removes a " + v.modelName + " from the store",
             "httpMethod":"DELETE",
             "summary":"Remove an existing " + v.modelName+ (summary | ''),
             "parameters":[param.path("id", "ID of " + v.modelName + " that needs to be removed", "string")],

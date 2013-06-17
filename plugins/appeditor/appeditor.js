@@ -1,75 +1,72 @@
-var Plugin = require('../../lib/plugin-api'), _u = require('underscore');
+var bobamo = require('../../index'), Plugin = bobamo.PluginApi, Model = bobamo.DisplayModel, _u = require('underscore');
 var AppEditorPlugin = function (options, app, name) {
     Plugin.apply(this, arguments);
-    this._appModel = {
-        header:{
-            'admin-menu':{
-                appeditor:{
-                    label:'Application Details',
-                    href:'#/appeditor/admin/edit'
-                }
-            }
-        }
-    };
-}
+    this.conf = {};
+};
+
 require('util').inherits(AppEditorPlugin, Plugin);
 
-AppEditorPlugin.prototype.appModel = function () {
-    return this._appModel;
-}
-AppEditorPlugin.prototype.configure = function (options) {
-    _u.extend(this._appModel, options);
-}
-AppEditorPlugin.prototype.filters = function () {
-    this.app.get(this.pluginUrl + '*', function (req, res, next) {
-        res.locals('pluginManager', this.pluginManager);
-        next();
-    }.bind(this));
-    Plugin.prototype.filters.apply(this, arguments);
-}
-AppEditorPlugin.prototype.routes = function (options) {
-
-    this.app.get(this.pluginUrl + '/admin/:id', function (req, res, next) {
-        var appModel = this._appModel;
-        res.send({
-            payload:appModel,
-            status:1
-        })
-    }.bind(this));
-    var revision = function (req) {
-        var appModel = this.pluginManager.appModel;
-        if (req.body.version != appModel.version) {
-            var revisions = (req.body.revisions || (req.body.revisions = []));
-            revisions.push({
-                version:appModel.version,
-                description:appModel.description,
-                modified:appModel.modified || new Date(),
-                timestamp:appModel.timestamp
-            })
+AppEditorPlugin.prototype.admin = function () {
+    var appModel = this.pluginManager.appModel;
+    return  new Model('appeditor', {
+        schema: {
+            title: {help: 'Application Title', validators: [
+                {type: 'required'}
+            ]},
+            version: {type: 'Text', help: 'Version of application'},
+            description: {
+                type: 'TextArea',
+                help:'Description of application'}
+                ,
+            authors: {
+                type: 'List',
+                help: 'People who have contributed, email "Justin Spears" &lt;speajus@gmail.com&gt;'
+            }
+        },
+        buttons: {
+            left: []
+        },
+        title: 'About',
+        defaults: {
+            title: appModel.title,
+            version: appModel.version,
+            description: appModel.description,
+            authors: this.conf.authors
         }
+    });
+}
 
-    }.bind(this);
-    this.app.post(this.pluginUrl + '/admin', function (req, res, next) {
-        revision(req);
-        this.save(req.body, function (err, obj) {
-            res.send({
-                status:0,
-                payload:obj
-            })
-        }.bind(this), req);
-    }.bind(this));
+AppEditorPlugin.prototype.appModel = function () {
+    return this.conf;
+};
 
-    this.app.put(this.pluginUrl + '/admin', function (req, res, next) {
-        revision(req);
-        this.save(req.body, function (err, obj) {
-            res.send({
-                status:0,
-                payload:obj
-            })
-        }.bind(this), req);
-    }.bind(this));
+AppEditorPlugin.prototype.configure = function (conf) {
 
-    Plugin.prototype.routes.apply(this, arguments);
+    conf = conf || {};
+//    var appModel = this.pluginManager.appModel;
+//    if (this.conf) {
+//        conf.revisions = this.conf.revisions;
+//    } else {
+//        conf.revisions = [];
+//    }
+//    var cversion = appModel.version || this.conf && this.conf.version;
+//    if (conf.version != cversion) {
+//        var revisions = conf.revisions || (conf.revisions = []);
+//        revisions.push({
+//            version: appModel.version,
+//            description: appModel.description,
+//            modified: appModel.modified || new Date(),
+//            timestamp: appModel.timestamp
+//        });
+//    }
+    Plugin.prototype.configure.call(this, conf);
+    var errors;
+    if (!conf.title) {
+        if (!errors)
+            errors = {};
+        errors.title = 'Is required';
+    }
+    return errors;
 }
 
 module.exports = AppEditorPlugin;

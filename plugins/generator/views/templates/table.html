@@ -4,7 +4,7 @@
     <thead style="white-space: nowrap">
         <tr>
             {{each(i,l) model.list_fields}}
-                <th data-field="${i}" class="elementActivate sortable">${model.pathFor(i).title}</th>
+                <th data-field="${i.property || i}" class="elementActivate sortable">${i.title || model.pathFor(i.property || i).title}</th>
             {{/each}}
         </tr>
         <tr>&nbsp;

@@ -1,5 +1,6 @@
 define(['Backbone.Form', 'jquery', 'underscore', 'libs/bootstrap/js/bootstrap-typeahead'], function (Form, $, _) {
     "use strict";
+    var pslice = Array.prototype.slice;
     var editors = Form.editors;
     var Select = editors.Select;
     var Item = function (itm) {
@@ -45,6 +46,9 @@ define(['Backbone.Form', 'jquery', 'underscore', 'libs/bootstrap/js/bootstrap-ty
                 return new Item(v)
             }));
         },
+        setValue:function(value){
+          return Select.prototype.setValue.apply(this, pslice.call(arguments));
+        },
         setOptions: function(options, opt, cb) {
             var self = this;
             cb = cb || _.bind(this.renderOptions, this);
@@ -77,7 +81,7 @@ define(['Backbone.Form', 'jquery', 'underscore', 'libs/bootstrap/js/bootstrap-ty
 
         render:function () {
             this.$el.attr('type', this.options.dataType || this.dataType);
-            this.$el.val(this.options.value);
+            this.$el.val(this.value || this.options.value);
             var self = this;
             var $el = this.$el.parent();
             var schema = this.schema;

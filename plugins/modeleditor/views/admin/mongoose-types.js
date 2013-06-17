@@ -1,4 +1,5 @@
-define(['exports', 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/schema-types', 'mongoose/js/validators', 'underscore', 'jquery'], function (exports, b, Form, schemaTypes, validators, _, $) {
+define(['exports', 'Backbone', 'Backbone.Form/form-model',
+    'modeleditor/views/admin/schema-types', 'mongoose/js/validators', 'underscore', 'jquery'], function (exports, b, Form, schemaTypes, validators, _, $) {
     "use strict";
     validators.inject(Form);
 
@@ -116,7 +117,7 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/a
             schema:{
                 ref:{
                     type:'Select',
-                    collection:'views/modeleditor/admin/schema-collection',
+                    collection:'modeleditor/views/admin/schema-collection',
                     help:'Reference another schema'
                 }
             }
@@ -170,7 +171,7 @@ define(['exports', 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/a
 
 
             if (_.isUndefined(DataType.Object.prototype.schema.schema.model))
-                DataType.Object.prototype.schema.schema.model = require('views/modeleditor/admin/property');
+                DataType.Object.prototype.schema.schema.model = require('modeleditor/views/admin/property');
             function validation() {
                 var fields = form.fields;
                 var val = fields.schemaType.getValue();

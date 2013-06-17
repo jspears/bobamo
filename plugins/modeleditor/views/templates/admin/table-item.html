@@ -4,16 +4,21 @@
 <!--<td><%= item.get('labelAttr') %></td>-->
 <!--<td><a href="#/modeleditor/admin/create?id=<%=item.id%>"><i class="icon-edit"></i>Edit</a></td>-->
 <td>
-    <h2><%= item.get('modelName') %></h2>
+    <h2><%= item.get('modelName') %> <small class="pull-right">
+        Edit:
+        <a href="#!modeleditor/views/admin/form-edit?id=<%=item.id%>">Form View</a>  |
+        <a href="#!modeleditor/views/admin/list-edit?id=<%=item.id%>">List View</a>
+    </small></h2>
+    <hr/>
     <p class="lead"><%=  item.get('description') %></p>
-    <br/>
     <a href="<%=item.get('url')%>" target="_blank"><%= item.get('url') %></a>
+
     <% if (item.get('managed')){%>
     <div class="pull-right">
-        <a class="btn active" href="#/views/modeleditor/admin/create?id=<%=item.id%>"><i class="icon-wrench"></i>Configure</a>
-        <a class="btn" href="#/views/modeleditor/admin/delete?id=<%=item.id%>"><i class="icon-trash"></i>Delete</a>
+        <a class="btn active" href="#/modeleditor/views/admin/create?id=<%=item.id%>"><i class="icon-wrench"></i>Configure</a>
+        <a class="btn" href="#/modeleditor/views/admin/delete?id=<%=item.id%>"><i class="icon-trash"></i>Delete</a>
     </div>
     <% }else{ %>
-    <a href="#/views/modeleditor/admin/create?id=<%=item.id%>" class="btn btn-primary pull-right"><i class="icon-wrench"></i> Configure</a>
+    <a href="#/modeleditor/views/admin/create?id=<%=item.id%>" class="btn btn-primary pull-right"><i class="icon-wrench"></i> Configure</a>
     <% } %>
 </td>

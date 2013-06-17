@@ -146,6 +146,7 @@ module.exports = [
     //  { name:'Link', types:['ObjectId']},
     //  { name:'List', types:['ObjectId']},
     { name:'NestedModel', types:['ObjectId', 'Object']},
-    { name:'Object', types:['Object']}
+    { name:'Object', types:['Object']},
+    { name:'ReadOnly', schema:{template:{type:'TextArea', placeholder:"{{value}}"}} }
 
 ];

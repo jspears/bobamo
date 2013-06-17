@@ -5,23 +5,24 @@ var bobamo = require('../../index'),
     Model = bobamo.DisplayModel,
     path = require('path'),
     fs = require('fs'),
-    SwaggerToMarkdown = require('./genmarkdown'),
     generateClient = require('./generate-client'),
-    u = require('../../lib/util'), _u = require('underscore'),
+    u = require('../../lib/util'), J=require('../../lib/stringify'), _u = require('underscore'),
     PluginApi = bobamo.PluginApi, util = require('util');
+var defaultConf = {
+    scala: process.env['SCALA_HOME'],
+    java: process.env['JAVA_HOME'] || '/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home',
+    java_opts: process.env['JAVA_OPTS'] || ' -XX:MaxPermSize=256M -Xmx1024M -DloggerPath=conf/log4j.properties',
+    codegen: process.env['CODEGEN_HOME'],
+    pandoc_template: null
 
+}
 var JsonSchemaPlugin = function () {
     PluginApi.apply(this, arguments);
-    this.conf = {
-        scala:process.env['SCALA_HOME'],
-        java:process.env['JAVA_HOME'] || '/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home',
-        java_opts:process.env['JAVA_OPTS'] || ' -XX:MaxPermSize=256M -Xmx1024M -DloggerPath=conf/log4j.properties',
-        codegen:process.env['CODEGEN_HOME'],
-        pandoc_template:null
-    }
+
+    this.conf = _u.extend({ }, defaultConf);
 }
 util.inherits(JsonSchemaPlugin, PluginApi);
-
+JsonSchemaPlugin.prototype.SwaggerToMarkdown = require('./genmarkdown');
 
 JsonSchemaPlugin.prototype.modelToSchema = function (model, models) {
     model = _u.isString(model) ? this.pluginManager.appModel.modelFor(model) : model;
@@ -39,20 +40,20 @@ JsonSchemaPlugin.prototype.modelToSchema = function (model, models) {
 }
 JsonSchemaPlugin.prototype.appModel = function () {
     return {
-        modelPaths:{},
-        header:{
-            'admin-menu':{
-                'jsonschema':{
-                    label:'Service API Documentation ',
-                    href:'#jsonschema/view/doc'
+        modelPaths: {},
+        header: {
+            'admin-menu': {
+                'jsonschema': {
+                    label: 'Service API Documentation ',
+                    href: '#jsonschema/view/doc'
                 },
-                'jsonschema-doc':{
-                    label:'Service Edit Documentation ',
-                    href:'#jsonschema/view/markdown'
+                'jsonschema-doc': {
+                    label: 'Service Edit Documentation ',
+                    href: '#jsonschema/view/markdown'
                 },
-                'jsonschema-conf':{
-                    label:'Service API Configuration ',
-                    href:'#views/configure/jsonschema'
+                'jsonschema-conf': {
+                    label: 'Service API Configuration ',
+                    href: '#views/configure/jsonschema'
                 }
             }
         }
@@ -61,81 +62,81 @@ JsonSchemaPlugin.prototype.appModel = function () {
 JsonSchemaPlugin.prototype.admin = function () {
     return new Model('jsonschema', [
         {
-            schema:{
-                url:{
-                    type:'Text',
-                    placeholder:this.conf.url,
-                    title:'URL',
-                    help:'The fully qualified url to this machine'
+            schema: {
+                url: {
+                    type: 'Text',
+                    placeholder: this.conf.url,
+                    title: 'URL',
+                    help: 'The fully qualified url to this machine'
                 },
-                codegen:{
-                    type:'Text',
-                    placeholder:this.conf.codegen,
-                    title:'swagger-codegen',
-                    help:'The path to swagger codegen'
+                codegen: {
+                    type: 'Text',
+                    placeholder: this.conf.codegen,
+                    title: 'swagger-codegen',
+                    help: 'The path to swagger codegen'
                 },
-                scala:{
-                    type:'Text',
-                    placeholder:this.conf.scala,
-                    title:'Scala',
-                    help:'Path to scala home scala executable should be in %scala%/bin/scala'
+                scala: {
+                    type: 'Text',
+                    placeholder: this.conf.scala,
+                    title: 'Scala',
+                    help: 'Path to scala home scala executable should be in %scala%/bin/scala'
                 },
-                java:{
-                    type:'Text',
-                    placeholder:this.conf.java,
-                    title:'JAVA_HOME',
-                    help:'Path to java home'
+                java: {
+                    type: 'Text',
+                    placeholder: this.conf.java,
+                    title: 'JAVA_HOME',
+                    help: 'Path to java home'
                 },
-                java_opts:{
-                    type:'Text',
-                    placeholder:this.conf.java_opts,
-                    title:'JAVA_OPTS',
-                    help:'JAVA_OPTS env value'
+                java_opts: {
+                    type: 'Text',
+                    placeholder: this.conf.java_opts,
+                    title: 'JAVA_OPTS',
+                    help: 'JAVA_OPTS env value'
                 },
-                pandoc_template:{
-                    type:'Text',
-                    title:'Template',
-                    help:'Pandoc template directory',
-                    placeholder:this.conf.pandoc_template
+                pandoc_template: {
+                    type: 'Text',
+                    title: 'Template',
+                    help: 'Pandoc template directory',
+                    placeholder: this.conf.pandoc_template
                 }
 
             },
-            url:this.pluginUrl + '/admin/configure',
-            fieldsets:[
-                {legend:"JsonSchema Plugin", fields:['url', 'pandoc_template', 'codegen', 'scala', 'java_opts', 'java']}
+            url: this.pluginUrl + '/admin/configure',
+            fieldsets: [
+                {legend: "JsonSchema Plugin", fields: ['url', 'pandoc_template', 'codegen', 'scala', 'java_opts', 'java']}
             ],
-            plural:'JsonSchema',
-            title:'JsonSchema Plugin',
-            modelName:'jsonschema'
+            plural: 'JsonSchema',
+            title: 'JsonSchema Plugin',
+            modelName: 'jsonschema'
         }
     ]);
 }
 
 var docRe = /^document-(.*)/;
 var extensionMap = JsonSchemaPlugin.prototype.extensionMap = {
-    'html5':{
-        ext:'html',
-        contentType:'text/html'
+    'html5': {
+        ext: 'html',
+        contentType: 'text/html'
     },
-    'html+lhs':{
-        ext:'html',
-        contentType:'text/html'
+    'html+lhs': {
+        ext: 'html',
+        contentType: 'text/html'
     },
-    'html5+lhs':{
-        ext:'html',
-        contentType:'text/html'
+    'html5+lhs': {
+        ext: 'html',
+        contentType: 'text/html'
     },
-    's5':{
-        ext:'html',
-        contentType:'text/html'
+    's5': {
+        ext: 'html',
+        contentType: 'text/html'
     },
-    'slidy':{
-        ext:'html',
-        contentType:'text/html'
+    'slidy': {
+        ext: 'html',
+        contentType: 'text/html'
     },
-    'dzslides':{
-        ext:'html',
-        contentType:'text/html'
+    'dzslides': {
+        ext: 'html',
+        contentType: 'text/html'
     }
 }
 JsonSchemaPlugin.prototype.filters = function () {
@@ -155,10 +156,10 @@ JsonSchemaPlugin.prototype.filters = function () {
             var pdc = require('node-pandoc');
             var docType = type.replace(docRe, "$1");
             // console.log('markdown', md);
-            var opts = []
-            var conf = _u.extend({title:appModel.title}, this.conf, req.query, req.body);
+            var opts = [ '--data-dir='+process.cwd()+'/', '--variable=CWD:'+process.cwd()]
+            var conf = _u.extend({title: appModel.title}, this.conf, req.query, req.body);
             if (conf.pandoc_template)
-                opts.push('--template=' + process.cwd()+'/'+conf.pandoc_template);
+                opts.push('--template=' + process.cwd() + '/' + conf.pandoc_template);
             if (conf.title)
                 opts.push('--variable=title:' + conf.title + '');
             if (conf.toc !== false)
@@ -173,7 +174,6 @@ JsonSchemaPlugin.prototype.filters = function () {
                 var ext = docType;
                 var fileName = bobamo.inflection.hyphenize((appModel.title + ' ' + appModel.version).replace(/\s*/, '')) + '.' + ext;
                 if (em) {
-                    ext = em.ext;
                     res.setHeader('Content-Type', em.contentType);
                 } else {
                     res.setHeader("Content-Transfer-Encoding", "binary");
@@ -214,7 +214,7 @@ JsonSchemaPlugin.prototype.filters = function () {
 
     this.app.get(re, function (req, res, next) {
         if (req.url === this.pluginUrl + '/docs') { // express static barfs on root url w/o trailing slash
-            res.writeHead(302, { 'Location':req.url + '/' });
+            res.writeHead(302, { 'Location': req.url + '/' });
             res.end();
             return;
         }
@@ -235,53 +235,49 @@ JsonSchemaPlugin.prototype.swaggerUrl = function () {
     return swagUrl;
 }
 JsonSchemaPlugin.prototype.configure = function (conf) {
-    if (conf)
-        _u.each(conf, function (v, k) {
-            if (!v)
-                delete conf[k]
-        });
-    _u.extend(this.conf, conf);
+    PluginApi.prototype.configure.call(this, conf);
+    _u.extend(this.conf, defaultConf, this.conf);
     this.swaggerUrl();
+    return null;
 }
 JsonSchemaPlugin.prototype.resource = function (modelName) {
-    var appModel =this.pluginManager.appModel;
+    var appModel = this.pluginManager.appModel;
     var version = appModel.version, swagUrl = this.swaggerUrl();
-    if (modelName){
+    if (modelName) {
 //        var model = this.pluginManager.appModel
-        var doc = gen_resource.resourceFor(appModel.modelFor(modelName),swagUrl, version, function(mName){
-           return _u.isString(mName) ? appModel.modelFor(mName) : mName;
+        var doc = gen_resource.resourceFor(appModel.modelFor(modelName), swagUrl, version, function (mName) {
+            return _u.isString(mName) ? appModel.modelFor(mName) : mName;
         }.bind(this));
-    }else{
+    } else {
         var doc = gen_resource.resources(appModel.modelPaths, swagUrl, version);
     }
     return doc;
 }
 JsonSchemaPlugin.prototype.markdown = function () {
     var appModel = this.pluginManager.appModel;
-    return new SwaggerToMarkdown({
-        apiname:this.pluginManager.appModel.title,
-        basePath:this.swaggerUrl(),
-        resourcefile:this.resource(),
-        authors:appModel.authors,
-        revisions:appModel.revisions,
-        modified:appModel.modified? new Date(appModel.modified) : new Date(),
-        specifications:Object.keys(appModel.modelPaths).map(this.resource, this)
+    return new this.SwaggerToMarkdown({
+        apiname: this.pluginManager.appModel.title,
+        basePath: this.swaggerUrl(),
+        resourcefile: this.resource(),
+        authors: appModel.authors,
+        revisions: appModel.revisions,
+        modified: appModel.modified ? new Date(appModel.modified) : new Date(),
+        specifications: Object.keys(appModel.modelPaths).map(this.resource, this)
     }).print();
 }
-JsonSchemaPlugin.prototype.metaService = function(){
+JsonSchemaPlugin.prototype.metaService = function () {
     var appModel = this.pluginManager.appModel;
-    var resources = _u.flatten(_u.flatten(Object.keys(appModel.modelPaths).map(this.resource, this).map(function(v){
-        return v.apis;
-    })).map(function(v){
-            console.log(v);
+    var resources = _u.flatten(_u.flatten(Object.keys(appModel.modelPaths).map(this.resource, this).map(function (v) {
+            return v.apis;
+        })).map(function (v) {
             var path = v.path;
             var fp = (((path[0] == '/' ) ? path.substring(1) : path).split('/')).shift();
 
-            return v.operations.map(function(v){
-                var val = v.httpMethod+'['+ fp+'.'+v.nickname +']';
+            return v.operations.map(function (v) {
+                var val = v.httpMethod + '[' + fp + '.' + v.nickname + ']';
                 return {
-                    label:v.nickname+' ['+v.httpMethod+' '+path+']',
-                    val:val
+                    label: v.nickname + ' [' + v.httpMethod + ' ' + path + ']',
+                    val: val
                 }
             })
         }));
@@ -289,11 +285,11 @@ JsonSchemaPlugin.prototype.metaService = function(){
 }
 
 JsonSchemaPlugin.prototype.routes = function () {
-    this.app.get(this.pluginUrl+'/meta/service', function(req,res){
+    this.app.get(this.pluginUrl + '/meta/service', function (req, res) {
 
         res.send({
-            status:0,
-            payload:this.metaService()
+            status: 0,
+            payload: this.metaService()
         })
 
     }.bind(this));

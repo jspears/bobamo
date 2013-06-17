@@ -1,32 +1,34 @@
 {
-  "name": "bobamo",
-  "description": "A scaffoldless crud thing using bootstrap, passport, mongoose, backbone and jquery",
-  "version": "0.9.0",
-  "private": false,
-  "keywords":["express","rest","mers","csvimport","passport","less", "mongoose","mongodb","imageupload"],
-  "dependencies": {
-    "jqtpl": "latest",
-    "mongoose": "latest",
-    "mers": ">= 0.4.1",
-    "underscore": "latest",
-    "less": "latest",
-    "connect": "latest",
-    "express": ">=3",
-    "requirejs": "latest"
-  },
-  "bin": {
-    "bobamo": "bin/bobamo"
-  },
-  "devDependencies": {
-    "should": "latest",
-    "csv": "latest"
-  },
-  "scripts": {
-    "test": "mocha tests/*-mocha.js",
-    "example": "node example/app.js"
-  },
-  "optionalDependencies": {},
-  "engines": {
-    "node": "*"
-  }
+    "name": "bobamo",
+    "description": "A scaffoldless crud thing using bootstrap, passport, mongoose, backbone and jquery",
+    "version": "0.9.0",
+    "private": false,
+    "keywords": ["express", "rest", "mers", "csvimport", "passport", "less", "mongoose", "mongodb", "imageupload"],
+    "dependencies": {
+        "jqtpl": "latest",
+        "mongoose": "latest",
+        "mers": ">= 0.4.1",
+        "underscore": "latest",
+        "less": "latest",
+        "connect": "latest",
+        "express": ">=3",
+        "requirejs": "latest",
+        "q": "latest",
+        "moment": "latest"
+    },
+    "bin": {
+        "bobamo": "bin/bobamo"
+    },
+    "devDependencies": {
+        "should": "latest",
+        "csv": "latest"
+    },
+    "scripts": {
+        "test": "mocha tests/*-mocha.js",
+        "example": "node example/app.js"
+    },
+    "optionalDependencies": {},
+    "engines": {
+        "node": "*"
+    }
 }

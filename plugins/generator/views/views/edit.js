@@ -12,7 +12,7 @@ define([
     , function (_,EditView, collection, Model, template) {
     "use strict";
 
-    var fieldsets = {{json model.fieldsets }};
+    var fieldsets // ${nl}={{json model.fieldsetsFor() }};
     return EditView.extend({
         fieldsets:fieldsets,
         template:_.template(template),
@@ -28,7 +28,6 @@ define([
             return EditView.prototype.render.apply(this, _.toArray(arguments));
         },
         onNext:function(){
-            console.log('next',collection)
             collection.nextId(function(id){
                 console.log('nextId', id);
                 if (id){
@@ -41,7 +40,7 @@ define([
             });
         },
         onPrevious:function(){
-            console.log('previous',collection)
+
             collection.previousId(function(id){
                 console.log('previousId', id);
                 if (id){

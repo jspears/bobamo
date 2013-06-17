@@ -1,10 +1,11 @@
-define(['renderer/js/libs/numeral/numeral'],function(numeral){
-    var conf = {{json model.defaults || {} }}
-    return function(value, options){
+define(['renderer/js/libs/numeral/numeral'], function (numeral) {
+    var conf //${nl()}= {{json model.defaults || {} }}
+    return function (options) {
         var fmt = options && options.format || conf.format;
-        if (fmt)
+        return fmt ? function (value) {
             this.$el.html(numeral(value).format(fmt))
-        else
-          this.$el.html(value);
+        } : function (value) {
+            this.$el.html(''+value);
+        }
     }
 })

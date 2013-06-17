@@ -1,4 +1,7 @@
-var fs = require('fs'), path = require('path'), _u = require('underscore'), inflection = require('../../lib/inflection'), crypto = require('crypto'), less = require('less');
+var fs = require('fs'),
+    path = require('path'), _u = require('underscore'),
+    inflection = require('../../lib/inflection'),
+    crypto = require('crypto'), less = require('less');
 /**
  * CssFactory for Less
  */
@@ -23,7 +26,6 @@ function CssFactory(options) {
         options.paths.forEach(function (dir) {
             if (fs.existsSync(dir))
                 fs.readdirSync(dir).forEach(function (f) {
-                    console.log('readdir', dir, f);
                     if (/\.less$/.test(f)) {
                         _default_imports.push(f);
                     }
@@ -70,14 +72,6 @@ CssFactory.prototype.schemaFor = function (vars) {
     var schema = {
         id:{
             type:'Hidden'
-        },
-        imports:{
-            type:'List',
-            listType:'Text'
-        },
-        paths:{
-            type:'List',
-            listType:'Text'
         }
     };
     _u(vars).each(function (v, k) {
@@ -96,9 +90,7 @@ CssFactory.prototype.schemaFor = function (vars) {
  */
 CssFactory.prototype.fieldsets = function (vars) {
     vars = vars || this.variables;
-    var fieldsets = [
-        {legend:'Imports', fields:['imports', 'paths']}
-    ];
+    var fieldsets = [];
     _u(vars).each(function (v, k) {
         fieldsets.push({legend:inflection.titleize(inflection.humanize(k)), fields:Object.keys(v)})
     }, this)
@@ -137,11 +129,9 @@ CssFactory.prototype.readVariables = function (lines, ret, file) {
  * @param imports -> array of imports.
  */
 CssFactory.prototype._imports = function (imports) {
-    var str = [];
-    _u(imports).each(function onImport(v, k) {
-        str.push('@import "' + v + '";\n');
-    });
-    return str;
+   return  imports ? imports.map(function onImport(v, k) {
+        return '@import "' + v + '"';
+   }) : [];
 
 }
 CssFactory.prototype.createCache = function (onCreate, variables, isDefault) {
@@ -179,6 +169,9 @@ CssFactory.prototype.getCache = function (id) {
 CssFactory.prototype.cache = function (obj) {
     return this._cache[obj.id || obj.checksum] = _u.extend({ created:Date.now()}, obj);
 }
+function falsy(v){
+    return v;
+}
 /**
  * creates css
  * @param imports - an array of imports to be used.
@@ -195,21 +188,23 @@ CssFactory.prototype.createCss = function (onCreate, variables, imports) {
         variables.paths = this.options.paths;
     }
 
-    var str = this._imports(variables.imports);
-    _u(variables).each(function onBodyPost(k, v) {
+    var str = this._imports(variables.imports).concat(
+
+    _u(variables).map(function onBodyPost(k, v) {
         if (k == 'imports' || k == 'paths') return;
-        if (v && k && _u.isString(v) && _u.isString(k) & !valRe.test(k))
-            str.push('@' + v + ': ' + k + ';\n');
-    });
+        if (v && k && _u.isString(v) && _u.isString(k) && !valRe.test(k))
+            return '@' + v + ': ' + k;
+    }));
 
     var shasum = crypto.createHash('sha1');
     var parser = new (less.Parser)({
         paths:variables.paths.slice(0)
     });
 
-
-    parser.parse(str.join(''), function (err, tree) {
+    var strg = str.filter(falsy).concat('').join(";\n");
+    parser.parse(strg, function (err, tree) {
         if (err) {
+            console.log('error parsing', strg, err);
             onCreate(err);
         } else {
             try {

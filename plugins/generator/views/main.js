@@ -21,9 +21,9 @@ require.config({
     templates: '../templates',
    'backbone-modal':'libs/backbone-forms/editors/backbone.bootstrap-modal',
 
-{{each(j,k) pluginManager.pluginNames()}}
-    ${j}:'${baseUrl}${j}',
-{{/each}}
+//{{each(j,k) pluginManager.pluginNames()}}
+//${nl}    ${j}:'${baseUrl}${j}',
+//{{/each}}
     tpl: '../tpl'
   }
 

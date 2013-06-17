@@ -72,13 +72,6 @@ CsvPlugin.prototype.parsers = function () {
     return parsers;
 };
 
-CsvPlugin.prototype.configure = function (conf) {
-    Object.keys(this.conf).forEach(function (v) {
-        delete this.conf[v];
-    }, this);
-    this.conf.modelName = {};
-    _.extend(this.conf, conf);
-};
 CsvPlugin.prototype.genConf = function (modelName, headers, allParsers) {
     var schema = this.pluginManager.appModel.modelPaths[modelName].schema;
     allParsers = allParsers || this.pluginManager.asList('parsers');
@@ -210,11 +203,12 @@ CsvPlugin.prototype.routes = function () {
 
     }.bind(this));
     function onConfigureFromFile(req, res) {
-        var conf = req.params.configuration || req.body.configuration || 'Default';
-        var modelName = req.params.modelName || inflection.camelize(req.files.import.name.replace(/\.{0,7}$/, ''), false);
+        var conf = req.params.configuration || req.body.configuration || 'Default'
+        var file = req.files.file || req.files.import;
+        var modelName = req.params.modelName || inflection.camelize(file.name.replace(/\.{0,7}$/, ''), false);
         var m = pluginManager.appModel.modelPaths[modelName];
         m = m && m.schema;
-        var read = fs.createReadStream(req.files.file.path);
+        var read = fs.createReadStream(file.path);
         this.readHeader(read, function (err, resp) {
             if (err) {
                 console.log('error', err);
@@ -252,7 +246,7 @@ CsvPlugin.prototype.routes = function () {
 
     this.app.get(pluginUrl + '/admin/configure/:modelName/:config?', function (req, res) {
 
-        var modelName = req.params.modelName, config = req.params.config || 'Default', mn = this.conf.modelName;
+        var modelName = req.params.modelName, config = req.params.config || 'Default', mn = this.conf.modelName || (this.conf.modelName = {});
         var schema = pluginManager.appModel.modelPaths[modelName];
 
         var mapping;
@@ -274,7 +268,7 @@ CsvPlugin.prototype.routes = function () {
 
     }.bind(this));
     var saveConfig = function onSaveConfig(req, res) {
-        var modelName = req.params.modelName, config = req.params.config || 'Default', mn = this.conf.modelName;
+        var modelName = req.params.modelName, config = req.params.config || 'Default', mn = this.conf.modelName || (this.conf.modelName = {});
         var m = mn[modelName] || (mn[modelName] = {});
         m[config] = req.body.mapping;
         this.save(this.conf, function (e) {
@@ -293,7 +287,9 @@ CsvPlugin.prototype.routes = function () {
 
     this.app.get(pluginUrl + '/admin/importmodel/label/:modelName', function (req, res) {
         var payload = [];
-        payload.push.apply(payload, Object.keys(this.conf.modelName[req.params.modelName] || {}).map(function (v) {
+        var modelName = req.params.modelName, config = req.params.config || 'Default', mn = this.conf.modelName || (this.conf.modelName = {});
+
+        payload.push.apply(payload, Object.keys(this.conf.modelName[modelName] || {}).map(function (v) {
             return {label: v, val: v};
         }));
         if (payload.length == 0)

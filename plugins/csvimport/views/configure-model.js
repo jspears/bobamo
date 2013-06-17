@@ -1,4 +1,4 @@
-define(['underscore', 'Backbone', 'Backbone.Form', 'csvimport/mapping-form', 'modeleditor/js/form-model'], function (_, B, Form, MappingForm) {
+define(['underscore', 'Backbone', 'Backbone.Form', 'csvimport/mapping-form', 'Backbone.Form/form-model', 'libs/editors/reorder-list-editor'], function (_, B, Form, MappingForm) {
     return B.Model.extend({
         parse:function (resp) {
             var p = resp && resp.payload || resp;
@@ -15,15 +15,10 @@ define(['underscore', 'Backbone', 'Backbone.Form', 'csvimport/mapping-form', 'mo
             });
             return p;
         },
-        toJSON:function(){
-            console.log('ConfModel.toJson');
-            return B.Model.prototype.toJSON.apply(this, _.toArray(arguments));
-        },
         createForm:function(opt){
           return (this.form = new Form(opt));
         },
         urlRoot:function () {
-//            /admin/importmodel/:modelName/:configure
             return '${pluginUrl}/admin/configure/' + this.get('modelName')
         },
         defaults:{
@@ -40,7 +35,7 @@ define(['underscore', 'Backbone', 'Backbone.Form', 'csvimport/mapping-form', 'mo
                 help:'A Sample CSV file to look for headers'
             },
             mapping:{
-                type:'List',
+                type:'ReorderList',
                 itemType:'NestedModel',
                 model:B.Model.extend({
                     toString:function(){

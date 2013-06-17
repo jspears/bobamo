@@ -3,16 +3,16 @@ var bobamo = require('../../index'),
     inflection = bobamo.inflection, Model = bobamo.DisplayModel
     Swag = require('./swag-utils')
     ;
-var swagger = require("swagger-node-express/Common/node/swagger");
+var swagger = require("./lib/swagger");
 var util = require('../../lib/util');
-var param = require("swagger-node-express/Common/node/paramTypes");
+var param = require("./lib/paramTypes");
 var url = require("url");
 var swe = swagger.errors;
 
 
 var Spec = function (args, finder, path) {
     var display = finder.display || {};
-    var _responseModel;
+    var _responseModel, _requestModel;
     this.responseModel = function () {
         if (_responseModel)
             return _responseModel;
@@ -23,6 +23,7 @@ var Spec = function (args, finder, path) {
         _responseModel = new Model(modelName, [display.responseModel])
         return  _responseModel;
     }
+
     this.__defineGetter__('errorResponses', function () {
         var errorResponses = util.find(errorResponses, args);
         if (errorResponses && errorResponses.length) {
@@ -32,12 +33,15 @@ var Spec = function (args, finder, path) {
         }
     })
     this.__defineGetter__('params', function () {
+
         var method = this.method || 'GET';
         var parameters = [];
         if (display.hidden)
             return;
-        var defP = util.find('params', args) || util.find('parameters', args)
+        var defP = finder.display && (finder.display.params || finder.display.parameters) || util.find('params', args) || util.find('parameters', args)
+        console.log('Spec->params', finder.name, defP);
         if (defP) {
+
             return defP;
         }
         if (method == 'GET') {
@@ -52,7 +56,7 @@ var Spec = function (args, finder, path) {
                         dataType:Swag.fromType(vv.schemaType || vv.type) || 'string',
                         description:vv.help || vv.description,
                         name:kk,
-                        paramType:'query',
+                        paramType:display.paramType || 'query',
                         required:required});
                 });
 
@@ -111,7 +115,7 @@ var Spec = function (args, finder, path) {
             return rc;
         }
         rc = this.responseModel().modelName;
-        return (this.method == 'POST' || this.method == 'DELETE') ?  'void' :  display.single ? rc : "List[" + rc + "]";
+        return (this.method == 'POST' || this.method == 'DELETE') ?  'void' :  display.multiple !== false ? rc : "List[" + rc + "]";
     });
 
     this.__defineGetter__('nickname', function () {
@@ -134,7 +138,7 @@ var Spec = function (args, finder, path) {
     this.__defineGetter__('summary', function () {
         if (finder && finder.display && finder.display.summary)
             return finder.display.summary;
-        return finder.help || finder.description || 'About ' + finder.title;
+        return finder.help || finder.description || finder.title;
 
     });
 }

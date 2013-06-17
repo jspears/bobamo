@@ -1,40 +1,7 @@
-define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/fieldset', 'views/modeleditor/admin/editors', 'views/modeleditor/admin/mongoose-types', 'exports', 'underscore', 'Backbone.Form', 'libs/editors/typeahead-editor'], function (b, Form, Fieldset, Editors, MongooseType, exports, _) {
-    var DataTypes = {
-        'String':[
-            'text',
-            'password',
-            'color',
-            'date',
-            'datetime',
-            'datetime-local',
-            'email',
-            'month',
-            'number',
-            'range',
-            'search',
-            'tel',
-            'time',
-            'url',
-            'week'],
-        'Number':[
-            'number',
-            'range',
-            'week']
-    }
-
-    function editorsFor(val) {
-        var editors = [];
-        _.each(Editors, function (v, k) {
-            if (v && v.types) {
-
-                if (~v.types.indexOf(val))
-                    editors.push(k);
-            } else {
-                editors.push(k)
-            }
-        });
-        return editors;
-    }
+define([ 'Backbone', 'Backbone.Form/form-model', 'modeleditor/views/admin/fieldset', 'modeleditor/editor-selector', 'modeleditor/views/admin/mongoose-types', 'exports', 'underscore', 'Backbone.Form', 'libs/editors/typeahead-editor'],
+    function (b, Form, Fieldset, editorSelector, MongooseType, exports, _) {
+    "use strict";
+    var Editors = editorSelector.Editors, editorsFor = editorSelector.editorsFor, editorFor = editorSelector.editorFor;
 
     var Property = b.Model.extend({
 
@@ -59,8 +26,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                 model:b.Model.extend({
                     createForm:function (args) {
                         args.model.schema = Editors;
-                        var form = new Form(args)
-                        return form;
+                        return (this.form = new Form(args));
                     }
                 })
             },
@@ -98,28 +64,15 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             var title = this.get('path') || this.get('name');
             if (title)
                 form.title = 'Property [' + title + ']';
-            var self = this;
 
+            //noinspection JSUnusedLocalSymbols
             function onSchema(c1, c2, field) {
                 var val = field && field.$el.val();
                 console.log('onSchema', val);
-                var first, second, third, pos = -1;
-                _.each(Editors, function (v, k) {
-                    if (k == val)
-                        first = k;
-                    else if (v && v.types) {
-                        var idx = v.types.indexOf(val);
-                        if (idx > pos) {
-                            third = k;
-                            pos = idx;
-
-                        }
-                    }
-                });
                 var editor =  form.fields.type.editor;
                 editor.setOptions(
                     function (cb) {
-                        editor.value = first || second || third || 'Text';
+                        editor.value = editorFor(val);
                         cb(editorsFor(val));
                         onType();
                     });
@@ -132,7 +85,7 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
                 var fields = form.fields.editor.editor.form.fields;
                 _.each(_.omit(fields, type), function (f) {
                     f.$el.hide();
-                })
+                });
                 if (type&& fields[type])
                     fields[type].$el.show();
                 else{
@@ -141,11 +94,12 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
             }
 
             form.on("hidden:change", onType);
+            //noinspection JSUnusedLocalSymbols
             function onEditor(c1, field) {
                 var newValue = field && field.$el.val() || form.fields.type.value;
                 console.log('onEditor', newValue);
                 form.fields.type.editor.setOptions(
-                    function (cb) {
+                    function onEditorSetOptions(cb) {
                         form.fields.type.editor.value = newValue;
                         cb(editorsFor(form.fields.persistence.editor.form.fields.schemaType.getValue()));
                     });
@@ -166,8 +120,8 @@ define([ 'Backbone', 'modeleditor/js/form-model', 'views/modeleditor/admin/field
     //   Property.prototype.schema.paths.model = Property;
     exports.property = function () {
         return Property;
-    }
+    };
 
 
     return Property;
-})
+});
