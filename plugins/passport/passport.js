@@ -13,6 +13,7 @@ var PassportPlugin = function () {
     this._install;
     this.conf = defaultConf;
     this.app.use(passport.initialize());
+    this.app.use(passport.session());
 
     this._appModel = {  header: {
 
@@ -36,15 +37,19 @@ PassportPlugin.prototype.findByUsernamePassword = function (username, password, 
     var obj = {};
     obj[this.conf.usernameField] = username;
     obj[this.conf.passwordField] = password;
-    var u = _.first(_.where(this.conf.users, {username: username, _password:password }));
+    var u = _.first(_.where(this.conf.users, {username: username, _password: password }));
     if (u) {
         u._id = u.username;
         return done(null, u);
     }
-    mongoose.model(this.conf.authModel).findOne(obj, function (err, u) {
-        console.log('err', err, 'found', obj, u != null);
-        done(err, u);
-    });
+    if (this.conf.authModel) {
+        mongoose.model(this.conf.authModel).findOne(obj, function (err, u) {
+            console.log('err', err, 'found', obj, u != null);
+            done(err, u);
+        });
+    } else {
+        return done(null, null);
+    }
 }
 PassportPlugin.prototype.findById = function (id, done) {
     console.log('findById', id);
@@ -53,13 +58,13 @@ PassportPlugin.prototype.findById = function (id, done) {
         return done(null, u);
     var obj = {};
     obj[this.conf.idField] = id;
-    if (this.conf.authModel){
-    mongoose.model(this.conf.authModel).findOne(obj, function (err, u) {
-        console.log('err', err, 'found', obj, u != null);
+    if (this.conf.authModel) {
+        mongoose.model(this.conf.authModel).findOne(obj, function (err, u) {
+            console.log('err', err, 'found', obj, u != null);
 
-        done(err, u);
-    });
-    }else{
+            done(err, u);
+        });
+    } else {
         done(null)
     }
 }
@@ -70,8 +75,9 @@ PassportPlugin.prototype.identify = function (user, done) {
 PassportPlugin.prototype.registerSave = function () {
     var conf = this.conf;
     var doEncrypt = this.doEncrypt.bind(this);
+    if (conf.authModel)
     bobamo.ready.promise.then(function () {
-          mongoose.model(conf.authModel).schema.pre('save', function (next) {
+        mongoose.model(conf.authModel).schema.pre('save', function (next) {
             var password = this._doc[conf.passwordField];
             if (password && password !== 'password') {
                 this[conf.passwordField] = doEncrypt(password)
@@ -97,7 +103,6 @@ PassportPlugin.prototype.install = function (strategy) {
     }
     this._install = strategy;
     try {
-        this.app.use(passport.session());
 
         passport.use(strategy, new Strategy(this.findByUsernamePassword.bind(this)));
         passport.serializeUser(this.identify.bind(this));
@@ -114,10 +119,10 @@ PassportPlugin.prototype.configure = function (options) {
     options = _u.extend({}, defaultConf, options);
     if (!(options.users || options.authModel))
         return {
-        users:{
-            message:'Need at least one user'
+            users: {
+                message: 'Need at least one user'
+            }
         }
-    }
     _.each(options.users, function (u) {
         if (u.password)
             u._password = this.doEncrypt(u.password, options.hash, options.digest);
@@ -172,16 +177,16 @@ PassportPlugin.prototype.admin = function () {
                 users: {
                     type: 'List',
                     itemType: 'Object',
-                    help:'You can add users to your bobamo.json here in case the backing store is unavailable',
+                    help: 'You can add users to your bobamo.json here in case the backing store is unavailable',
                     subSchema: {
-                        username:{ type:'Text', title:'username'},
-                        password:{ type:'Password', title:'password'}
+                        username: { type: 'Text', title: 'username'},
+                        password: { type: 'Password', title: 'password'}
                     }
                 }
             },
             url: this.pluginUrl + '/admin/configure',
             fieldsets: [
-                {legend: "Passport Plugin", fields: ['usernameField', 'passwordField', 'hash', 'encoding', 'authModel','users']}
+                {legend: "Passport Plugin", fields: ['usernameField', 'passwordField', 'hash', 'encoding', 'authModel', 'users']}
             ],
             defaults: this.conf, //_u.extend({model:this.options.authModel.modelName}, this.config),
             plural: 'Passport',
@@ -325,24 +330,24 @@ PassportPlugin.prototype.routes = function () {
                     }
                 });
             }
-            this.findByUsernamePassword(req.user[usernameField], this.doEncrypt(body.password), function(e,o){
+            this.findByUsernamePassword(req.user[usernameField], this.doEncrypt(body.password), function (e, o) {
                 if (e) return next(e);
                 if (!o)
                     return res.send({
                         status: 1,
                         error: {
-                            errors:{password: 'Incorrect Password'}
+                            errors: {password: 'Incorrect Password'}
                         }
                     });
                 o[passwordField] = body.new_password;
-                o.save(function(oe, no){
+                o.save(function (oe, no) {
                     if (oe) return next(oe);
                     req.user = no;
                     res.send({
-                        status:0,
-                        payload:{
-                            _id:req.user[usernameField],
-                            message:'Password Changed Successfully'
+                        status: 0,
+                        payload: {
+                            _id: req.user[usernameField],
+                            message: 'Password Changed Successfully'
                         }
                     })
                 });

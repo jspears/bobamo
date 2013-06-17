@@ -1,7 +1,6 @@
 var bobamo = require('../../index'),
     mongoose = bobamo.mongoose,
     Plugin = bobamo.PluginApi,
-    static = require('connect/lib/middleware/static'),
     ImageInfo = require('./ImageInfo'),
     fs = require('fs-extra'),
     path = require('path'),
@@ -139,9 +138,6 @@ ImageUploadPlugin.prototype.renderers = function () {
 //I really want to configure the executable via the GUI but it is so full
 //of security issues, I can't.
 ImageUploadPlugin.prototype.admin = function () {
-    return this._admin;
-}
-ImageUploadPlugin.prototype._admin = function(){
     return new Model('imageupload', [
         {
             schema: {
@@ -181,6 +177,7 @@ ImageUploadPlugin.prototype.configure = function (conf) {
     });
     return null;
 }
+
 ImageUploadPlugin.prototype.routes = function () {
 
     var dir = process.cwd();
@@ -239,7 +236,7 @@ ImageUploadPlugin.prototype.routes = function () {
 
 
     }.bind(this),
-        static(dir + '/public')
+       require('express').static(dir + '/public')
     );
     //, static(dir+'/public'));
 //    _u.each(options.imageVersions, function(v,k){

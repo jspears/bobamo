@@ -1,4 +1,5 @@
 var Q = require('q');
+
 module.exports.bus = require('./lib/bus')
 module.exports.express = require('./lib/bobamo-express.js');
 module.exports.expressApi = require('express');

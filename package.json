@@ -10,7 +10,6 @@
         "mers": ">= 0.4.1",
         "underscore": "latest",
         "less": "latest",
-        "connect": "latest",
         "express": ">=3",
         "requirejs": "latest",
         "q": "latest",

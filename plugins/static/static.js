@@ -1,5 +1,5 @@
 var Plugin = require('../../lib/plugin-api'), editors = require('./editors'),
-    util = require('util'), path = require('path'), static = require('connect/lib/middleware/static'), _u = require('underscore');
+    util = require('util'), path = require('path'), _u = require('underscore');
 var StaticPlugin = function (options, app, name, p, pluginManager) {
     Plugin.apply(this, arguments);
     var public = path.join(this.path, 'public', 'js')
@@ -83,9 +83,9 @@ StaticPlugin.prototype.filters = function () {
     var prefix = this.baseUrl;
     var sdir = path.join(this.path, 'public');
     var psdir = path.join(process.cwd(), 'public');
-
-    var public = static(sdir);
-    var publicUser = static(psdir);
+    var express = require('express');
+    var public = express.static(sdir);
+    var publicUser = express.static(psdir);
     this.app.get(prefix + '*', function (req, res, next) {
         req._url = req.url;
         req.url = req.url.substring(prefix.length - 1);
