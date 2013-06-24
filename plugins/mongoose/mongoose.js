@@ -370,7 +370,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
         }, this);
         return obj;
     }
-    if (p.instance == 'ObjectID') {
+    if (p.instance === 'ObjectID') {
         if (opts.ref) {
 
             _u.extend(defaults, {
@@ -449,6 +449,7 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                     Number:
                         _u.extend(defaults, {schemaType: 'Number', type: 'Number'});
                         break;
+
                     case
                     String:
                         var o = {schemaType: 'String'};
@@ -478,6 +479,15 @@ MongoosePlugin.prototype.editorFor = function (path, p, Model) {
                             dataType: 'date'
 
                         })
+                        break;
+                    case
+                        mongoose.SchemaTypes.Mixed:
+                        _u.extend(defaults, {
+                            type: 'Object',
+                            schemaType: 'Mixed'
+                        });
+
+                        console.log('Mixed not yet totally supported');
                         break;
                     default:
                     {
