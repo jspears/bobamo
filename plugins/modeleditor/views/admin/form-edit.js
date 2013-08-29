@@ -322,12 +322,24 @@ define(['Backbone', 'Backbone.Form/form-model',
         onSuccess: function () {
             EditView.prototype.onSuccess.apply(this, pslice.call(arguments))
             var id = this.modelInstance.id;
-            require(['views/' + id + '/edit',
-                'text!templates/' + id + '/edit.html.raw'
-            ], this.doModify.bind(this));
+            require.undef('views/' + id + '/edit');
+            require.undef('text!templates/'+ id + '/edit.html');
+            require.undef('modelcollections/'+ id );
+            require.undef('collections/'+ id );
+            require.undef('models/'+ id );
+            require.undef('text!templates/'+ id + '/table-item.html');
+            require.undef('text!templates/'+ id + '/table.html');
+            require.undef('views/'+ id + '/list');
+            require.undef('text!templates/'+ id + '/edit.html.raw');
+            /*
+             text!templates/group/edit.html: "<div class="edit-form group">↵    <ul style="display:none" class="unstyled error-list alert-error"></ul>↵    <ul style="display:none" class="unstyled success-list"></ul>↵    <div class="form-wrap ">↵        <div class="form-container"></div>↵    </div>↵    <div class="form-actions btn-toolbar">↵        <!--<div class="btn-group pull-left">-->↵            <!--<a class="btn cancel" href="#/views/group/list"><b class="icon-list"/>List</a>-->↵            <!--<button class="btn cancel">Cancel</button>-->↵        <!--</div>-->↵        <!--<div class="space btn-group pull-left" style="padding-left:2em;padding-right:2em">&nbsp;</div>-->↵        <!--<div class="btn-group pull-left" style="display:none">-->↵            <!--<a class="btn previous">Previous</a>-->↵            <!--<a class="btn next">Next</a>-->↵        <!--</div>-->↵        <!--<button class="btn pull-right btn-primary save finish">Save</button>-->↵↵        <div class="clearfix"></div>↵    </div>↵↵</div>"
+             text!templates/group/edit.html.raw: "<div class="edit-form ${model && model.modelName}">↵    <ul style="display:none" class="unstyled error-list alert-error"></ul>↵    <ul style="display:none" class="unstyled success-list"></ul>↵    <div class="form-wrap ">↵        <div class="form-container"></div>↵    </div>↵    <div class="form-actions btn-toolbar">↵        <!--<div class="btn-group pull-left">-->↵            <!--<a class="btn cancel" href="#/views/${collection}/list"><b class="icon-list"/>List</a>-->↵            <!--<button class="btn cancel">Cancel</button>-->↵        <!--</div>-->↵        <!--<div class="space btn-group pull-left" style="padding-left:2em;padding-right:2em">&nbsp;</div>-->↵        <!--<div class="btn-group pull-left" style="display:none">-->↵            <!--<a class="btn previous">Previous</a>-->↵            <!--<a class="btn next">Next</a>-->↵        <!--</div>-->↵        <!--<button class="btn pull-right btn-primary save finish">Save</button>-->↵↵        <div class="clearfix"></div>↵    </div>↵↵</div>"
+             text!templates/group/table-item.html: "↵<td><%= format('name', 0) %></td>↵↵<td><%= format('description', 1) %></td>↵↵<td><%= format('created_at', 2) %></td>↵↵<td><%= format('modified_at', 3) %></td>↵↵<td>↵    <a href="#/views/group/edit?id=<%=item.id%>"><i class="icon-edit"></i>Edit</a>↵    <a href="#/views/group/delete?id=<%=item.id%>"><i class="icon-remove"></i>Delete</a>↵↵</td>"
+             text!templates/group/table.html:
+             */
         },
-        doModify: function (View, table, tableItem) {
-            _.extend(View.prototype, this.createConfig(table, tableItem));
+        doModify: function (View, table, tableItem, busted) {
+            _.extend(busted.prototype, View.prototype, {})
         },
         createConfig: function (formtemplate) {
             var fieldsets = this.modelInstance.get('fieldsets'),
