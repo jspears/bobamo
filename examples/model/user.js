@@ -26,6 +26,7 @@ module.exports = function (bobamo) {
             stars: Number,
             favorite: {type: Number, display: {title: 'Favorite'}}
         },
+        messages        : { type: Schema.Types.Mixed,  required: true, index: true },
         roles: [RoleSchema],
         created_at: {type: Date, display: {display: 'none'}},
         created_by: {type: Schema.ObjectId, ref: 'user'},

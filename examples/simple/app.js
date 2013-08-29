@@ -5,8 +5,8 @@
 //require('bobamo/examples/model/Employee');
 
 var bobamo    = require('bobamo'), mongoose= bobamo.mongoose;
-//require('bobamo/examples/model/user')(bobamo);
-//require('bobamo/examples/model/group')(bobamo);
+require('bobamo/examples/model/user')(bobamo);
+require('bobamo/examples/model/group')(bobamo);
 
 var app = bobamo.app({
     //uri:'mongodb://localhost',

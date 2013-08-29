@@ -10,9 +10,7 @@ AppEditorPlugin.prototype.admin = function () {
     var appModel = this.pluginManager.appModel;
     return  new Model('appeditor', {
         schema: {
-            title: {help: 'Application Title', validators: [
-                {type: 'required'}
-            ]},
+            title: {help: 'Application Title'},
             version: {type: 'Text', help: 'Version of application'},
             description: {
                 type: 'TextArea',
@@ -59,14 +57,8 @@ AppEditorPlugin.prototype.configure = function (conf) {
 //            timestamp: appModel.timestamp
 //        });
 //    }
-    Plugin.prototype.configure.call(this, conf);
-    var errors;
-    if (!conf.title) {
-        if (!errors)
-            errors = {};
-        errors.title = 'Is required';
-    }
-    return errors;
+   return Plugin.prototype.configure.call(this, conf);
+
 }
 
 module.exports = AppEditorPlugin;

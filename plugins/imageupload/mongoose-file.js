@@ -44,6 +44,6 @@ File.prototype.cast = function (test, obj, init) {
 
 Schema.Types.File = File;
 Types.File = File;
-exports.File = File;
+module.exports = File;
 
 

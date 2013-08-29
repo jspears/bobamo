@@ -92,7 +92,7 @@ state is dramatically easier.  All data access is done through JSON/REST calls. 
 * Model Editor - Create models using a UI or enhance your display using a UI.
 * Renderers - Custom renderers so you can make things just right.
 * Editors - Plugin your own editors and easily extend the built in functionality.
-* Swagger - A little experimental but this all is so... But expose your models as swagger schema.
+* Swagger - A little experimental but this all is so... But expose your services as swagger schema.
 * Form Editor - Create forms for your models, in the UI.
 * CSV - Import models and data from CSV.
 * Less - Stylize to your hearts content.

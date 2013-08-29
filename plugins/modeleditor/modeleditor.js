@@ -497,7 +497,7 @@ EditPlugin.prototype.routes = function () {
         var type = req.params.modelName;
         var conf = this.conf.modelPaths && this.conf.modelPaths[type];
         var mconf = this.pluginManager.appModel.modelPaths[type];
-        if (conf){
+        if (conf || mconf){
             conf = _.extend({}, mconf, conf);
         }
         res.send({

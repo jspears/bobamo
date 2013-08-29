@@ -51,16 +51,18 @@ ImageUploadPlugin.prototype.editorFor = function (p, property, Model) {
         type: 'ImageUpload',
         multiple: isArray
     }
-
-    var ref = isArray ? property.length ? property[0] : null : property;
-    if (ref.ref && mongoose.modelSchemas[ref.ref] == ImageInfo) {
-        ret.url = apiPath + ref.ref;
+    if (property && property.type === File) {
+        ret.schemaType = p.schemaType;
         return ret;
+    } else {
+        var ref = isArray ? property.length ? property[0] : null : property;
+        var type = ref.type || ref.options && ref.options.type;
+        if (type === File)
+            return ret;
+        if (type === ImageInfo) {
+            return ret;
+        }
     }
-    if (ref == ImageInfo) {
-        return ret;
-    }
-
 }
 
 
@@ -164,7 +166,6 @@ ImageUploadPlugin.prototype.admin = function () {
 }
 
 
-
 ImageUploadPlugin.prototype.configure = function (conf) {
     _u.extend(this.defaults, conf);
     if (!this.defaults.directory) {
@@ -236,7 +237,7 @@ ImageUploadPlugin.prototype.routes = function () {
 
 
     }.bind(this),
-       require('express').static(dir + '/public')
+        require('express').static(dir + '/public')
     );
     //, static(dir+'/public'));
 //    _u.each(options.imageVersions, function(v,k){
