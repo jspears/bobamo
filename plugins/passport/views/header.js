@@ -1,4 +1,4 @@
-define(['super/views/header', 'underscore', 'passport/views/login-state', 'text!/passport/views/tpl/header.html'], function(HeaderView, _, LoginState, headerTmpl){
+define(['super/views/header', 'underscore', 'passport/views/login-state', 'text!passport/views/tpl/header.html'], function(HeaderView, _, LoginState, headerTmpl){
 
 
 
