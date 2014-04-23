@@ -2,36 +2,29 @@ define([
     'underscore',
     'Backbone',
     'libs/bobamo/edit',
-    'text!${pluginUrl}/templates/admin/edit.html',
-    'jquery-ui',
-    'libs/backbone-forms/src/jquery-ui-editors',
+    'text!appeditor/views/templates/admin/edit.html',
     'libs/editors/multi-editor'
 ], function (_, Backbone, EditView, template) {
     "use strict";
 
     var schema = {
-        title:{help:'Application Title'},
-        version:{help:'Version of application'},
-        description:{},
-        models:{
-            type:'MultiEditor',
-            help:'Which Models to allow users to view',
-            options:eval('({{html JSON.stringify(Object.keys(appModel.modelPaths))}})')
-        },
-        plugins:{
-            type:'List',
-            help:'The order in which to process plugins'
+        title: {help: 'Application Title'},
+        version: {help: 'Version of application'},
+        description: {},
+        authors: {
+            type: 'List',
+            help: 'People who have contributed, email "Justin Spears" &lt;speajus@gmail.com&gt;'
         }
-    }
+    };
     var Model = Backbone.Model.extend({
-        schema:schema,
-        url:'${pluginUrl}/admin',
-        parse:function (resp) {
+        schema: schema,
+        url: '${pluginUrl}/admin',
+        parse: function (resp) {
             console.log('response', resp);
             return resp.payload;
         },
-        idAttribute:'app',
-        get:function (key) {
+        idAttribute: 'app',
+        get: function (key) {
             if (key && key.indexOf('.') > -1) {
                 var split = key.split('.');
                 var val = this.attributes;
@@ -44,27 +37,33 @@ define([
         }
 
     });
+
+    var authors//${nl()} = {{json appModel.authors || []}};
     return EditView.extend({
-        fieldsets:[
-            {legend:'Application', fields:['title', 'version', 'description']},
-            {'legend':'Models', fields:['models']},
-            {'legend': 'Plugins', fields:['plugins']}
+        fieldsets: [
+            {legend: 'Application', fields: ['title', 'version', 'description']},
+//            {'legend':'Models', fields:['models']},
+//            {'legend': 'Plugins', fields:['plugins']},
+            {'legend': 'Authors', fields: ['authors']}
         ],
-        template:_.template(template),
-        model:Model,
-        isWizard:true,
-        config:{
-            title:'App',
-            plural:'App',
-            modelName:'app'
+        buttons: _.omit(EditView.prototype.buttons, 'left'),
+        template: _.template(template),
+        model: Model,
+        isWizard: true,
+        config: {
+            title: 'App',
+            plural: 'App',
+            modelName: 'app'
         },
-        createModel:function () {
+        createModel: function () {
             return new Model({
-                title:'${appModel.title}',
-                description:'${appModel.description}',
-                version:'${appModel.version}',
-                models:eval('({{html JSON.stringify(Object.keys(appModel.modelPaths))}})'),
-                plugins:eval('({{html JSON.stringify(pluginManager.pluginNames())}})')
+                title: '${appModel.title}',
+                description: '${appModel.description}',
+                version: '${appModel.version}',
+                build: '${appModel.build}',
+//                models:{{json Object.keys(appModel.modelPaths) }},
+//                plugins:{{json pluginManager.pluginNames()}},
+                authors: authors
             });
         }
     });

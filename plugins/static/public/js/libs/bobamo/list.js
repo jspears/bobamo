@@ -4,10 +4,11 @@ define([
     'underscore',
     'Backbone',
     'replacer',
+    'libs/renderer/renderers',
     'libs/table/jquery.bobamo-paginate',
     'libs/table/jquery.sorter'
 
-], function ($, _, Backbone, replacer) {
+], function ($, _, Backbone, replacer, Renderer) {
     "use strict";
     function _null(v) {
         return v != null;
@@ -21,19 +22,19 @@ define([
     var ListItemView = Backbone.View.extend({
         tagName:"tr",
         initialize:function (options) {
+            this.renderer = options && options.renderer || new Renderer();
             this.model.bind("change", this.render, this);
             this.model.bind("destroy", this.close, this);
-
-      //      _.bind(this.format, this);
+            this.sort = [];
             return this;
         },
-        format:function(field, model, schema){
-            return schema && schema.format ? schema.format(field, model, schema) : model.get(field);
+        format:function(field, idx, model, schema){
+            return this.renderer.render(model.get(field),  field,  model, idx, schema && schema.renderer);
         },
         _fields:{},
-        _format:function(field){
+        _format:function(field, idx){
             var schema = field in this._fields ? this._fields[field] : (this._fields[field] = this.schema(field, this.model));
-            return this.format(field, this.model, schema)
+            return this.format(field, idx, this.model, schema)
         },
         schema:function(field, model){
             if (!(model || field))
@@ -69,7 +70,8 @@ define([
             'paginate-change .pager_table':'doPage',
             'sorter-change .sortable':'onSort'
         },
-        initialize:function () {
+        renderer:new Renderer({}),
+        initialize:function (options) {
             if (!this.template) {
                 throw new Error('template must be defined');
             }
@@ -77,14 +79,17 @@ define([
                 throw new Error('collection must be defined');
             }
             this.collection.on('reset', this.renderList, this);
-            this.collection.on('fetch', this.renderList, this);
+            this.collection.on('fetch', function(){
+                console.log('fetch', arguments)
+                this.renderList.apply(this, _.toArray(arguments)) }, this);
+
             return this;
         },
         itemView:ListItemView,
         renderItem:function (item) {
             var template = this.listItemTemplate;
             if (this.$ul) {
-                var lel = new ListItemView({model:item, template:template}).render().el;
+                var lel = new ListItemView({model:item, renderer:this.renderer, template:template}).render().el;
                 this.$ul.append(lel);
             }
             return this;
@@ -96,9 +101,10 @@ define([
             _.each(this.collection.models, this.renderItem, this);
             this.$paginate.paginate('update', {sort:this.sort_str ? ' sorting by: ' + this.sort_str : '', total:this.collection.total});
             $('.sortable', this.$table).sorter();
+            this.trigger('fetched', arguments);
             return this;
         },
-        sorts:[],
+
         doPage:function (evt) {
             this.update('Loading page <b>' + evt.page + '</b> of {items}');
             return this;
@@ -107,6 +113,7 @@ define([
             var $p = this.$paginate.paginate('wait', message);
 
             var self = this;
+            var params = this.collection.params;
             var data = _.extend({
                 limit:parseInt($p.attr('data-limit')),
                 skip:Math.max(0, parseInt($p.attr('data-skip')))
@@ -116,10 +123,27 @@ define([
                 if (!v.direction) return;
                 sort.push([v.field, v.direction].join(':'));
             });
+            var populate = [];
+            _.each(this.renderer.config, function(v){
+                console.log('renderer',v);
+                if (v.property && ~v.property.indexOf('.')){
+                    //TODO - Mongoose throws an exception if you populate a non IdRef  fix mers so that it doesn't
+                    // send it.
+                    var mangle = v.property.split('.');
+                    mangle.pop();
+                    populate.push(mangle.join('.'))
+                }
+            });
+            if (populate.length)
+                data.populate = populate.join(',');
 
+            this.collection.params = data;
             data.sort = sort.join(',');
-            this.collection.fetch({data:data});
+            this.collection.fetch({data:data, success:_.bind(this._fetch, this)});
             return this;
+        },
+        _fetch:function(){
+          this.collection.trigger('list-data', arguments);
         },
         onSort:function (evt) {
             var obj = {field:evt.field, direction:evt.direction, label:evt.label};

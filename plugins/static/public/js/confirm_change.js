@@ -1,4 +1,4 @@
-define(['Backbone', 'underscore', 'jquery', 'text!tpl/confirm_change.html', 'libs/bootstrap/js/bootstrap-modal'], function(Backbone, _, $, template){
+define(['Backbone', 'underscore', 'jquery','backbone-modal', 'text!tpl/confirm_change.html'], function(Backbone, _, $, Modal, template){
     var ConfirmView = Backbone.View.extend({
          defaults:{
             body:'You made changes do you want to save them?',

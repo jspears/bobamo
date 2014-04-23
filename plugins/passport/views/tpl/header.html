@@ -1,0 +1,37 @@
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <div class="nav-collapse collapse">
+
+                <ul class="nav">
+                    <li>
+                        <a class="brand" href="#">${appModel.title}</a>
+                    </li>
+                    <% _.each(['title-bar'], function(t){
+                    _.each(items[t], function(l){ %>
+                    <%= menu(l) %>
+                    <%})})%>
+
+                </ul>
+                <ul class="nav pull-right">
+                    <%if (items['admin-menu']&& _.keys(items['admin-menu']).length){%>
+                    <li class="divider-vertical"></li>
+                    <%=menu({items:items['admin-menu'],label:'Admin', id:'admin-menu'})%>
+                    <%}%>
+                    <%if (items['user-menu'] && _.keys(items['user-menu']).length){%>
+                    <li class="divider-vertical"></li>
+                    <%=menu({items:items['user-menu'],label:'User'})%>
+                    <%}%>
+                    <% _.each(['passport-menu'], function(t){
+                    _.each(items[t], function(l){
+                    console.log('passport-menu', l);
+                    %>
+                    <%= menu(l) %>
+                    <% })})%>
+                    <li class="login"><a href="#/login">Login</a></li>
+                    <li class="logout"><a href="/logout">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

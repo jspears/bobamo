@@ -1,0 +1,12 @@
+{
+    "name":"jsonschema", "description":"A plugin for Bobamo that generates JsonSchema and documentation", "version":"0.6.0", "private":false, "dependencies":{
+    "swagger-node-express":"latest",
+    "node-pandoc":"latest",
+    "moment":"latest"
+},
+    "devDependencies":{
+        "should":"latest",
+        "nodeunit":"latest"
+    }
+
+}

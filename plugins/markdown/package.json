@@ -1,0 +1,9 @@
+{
+    "name": "bobamo-markdown"
+    , "description":"A plugin for bobamo that adds a markdown editor with preview"
+    , "version": "0.6.0"
+    , "private": false
+    , "dependencies":{
+        "marked":"latest"
+    }
+}

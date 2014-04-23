@@ -4,19 +4,25 @@ define(['jquery'], function ($) {
 
         this.$el = $('<div class="btn-toolbar"></div>')
         this.$message = $('<div class="message well"></div>');
-        this.$buttonGrp = $('<div class="btn-group"></div>');
-        this.$buttonGrp2 = $('<div class="btn-group"></div>');
-        this.$buttonGrp3 = $('<div class="btn-group"></div>');
-        this.$el.append(this.$buttonGrp, this.$buttonGrp2, this.$buttonGrp3);
-        this.$el.delegate('.btn-group a.btn', 'click', $.proxy(this.onClick, this));
+        this.$buttonGrp = $('<div class="btn-group pages"></div>');
+        this.$buttonGrp2 = $('<div class="btn-group pages"></div>');
+        this.$buttonGrp3 = $('<div class="btn-group pages"></div>');
+        this.$buttonItems = $('<div class="btn-group pull-right perPage"></div>')
+        this.$el.append(this.$buttonGrp, this.$buttonGrp2, this.$buttonGrp3, this.$buttonItems);
+        this.$el.delegate('.btn-group.pages .btn', 'click', $.proxy(this.onClick, this));
+        this.$el.delegate('.btn-group.perPage .btn', 'click', $.proxy(this.onClickPerPage, this));
+
         this.$element = $(element).append(this.$el, this.$message);
-        if (this.options.total) {
-            this.drawButtons();
-        }
         this.drawMessage();
     }
 
     Paginate.prototype = {
+        drawPerPage:function(){
+            var limit = this.options.limit;
+            this.$buttonItems.empty().append.apply(this.$buttonItems, $.map(this.options.perPage, function(i){
+                return '<a data-limit="'+i+'" class="btn '+ (i == limit ? 'active' : '')  +'">'+i+'</a>';
+            }));
+        },
         destroy:function(){
             console.log("destroy",this);
           this.$el.remove();
@@ -56,9 +62,16 @@ define(['jquery'], function ($) {
                 return $.isFunction(v) ? v.apply(self, Array.prototype.slice.call(arguments)) : v
             });
         },
-        onClick:function (e) {
-            var limit = this.options.limit;
+        onClickPerPage:function(e){
             var $c = $(e.currentTarget)
+            var limit = (this.options.limit = $c.attr('data-limit')) || this.options.limit;
+            this.$element.attr('data-limit', limit);
+            this.makeRequest(1);
+            this.drawPerPage();
+        },
+        onClick:function (e) {
+            var $c = $(e.currentTarget)
+            var limit = this.options.limit;
             var page = $c.attr('data-page');
             $('.btn-primary', this.$el).removeClass('btn-primary');
             var skip = this.options.skip = limit * Math.max(page-1,0);
@@ -88,13 +101,14 @@ define(['jquery'], function ($) {
             $.extend(this.options, obj);
             delete this.options.payload;
             this.drawButtons();
-            this.drawMessage();
 
+            this.drawMessage();
         },
         drawButtons:function () {
             this.$buttonGrp.empty();
             this.$buttonGrp2.empty()
             this.$buttonGrp3.empty();
+            this.$buttonItems.empty();
             var opts = this.options;
             var total = parseInt(_d(opts.filterTotal) ? opts.filterTotal : opts.total), limit = parseInt(opts.limit), skip = parseInt(opts.skip);
             var pageCount = Math.ceil(total / limit);
@@ -135,6 +149,7 @@ define(['jquery'], function ($) {
                     }
                 }
             }
+            this.drawPerPage();
             return this;
 
         },
@@ -224,6 +239,7 @@ define(['jquery'], function ($) {
         total:0,
         btnTemplate:'<a class="btn"></a>',
         sort:'',
+        perPage:[10,20,50],
         messages:{
             wait:'<b class="icon-wait"/>Loading...',
             none:'No {items:items} found{filter}.',

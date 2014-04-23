@@ -5,51 +5,24 @@
 
             <div class="nav-collapse mainnav">
                 <ul class="nav">
-                    {{each(i,l) appModel.modelPaths}}
-                      {{if l.finders && l.finders.length }}
-                         <li class="dropdown ${l.modelName}" id="menu${l.modelName}">
+                    <% _.each(['title-bar'], function(t){
+                    _.each(items[t], function(l){ %>
+                    <%= menu(l) %>
+                    <%})})%>
+                </ul>
+                <ul class="nav pull-right">
 
-                           <a    class="dropdown-toggle"  data-toggle="dropdown">
-                            ${l.plural}
-                            <b class="caret"></b>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#/${l.modelName}/list">All ${l.plural}</a></li>
-                            {{each(k, j) l.finders }}
-                            <li><a href="#/views/${l.modelName}/finder/${j.name}">${j.title}</a></li>
-                            {{/each}}
-
-                             </ul>
-                         </li>
-                      {{else}}
-                       <li class="${l.modelName}" id="menu${l.modelName}">
-                        <a href="#/${l.modelName}/list">${l.plural}</a>
-                      </li>
-
-                     {{/if}}
-                    {{/each}}
-                    {{if pluginManager.admin.length}}
-                    <li class="dropdown">
-
-                        <a href="#"
-                           class="dropdown-toggle"
-                           data-toggle="dropdown">
-                            Admin
-                            <b class="caret"></b>
-                        </a>
-                        <ul class="dropdown-menu">
-                            {{each(k, j) pluginManager.admin }}
-                            <li><a href="${j.href}">${j.title}</a></li>
-                            {{/each}}
-                        </ul>
-                    </li>
-                    {{/if}}
-
+                    <%if (items['admin-menu']&& _.keys(items['admin-menu']).length){%>
+                    <li class="divider-vertical"></li>
+                    <%=menu({items:items['admin-menu'],label:'Admin'})%>
+                    <%}%>
+                    <%if (items['user-menu'] && _.keys(items['user-menu']).length){%>
+                    <li class="divider-vertical"></li>
+                    <%=menu({items:items['user-menu'],label:'User'})%>
+                    <%}%>
                 </ul>
             </div>
-            {{if useAuthentication}}
-                <a class="logout pull-right" href="${baseUrl}logout">Logout</a>
-            {{/if}}
+
         </div>
     </div>
 </div>

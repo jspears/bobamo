@@ -1,59 +1,64 @@
-var Plugin = require('../../lib/plugin-api'), _u = require('underscore');
+var bobamo = require('../../index'), Plugin = bobamo.PluginApi, Model = bobamo.DisplayModel, _u = require('underscore');
 var AppEditorPlugin = function (options, app, name) {
     Plugin.apply(this, arguments);
-    this._appModel = {};
-}
+    this.conf = {};
+};
+
 require('util').inherits(AppEditorPlugin, Plugin);
-AppEditorPlugin.prototype.admin = function(){
-    return {
-        href:'#/appeditor/admin/edit',
-        title:'Application Details'
-    };
+
+AppEditorPlugin.prototype.admin = function () {
+    var appModel = this.pluginManager.appModel;
+    return  new Model('appeditor', {
+        schema: {
+            title: {help: 'Application Title'},
+            version: {type: 'Text', help: 'Version of application'},
+            description: {
+                type: 'TextArea',
+                help:'Description of application'}
+                ,
+            authors: {
+                type: 'List',
+                help: 'People who have contributed, email "Justin Spears" &lt;speajus@gmail.com&gt;'
+            }
+        },
+        buttons: {
+            left: []
+        },
+        title: 'About',
+        defaults: {
+            title: appModel.title,
+            version: appModel.version,
+            description: appModel.description,
+            authors: this.conf.authors
+        }
+    });
 }
-AppEditorPlugin.prototype.appModel = function(){
-    return this._appModel;
-}
-AppEditorPlugin.prototype.configure = function(options){
-    _u.extend(this._appModel,options);
-    console.log('AppEditorPlugin AppModel', this._appModel);
 
-}
-AppEditorPlugin.prototype.filters = function(){
-    this.app.get(this.pluginUrl+'*', function(req,res,next){
-        res.locals('pluginManager', this.pluginManager);
-        next();
-    }.bind(this));
-    Plugin.prototype.filters.apply(this, arguments);
-}
-AppEditorPlugin.prototype.routes = function (options) {
+AppEditorPlugin.prototype.appModel = function () {
+    return this.conf;
+};
 
-    this.app.get(this.pluginUrl + '/admin/:id', function (req, res, next) {
-        var appModel = this._appModel;
-        res.send({
-            payload:appModel,
-            status:1
-        })
-    }.bind(this));
+AppEditorPlugin.prototype.configure = function (conf) {
 
-    this.app.post(this.pluginUrl + '/admin', function (req, res, next) {
-        this.save(req.body, function(err, obj){
-            res.send({
-                status:0,
-                payload:obj
-            })
-        }.bind(this), req);
-    }.bind(this));
+    conf = conf || {};
+//    var appModel = this.pluginManager.appModel;
+//    if (this.conf) {
+//        conf.revisions = this.conf.revisions;
+//    } else {
+//        conf.revisions = [];
+//    }
+//    var cversion = appModel.version || this.conf && this.conf.version;
+//    if (conf.version != cversion) {
+//        var revisions = conf.revisions || (conf.revisions = []);
+//        revisions.push({
+//            version: appModel.version,
+//            description: appModel.description,
+//            modified: appModel.modified || new Date(),
+//            timestamp: appModel.timestamp
+//        });
+//    }
+   return Plugin.prototype.configure.call(this, conf);
 
-    this.app.put(this.pluginUrl + '/admin', function (req, res, next) {
-        this.save(req.body, function(err, obj){
-            res.send({
-                status:0,
-                payload:obj
-            })
-        }.bind(this), req);
-    }.bind(this));
-
-    Plugin.prototype.routes.apply(this, arguments);
 }
 
 module.exports = AppEditorPlugin;

@@ -3,7 +3,6 @@ define(['Backbone', 'jquery', 'underscore', 'text!tpl/home.html'], function (Bac
     var HomeView = Backbone.View.extend({
         el:'#content',
         initialize:function () {
-            console.log('Initializing Home View');
             this.template = _.template(homeTmpl);
         },
 

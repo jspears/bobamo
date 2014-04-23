@@ -4,7 +4,6 @@
     , "version": "0.6.0"
     , "private": false
     , "dependencies":{
-        "blueimp-file-upload":"latest",
         "imagemagick":"latest",
         "fs-extra":"latest"
     }

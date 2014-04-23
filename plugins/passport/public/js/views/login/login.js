@@ -1,4 +1,4 @@
-define(['Backbone', 'jquery', 'underscore', 'text!passport/tpl/login.html'], function (Backbone, $, _, loginTmpl) {
+define(['Backbone', 'jquery', 'underscore', 'passport/views/login-state', 'text!passport/views/tpl/login.html'], function (Backbone, $, _, loginState, loginTmpl) {
 
     var LoginView = Backbone.View.extend({
         el:        '#content',
@@ -20,6 +20,7 @@ define(['Backbone', 'jquery', 'underscore', 'text!passport/tpl/login.html'], fun
 
         login:    function (event) {
             event.preventDefault();
+            loginState.fetch()
             $.ajax({
                 url:'passport',
                 type:'POST',
@@ -30,17 +31,19 @@ define(['Backbone', 'jquery', 'underscore', 'text!passport/tpl/login.html'], fun
         onLogin:  function (res) {
             console.log('onLogin', arguments);
             if (res.status === 0) {
-                this.onSuccess(res);
+                this.onSuccess(res.payload);
             } else {
                 this.onFail();
             }
         },
         onFail:   function () {
-            $(this.el).find('.alert-warning').show('slow');
+            $(this.el).find('.alert-error').show('slow');
         },
         onSuccess:function (res) {
-            window.isAuthenticated = res;
-            $(this.el).find('.alert-warning').hide('slow', this.onNext);
+            loginState.isAuthenticated  = window.isAuthenticated = true;
+            loginState.set(res);
+            loginState.trigger('loggedin');
+            $(this.el).find('.alert-error').hide('slow', this.onNext);
         },
         onNext:   function () {
             if (this.options && this.options.router){

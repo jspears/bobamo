@@ -6,8 +6,6 @@ box though, you can easily change any part of the generated stuff by making it s
 directory.   This allows for easy customization.   You can at your own risk modify the scaffolding generated in views/generator
 
 ##Getting Started.
-Recently Bobamo has been refactored is a express plugin, err middleware.  This gives an easy installation method, (npm) and
-relatively easy configuration. 
 
 Just add bobamo to your package.json, npm install then configure app.js to use bobamo
 This is the easy way...
@@ -72,7 +70,7 @@ no scaffolding required.
   up top.  It should make it easier to use the parts you want and skip the parts you don't.
 * Single language.  No more writing server side in Ruby/PHP/Java and client side in javascript, its all javascript so
   less context switches, easier to share code between client/server.
-* Client oriented, AKA SOFEA (Server Oreinted Front End Architecture), Server does not do any view work, so maintaining
+* Client oriented, AKA SOFEA (Server Oreinted Front End Architecture) aka SPA, Server does not do any view work, so maintaining
 state is dramatically easier.  All data access is done through JSON/REST calls.  This allows for easy extensibility.
 * Dynamic - Only the code needed by the client is sent to the client. This is accomplished via RequireJS.   At some point it
   should be possible to compile it into one big javascript, but for now, this is how it works.
@@ -88,6 +86,17 @@ state is dramatically easier.  All data access is done through JSON/REST calls. 
 * Finders - Just add a static function with no arguments, or one with a display property
     to your  mongoose class and a new finder is created.
 * Image Upload/Download - Added the ability to add an image uploader downloader in 2 lines of code.
+* Plugable - Easy interface for adding your own plugins.
+* Authentication - Uses passport for authentication.
+* Setup Wizard - for quick going.
+* Model Editor - Create models using a UI or enhance your display using a UI.
+* Renderers - Custom renderers so you can make things just right.
+* Editors - Plugin your own editors and easily extend the built in functionality.
+* Swagger - A little experimental but this all is so... But expose your services as swagger schema.
+* Form Editor - Create forms for your models, in the UI.
+* CSV - Import models and data from CSV.
+* Less - Stylize to your hearts content.
+
 
 
 
@@ -129,11 +138,6 @@ display:{
 });
 
 ```
-
-Soon you should be able to edit these via an admin UI.
-Many-To-One support exists.
-One-To-Many support exists.
-
 
 
 

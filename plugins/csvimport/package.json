@@ -1,0 +1,11 @@
+{
+    "name": "bobamo-csvimport"
+    , "description":"A plugin for Bobamo for importing csv into models"
+    , "version": "0.6.0"
+    , "private": true
+    , "dependencies":{
+        "csv":"latest",
+        "q":"latest",
+        "moment":"latest"
+    }
+}

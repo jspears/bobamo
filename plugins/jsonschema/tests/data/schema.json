@@ -1,0 +1,150 @@
+{
+    "schema":{
+        "type":{
+            "schemaType":"String",
+            "name":"type",
+            "title":"Exception Type",
+            "help":"",
+            "type":"Text",
+            "placeholder":"",
+            "dataType":"text",
+            "defaultValue":"",
+            "textCase":"none"
+        },
+        "count":{
+            "schemaType":"Number",
+            "name":"type",
+            "title":"Exception Type",
+            "type":"Number",
+            "dataType":"text",
+            "textCase":"none"
+        },
+        "state":{
+            "schemaType":"String",
+            "name":"state",
+            "type":"Select",
+            "options":["yes", "no", "maybe"]
+
+        },
+        "exceptionDt":{
+            "schemaType":"Date",
+            "name":"exceptionDt",
+            "title":"Exception Date",
+            "help":"",
+            "type":"Date",
+            "yearStart":"0",
+            "yearEnd":"0",
+            "monthNames":"",
+            "defaultValue":""
+        },
+        "deep":{
+            "schemaType":"Object",
+            "type":"List",
+            "path":"deep",
+            "title":"think about it",
+            "subSchema":{
+                "superdeep":{
+                    "type":"Text"
+                }
+            }
+        },
+        "enm":{
+            "schemaType":"String",
+            "validators":[
+                {
+                    "type":"enum",
+                    "enums":["a", "b"]
+                }
+            ]
+        },
+        "valid":{
+            "schemaType":"Number",
+            "validators":[
+                {
+                    "type":"required",
+                    "message":""
+                },
+                {
+                    "type":"min",
+                    "min":1
+                },
+                {
+                    "type":"max",
+                    "max":10
+                }
+
+            ]
+        },
+        "notes":{
+            "schemaType":"Object",
+            "name":"notes",
+            "multiple":"true",
+            "title":"",
+            "help":"What has happened about this exception",
+            "modelName":"Note",
+            "type":"List",
+            "subSchema":{
+                "owner":{
+                    "schemaType":"String",
+                    "name":"owner",
+                    "title":"Owner ID",
+                    "help":"",
+                    "type":"Text",
+                    "placeholder":"",
+                    "dataType":"text",
+                    "defaultValue":"",
+                    "textCase":"none"
+                },
+                "addDt":{
+                    "schemaType":"Date",
+                    "name":"addDt",
+                    "title":"Date added",
+                    "help":"",
+                    "type":"Date",
+                    "yearStart":"0",
+                    "yearEnd":"0",
+                    "monthNames":"",
+                    "defaultValue":""
+                },
+                "message":{
+                    "schemaType":"String",
+                    "name":"message",
+                    "title":"Note",
+                    "help":"Enter notes about the exception",
+                    "type":"TextArea",
+                    "placeholder":"",
+                    "dataType":"text",
+                    "maxChars":"0",
+                    "rows":"0",
+                    "cols":"0",
+                    "defaultValue":"",
+                    "textCase":"none"
+                },
+                "stepTakenId":{
+                    "schemaType":"String",
+                    "name":"stepTakenId",
+                    "title":"Action Taken",
+                    "help":"This field will show the step taken in while handling an exception.   If an action is generated a note should be added",
+                    "type":"Text",
+                    "placeholder":"",
+                    "dataType":"text",
+                    "defaultValue":"",
+                    "textCase":"none"
+                }
+            }
+        },
+        "exceptionID":{
+            "schemaType":"String",
+            "name":"exceptionID",
+            "title":"Exception ID",
+            "help":"The unique ID of the exception",
+            "type":"Text",
+            "dataType":"text",
+            "textCase":"none"
+        }
+    },
+    "modelName":"Exception",
+    "description":"Exceptions to be handled by FM.",
+    "configurable":true
+
+}

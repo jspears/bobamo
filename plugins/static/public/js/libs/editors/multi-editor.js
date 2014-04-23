@@ -2,13 +2,12 @@ define(['Backbone.Form', 'jquery', 'underscore'], function (Form, $, _) {
     var editors = Form.editors;
     var MultiEditor = editors.MultiEditor = editors.Select.extend({
         initialize:function (options) {
-            editors.Base.prototype.initialize.call(this, options);
-
-            if (!this.schema || !(this.schema.options || this.schema.url)) throw "Missing required 'schema.options'";
-            if (this.schema && ( this.schema.multiple  !== false || this.schema.dataType == 'Array' || this.schema.type == 'Array' )){
+            editors.Select.prototype.initialize.apply(this, _.toArray(arguments));
+            if (this.schema && ( this.schema.multiple  !== false || this.schema.schemaType == 'Array' || this.schema.type == 'Array' )){
                 this.$el.attr('multiple', 'multiple');
                 this._multiple = true;
             }
+            return this;
         },
         setValue:function (value) {
             if (value)
@@ -23,7 +22,7 @@ define(['Backbone.Form', 'jquery', 'underscore'], function (Form, $, _) {
         renderOptions:function (options) {
             var $select = this.$el,
                 html = '';
-            var soptions = this.schema.options
+            var soptions = this.schema.options;
             if (!(soptions && soptions.required )) {
               html += soptions && soptions.selectNone || this.selectNone;
             }

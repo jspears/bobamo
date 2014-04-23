@@ -1,16 +1,18 @@
+
 define([
     'underscore',
     'libs/bobamo/edit',
-    'collections/${model.modelName}',
-    'models/${model.modelName}',
-    'text!templates/${model.modelName}/edit.html',
-    'libs/backbone-forms/src/templates/bootstrap',
+    'collections/${collection}',
+    'models/${collection}',
+    'text!templates/${collection}/edit.html',
+    'libs/backbone-forms/templates/bootstrap',
     'jquery-ui',
-    'libs/backbone-forms/src/jquery-ui-editors'
-].concat({{html JSON.stringify(model.editorsFor())}}), function (_,EditView, collection, Model, template) {
+    'libs/backbone-forms/editors/list'
+]
+    , function (_,EditView, collection, Model, template) {
     "use strict";
 
-    var fieldsets = eval('({{html JSON.stringify(model.fieldsets) }})');
+    var fieldsets // ${nl}={{json model.fieldsetsFor() }};
     return EditView.extend({
         fieldsets:fieldsets,
         template:_.template(template),
@@ -20,6 +22,34 @@ define([
             title:'${model.title}',
             plural:'${model.plural}',
             modelName:'${model.modelName}'
+        },
+        render:function(opts){
+            this.collection.currentId = opts && ( opts.id || opts._id);
+            return EditView.prototype.render.apply(this, _.toArray(arguments));
+        },
+        onNext:function(){
+            collection.nextId(function(id){
+                console.log('nextId', id);
+                if (id){
+                    collection.currentId = id;
+                    window.location.hash = '#/views/${model.modelName}/edit?id='+id;
+                }else{
+                    alert('alread at the end');
+
+                }
+            });
+        },
+        onPrevious:function(){
+
+            collection.previousId(function(id){
+                console.log('previousId', id);
+                if (id){
+                    collection.currentId = id;
+                    window.location.hash = '#/views/${model.modelName}/edit?id='+id;
+                }else{
+                    alert('already at the beginning');
+                }
+            });
         }
     });
 });

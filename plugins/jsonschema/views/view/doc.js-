@@ -1,0 +1,53 @@
+define(['Backbone', 'underscore', 'jquery'], function (B, _, $) {
+//   var re = /(.*<\s*body[^>]*>)|(<\s*\s*body\s*\>.+)/mig;
+
+
+    var DocView = B.View.extend({
+        el:'#content',
+//        events:{
+//          'click a':'onLinkClick'
+//
+//        },
+//        onLinkClick:function(e){
+//            e.preventDefault();
+//            var $target = $(e.target);
+//            var href = $target.attr('href').replace(/^#*/, "");
+//
+//            console.log('href', href);
+//            this.load(href);
+//        },
+        onLoad:function (resp, req, xhr) {
+            //    var html = resp.replace(re, "$1");
+            var $doc = $(resp); //.find('#content');
+            //        var $c = $doc.find('#content');
+            this.$el.html($doc);
+
+        },
+        onError:function (e) {
+            console.log('ERROR: loading', e);
+        },
+        pluginUrl:'${pluginUrl}',
+        render:function (options) {
+            if (options.type) {
+                this.load('${pluginUrl}/doc/' + options.type);
+            } else {
+                this.load('${pluginUrl}/view/doc.html')
+            }
+            $(options.container).html(this.$el);
+            return this;
+        },
+        load:function (url) {
+            $.ajax({
+                method:'GET',
+                url:url,
+                dataType:'html',
+                success:_.bind(this.onLoad, this),
+                error:_.bind(this.onError, this)
+            });
+
+        }
+    });
+
+    return DocView;
+
+})
