@@ -12,6 +12,7 @@ var PassportPlugin = function () {
     PluginApi.apply(this, arguments);
     this._install;
     this.conf = defaultConf;
+    if (this.options.authModel) this.conf.authModel = this.options.authModel.modelName;
     this.app.use(passport.initialize());
     this.app.use(passport.session());
 
