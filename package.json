@@ -5,15 +5,15 @@
     "private": false,
     "keywords": ["express", "rest", "mers", "csvimport", "passport", "less", "mongoose", "mongodb", "imageupload"],
     "dependencies": {
-        "jqtpl": "latest",
-        "mongoose": "latest",
-        "mers": "latest",
-        "underscore": "latest",
-        "less": "latest",
-        "express": ">=3",
-        "requirejs": "latest",
-        "q": "latest",
-        "moment": "latest"
+        "jqtpl": "2.0.16-rc1",
+        "mongoose": "3.8.11",
+        "mers": "0.9.0",
+        "underscore": "1.6.0",
+        "less": "1.7.0",
+        "express": "3.8.0",
+        "requirejs": "2.1.11",
+        "q": "1.0.1",
+        "moment": "2.6.0"
     },
     "bin": {
         "bobamo": "bin/bobamo"
